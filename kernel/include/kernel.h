@@ -7,8 +7,7 @@
 #include<commons/string.h>
 #include<commons/config.h>
 #include<readline/readline.h>
-#include "utils.h"
-#include "sumas.h"
 #include "../../shared/include/logger.h"
+#include "../../shared/include/client.h"
 
 #endif

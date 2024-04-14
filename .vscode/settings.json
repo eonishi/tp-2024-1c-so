@@ -1,6 +1,9 @@
 {
     "files.associations": {
         "kernel.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "logger.h": "c",
+        "server.h": "c",
+        "cpu.h": "c"
     }
 }

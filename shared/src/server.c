@@ -1,4 +1,4 @@
-#include "../include/utils.h"
+#include "../include/server.h"
 #include <sys/socket.h>
 
 t_log* logger;
