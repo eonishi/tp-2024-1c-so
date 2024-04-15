@@ -10,17 +10,19 @@ SHARED = $(shell find ../shared/obj/*.o)
 
 LINK = -lpthread -lcommons -lm -lreadline
 
-build: makefolder makeshared $(OBJ)
-	$(CC) -o $(MODULE).out $(MODULE).c $(OBJ) $(SHARED) $(LINK)
-
-
 CFLAGS = -c
+BUILD_DEBUG_FLAG = 
+
+
+build: makefolder makeshared $(OBJ)
+	$(CC) $(BUILD_DEBUG_FLAG) -o $(MODULE).out $(MODULE).c $(OBJ) $(SHARED) $(LINK) 
 
 debug: CFLAGS := $(CFLAGS) -g
 debug: makeshared_debug build
+debug: BUILD_DEBUG_FLAG := -g
 
 ./obj/%.o: ./src/%.c # REGLA # Este link no funca
-	$(CC) $(CFLAGS) -c $< -o $@ $(LINK) 
+	$(CC) $(CFLAGS) $< -o $@ $(LINK) 
 
 makefolder:  # Crea carpeta obj
 	if [ ! -d ./obj ]; then mkdir obj; fi

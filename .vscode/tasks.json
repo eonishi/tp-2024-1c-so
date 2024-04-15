@@ -1,0 +1,62 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "make_cpu",
+			"type": "shell",
+			"command": "make debug",
+			"args": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": ["$gcc"],
+			"options": {
+				"cwd": "${workspaceFolder}/cpu"
+			}
+		},
+		{
+			"label": "make_kernel",
+			"type": "shell",
+			"command": "make debug",
+			"args": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": ["$gcc"],
+			"options": {
+				"cwd": "${workspaceFolder}/kernel"
+			}
+		},
+		{
+			"label": "make_memory",
+			"type": "shell",
+			"command": "make debug",
+			"args": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": ["$gcc"],
+			"options": {
+				"cwd": "${workspaceFolder}/memory"
+			}
+		},
+		{
+			"label": "make_memory",
+			"type": "shell",
+			"command": "make debug",
+			"args": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": ["$gcc"],
+			"options": {
+				"cwd": "${workspaceFolder}/io"
+			}
+		},
+		// Tareas de compilación adicionales para memory y io, según sea necesario
+	]
+}

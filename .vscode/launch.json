@@ -1,0 +1,86 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug CPU",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/cpu/cpu.out",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/cpu",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "make_cpu"
+        },
+        {
+            "name": "Debug Kernel",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/kernel/kernel.out",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/kernel",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "make_kernel"
+        },
+        {
+            "name": "Debug IO",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/io/io.out",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/io",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "make_io"
+        },
+        {
+            "name": "Debug Memory",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/memory/memory.out",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/memory",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "make_memory"
+        }
+        // Configuraciones adicionales para memory y io, según sea necesario
+    ]
+}

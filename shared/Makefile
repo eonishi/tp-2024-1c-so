@@ -14,7 +14,7 @@ debug: CFLAGS := $(CFLAGS) -g
 debug: build
 
 ./obj/%.o: ./src/%.c # REGLA
-	$(CC) $(CFLAGS) -c $< -o $@ $(LINK)
+	$(CC) $(CFLAGS) $< -o $@ $(LINK)
 
 makefolder:  # Crea carpeta obj
 	if [ ! -d ./obj ]; then mkdir obj; fi
