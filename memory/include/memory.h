@@ -5,5 +5,6 @@
 #include <stdlib.h>
 #include <commons/log.h>
 #include "../../shared/include/logger.h"
+#include "../../shared/include/server.h"
 
 #endif
