@@ -1,8 +1,7 @@
-#include "include/memoria.h"
+#include "include/memory.h"
 
 int main(){
     t_log* logger = iniciar_logger("memory.log", "MEMORY");
-
     log_info(logger, "Logger de MEMORY iniciado");
 
     return 0;
