@@ -4,6 +4,9 @@
         "stdlib.h": "c",
         "logger.h": "c",
         "server.h": "c",
-        "cpu.h": "c"
+        "cpu.h": "c",
+        "log.h": "c",
+        "memory.h": "c",
+        "io.h": "c"
     }
 }

@@ -10,4 +10,6 @@
 #include "../../shared/include/logger.h"
 #include "../../shared/include/client.h"
 
+t_log *logger;
+
 #endif

@@ -7,4 +7,6 @@
 #include "../../shared/include/logger.h"
 #include "../../shared/include/server.h"
 
+t_log* logger;
+
 #endif

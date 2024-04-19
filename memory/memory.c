@@ -1,11 +1,10 @@
 #include "include/memory.h"
 
 int main(){
-    t_log* logger = iniciar_logger("memory.log", "MEMORY");
+    logger = iniciar_logger("memory.log", "MEMORY");
     log_info(logger, "Logger de MEMORY iniciado");
-
-    log_info(logger, "Iniciando servidor");
-    int server_fd = iniciar_servidor("MEMORY", "127.0.0.1", "8888", logger);
+    
+    int server_fd = iniciar_servidor("MEMORY", "127.0.0.1", "8888");
     int client_fd = esperar_cliente(server_fd);
 
     return 0;

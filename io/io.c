@@ -1,7 +1,7 @@
 #include "include/io.h"
 
 int main(){
-    t_log* logger = iniciar_logger("io.log", "IO");
+    logger = iniciar_logger("io.log", "IO");
 
     log_info(logger, "Logger IO Iniciado");
 

@@ -1,7 +1,7 @@
 #include "include/kernel.h"
 
 int main(){
-    t_log* logger = iniciar_logger("kernel.log", "KERNEL");
+    logger = iniciar_logger("kernel.log", "KERNEL");
 
     log_info(logger, "Logger de Kernel iniciado");
 
@@ -38,7 +38,6 @@ int main(){
 
     return 0;
 }
-
 
 /*
 El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 

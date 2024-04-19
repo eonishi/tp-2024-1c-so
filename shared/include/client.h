@@ -10,6 +10,8 @@
 #include<string.h>
 #include<commons/log.h>
 
+extern t_log* logger;
+
 typedef enum
 {
 	MENSAJE,

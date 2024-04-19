@@ -1,5 +1,5 @@
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef SERVER_H_
+#define SERVER_H_
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -23,10 +23,10 @@ extern t_log* logger;
 
 void* recibir_buffer(int*, int);
 
-int iniciar_servidor(char*, char*, char*, t_log*);
+int iniciar_servidor(char*, char*, char*);
 int esperar_cliente(int);
 t_list* recibir_paquete(int);
 void recibir_mensaje(int);
 int recibir_operacion(int);
 
-#endif /* UTILS_H_ */
+#endif /* SERVER_H_ */

@@ -1,10 +1,10 @@
 #include "../include/server.h"
 #include <sys/socket.h>
 
-t_log* logger;
 
-int iniciar_servidor(char* server_name, char* ip, char* puerto, t_log* logger)
+int iniciar_servidor(char* server_name, char* ip, char* puerto)
 {
+	log_info(logger, "Iniciando servidor");
 	int socket_servidor;
 
 	struct addrinfo hints, *servinfo, *p;

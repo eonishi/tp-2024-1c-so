@@ -6,4 +6,6 @@
 #include <commons/log.h>
 #include "../../shared/include/logger.h"
 
+t_log* logger
+
 #endif
