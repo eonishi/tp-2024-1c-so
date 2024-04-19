@@ -4,7 +4,9 @@ int main(){
     logger = iniciar_logger("cpu.log", "CPU");
 	log_info(logger, "Logger CPU Iniciado");
 
-	int server_fd = iniciar_servidor("CPU", "127.0.0.1", "4441");
+	inicializar_configuracion();
+
+	int server_fd = iniciar_servidor("CPU", config.ip_cpu, config.puerto_cpu);
 	int cliente_fd = esperar_cliente(server_fd);
 
 	t_list* lista;
@@ -32,6 +34,21 @@ int main(){
 		}
 	}
 	return EXIT_SUCCESS;
+}
+
+void inicializar_configuracion(){
+    log_info(logger, "Inicializando configuración...");
+    // config = malloc(sizeof(kernel_config));
+
+    t_config* config_loader = config_create("cpu.config");;
+
+    config.ip_cpu = config_get_string_value(config_loader, "IP_CPU");
+    config.puerto_cpu = config_get_string_value(config_loader, "PUERTO_CPU");
+
+    config.ip_memoria = config_get_string_value(config_loader, "IP_MEMORIA");
+    config.puerto_memoria = config_get_string_value(config_loader, "PUERTO_MEMORIA");
+
+    log_info(logger, "Configuración iniciadada correctamente.");
 }
 
 void iterator(char* value) {
