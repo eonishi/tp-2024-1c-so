@@ -7,6 +7,7 @@
         "cpu.h": "c",
         "log.h": "c",
         "memory.h": "c",
-        "io.h": "c"
+        "io.h": "c",
+        "functional": "c"
     }
 }

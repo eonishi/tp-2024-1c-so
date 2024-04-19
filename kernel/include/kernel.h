@@ -11,5 +11,23 @@
 #include "../../shared/include/client.h"
 
 t_log *logger;
+typedef struct
+{
+    char *ip_kernel;
+    char *puerto_kernel;
+    char *ip_memoria;
+    char *puerto_memoria;
+    char *ip_cpu;
+    char *puerto_cpu;
+} kernel_config;
+
+
+kernel_config config;
+
+
+
+
+
+
 
 #endif

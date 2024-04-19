@@ -19,6 +19,7 @@ void* serializar_paquete(t_paquete* paquete, int bytes)
 int crear_conexion(char *ip, char* puerto)
 {
 	log_info(logger, "Iniciar conexión de cliente");
+	
 	struct addrinfo hints;
 	struct addrinfo *server_info;
 
