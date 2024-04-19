@@ -7,8 +7,8 @@ int main(){
 
     inicializar_configuracion();
 
-	int conexion_cpu = crear_conexion_cpu(config.ip_cpu, config.puerto_cpu);
-    int conexion_memoria = crear_conexion_memoria(config.ip_memoria, config.puerto_memoria);
+	int conexion_cpu = crear_conexion_cpu();
+    int conexion_memoria = crear_conexion_memoria();
 
     log_info(logger, "Enviando mensaje al CPU...");
     enviar_mensaje("0", conexion_cpu);
@@ -54,7 +54,7 @@ int crear_conexion_cpu()
 int crear_conexion_memoria()
 {
     log_info(logger, "Creando conexión con Memoria...");
-	int conexion = crear_conexion(config.ip_cpu, config.puerto_cpu);
+	int conexion = crear_conexion(config.ip_memoria, config.puerto_memoria);
 	log_info(logger, "Conexión creada. Socket: %i", conexion);
 
     return conexion;

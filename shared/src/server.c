@@ -38,7 +38,7 @@ int esperar_cliente(int socket_servidor)
 	// Aceptamos un nuevo cliente
 	int socket_cliente;
 	socket_cliente = accept(socket_servidor, NULL, NULL);
-	// log_info(logger, "Se conecto un cliente!");
+	log_info(logger, "Se conecto un cliente");
 
 	return socket_cliente;
 }

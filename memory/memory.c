@@ -3,8 +3,8 @@
 int main(){
     logger = iniciar_logger("memory.log", "MEMORY");
     log_info(logger, "Logger de MEMORY iniciado");
-    
-    int server_fd = iniciar_servidor("MEMORY", "127.0.0.1", "8888");
+
+    int server_fd = iniciar_servidor("MEMORY", "127.0.0.1", "4442");
     int client_fd = esperar_cliente(server_fd);
 
     return 0;

@@ -4,7 +4,7 @@ int main(){
     logger = iniciar_logger("cpu.log", "CPU");
 	log_info(logger, "Logger CPU Iniciado");
 
-	int server_fd = iniciar_servidor("CPU", "127.0.0.1", "4444");
+	int server_fd = iniciar_servidor("CPU", "127.0.0.1", "4441");
 	int cliente_fd = esperar_cliente(server_fd);
 
 	t_list* lista;
