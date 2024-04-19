@@ -6,6 +6,9 @@ int main(){
 
 	inicializar_configuracion();
 
+	
+
+
 	int server_fd = iniciar_servidor("CPU", config.ip_cpu, config.puerto_cpu);
 	int cliente_fd = esperar_cliente(server_fd);
 
