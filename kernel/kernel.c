@@ -24,7 +24,6 @@ int main(){
 
 void inicializar_configuracion(){
     log_info(logger, "Inicializando configuración...");
-    // config = malloc(sizeof(kernel_config));
 
     t_config* config_loader = config_create("kernel.config");;
 

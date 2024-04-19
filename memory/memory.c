@@ -3,11 +3,24 @@
 int main(){
     logger = iniciar_logger("memory.log", "MEMORY");
     log_info(logger, "Logger de MEMORY iniciado");
+    
+    inicializar_configuracion();
 
-    int server_fd = iniciar_servidor("MEMORY", "127.0.0.1", "4442");
+    int server_fd = iniciar_servidor("MEMORY", config.ip_memoria, config.puerto_memoria);
     int client_fd = esperar_cliente(server_fd);
 
     return 0;
+}
+
+void inicializar_configuracion(){
+    log_info(logger, "Inicializando configuración...");
+
+    t_config* config_loader = config_create("memoria.config");;
+
+    config.ip_memoria = config_get_string_value(config_loader, "IP_MEMORIA");
+    config.puerto_memoria = config_get_string_value(config_loader, "PUERTO_MEMORIA");
+
+    log_info(logger, "Configuración iniciadada correctamente.");
 }
 
 /**
