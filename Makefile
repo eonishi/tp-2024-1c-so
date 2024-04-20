@@ -1,3 +1,8 @@
+build:
+	make -C ./cpu
+	make -C ./memory
+	make -C ./kernel
+	make -C ./io
 
 clean:
 	make clean -C ./cpu
