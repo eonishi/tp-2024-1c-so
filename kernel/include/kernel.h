@@ -29,6 +29,7 @@ kernel_config config;
 void inicializar_configuracion();
 int crear_conexion_cpu();
 int crear_conexion_memoria();
+void terminar_programa(int conexion_cpu, int conexion_memoria);
 
 
 void iterator(char* value);

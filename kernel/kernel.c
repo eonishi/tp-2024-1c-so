@@ -42,15 +42,17 @@ int main(){
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
+
+			terminar_programa(conexion_cpu, conexion_memoria);
+
 			return EXIT_FAILURE;
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 			break;
 		}
 	}
-	return EXIT_SUCCESS;
 
-    return 0;
+	return EXIT_SUCCESS;
 }
 
 void inicializar_configuracion(){
@@ -91,6 +93,14 @@ int crear_conexion_memoria()
 	log_info(logger, "Conexión creada. Socket: %i", conexion);
 
     return conexion;
+}
+
+void terminar_programa(int conexion_cpu, int conexion_memoria)
+{
+    liberar_conexion(conexion_cpu);
+    liberar_conexion(conexion_memoria);
+    log_info(logger, "Memoria liberada correctamente");
+    log_destroy(logger);
 }
 /*
 El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 

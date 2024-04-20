@@ -24,6 +24,7 @@ typedef struct
 cpu_config config;
 
 void inicializar_configuracion();
+void terminar_programa();
 void iterator(char* value);
 
 #endif

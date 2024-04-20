@@ -44,7 +44,7 @@
 			}
 		},
 		{
-			"label": "make_memory",
+			"label": "make_io",
 			"type": "shell",
 			"command": "make debug",
 			"args": [],

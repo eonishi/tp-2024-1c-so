@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include "../../shared/include/logger.h"
@@ -29,5 +30,6 @@ int crear_conexion_kernel();
 int crear_conexion_memory();
 
 void inicializar_configuracion();
+void terminar_programa(int conexion_kernel);
 
 #endif

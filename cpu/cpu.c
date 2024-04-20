@@ -27,12 +27,16 @@ int main(){
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
+		
+			terminar_programa();
+
 			return EXIT_FAILURE;
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 			break;
 		}
 	}
+
 	return EXIT_SUCCESS;
 }
 
@@ -48,6 +52,12 @@ void inicializar_configuracion(){
     config.puerto_memoria = config_get_string_value(config_loader, "PUERTO_MEMORIA");
 
     log_info(logger, "Configuración iniciadada correctamente.");
+}
+
+void terminar_programa()
+{
+    log_info(logger, "Memoria liberada correctamente");
+    log_destroy(logger);
 }
 
 void iterator(char* value) {

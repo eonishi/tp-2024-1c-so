@@ -9,6 +9,8 @@ int main(){
     int server_fd = iniciar_servidor("MEMORY", config.ip_memoria, config.puerto_memoria);
     int client_fd = esperar_cliente(server_fd);
 
+    terminar_programa();
+
     return 0;
 }
 
@@ -21,6 +23,12 @@ void inicializar_configuracion(){
     config.puerto_memoria = config_get_string_value(config_loader, "PUERTO_MEMORIA");
 
     log_info(logger, "Configuración iniciadada correctamente.");
+}
+
+void terminar_programa()
+{
+    log_info(logger, "Memoria liberada correctamente");
+    log_destroy(logger);
 }
 
 /**

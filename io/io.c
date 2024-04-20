@@ -8,7 +8,10 @@ int main()
     // Esta lógica se repite para cada IO que se quiera crear.
     inicializar_configuracion();
     int kernel_fd = crear_conexion_kernel();
-    enviar_mensaje(0, kernel_fd);
+    enviar_mensaje("0", kernel_fd);
+
+
+    terminar_programa(kernel_fd);
 
     // esto a chequear
     //int memory_fd = crear_conexion_memory();
@@ -48,6 +51,14 @@ void inicializar_configuracion()
     config.PUERTO_MEMORIA = config_get_string_value(config_loader, "PUERTO_MEMORIA");
 
     log_info(logger, "Configuración iniciadada correctamente.");
+}
+
+
+void terminar_programa(int conexion_kernel)
+{
+    liberar_conexion(conexion_kernel);
+    log_info(logger, "Memoria liberada correctamente");
+    log_destroy(logger);
 }
 
 /*
