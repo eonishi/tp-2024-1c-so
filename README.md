@@ -1,4 +1,11 @@
-# tp-scaffold
+# TP C-Comenta
+
+## Check point 1
+### Orden de ejecucion de los modulos
+1. Memoria
+2. CPU
+3. Kernel
+4. IO
 
 Esta es una plantilla de proyecto diseñada para generar un TP de Sistemas
 Operativos de la UTN FRBA.
