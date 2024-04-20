@@ -8,9 +8,11 @@ int main()
     // Esta lógica se repite para cada IO que se quiera crear.
     inicializar_configuracion();
     int kernel_fd = crear_conexion_kernel();
-    int memory_fd = crear_conexion_memory();
     enviar_mensaje(0, kernel_fd);
-    enviar_mensaje(0, memory_fd);
+
+    // esto a chequear
+    //int memory_fd = crear_conexion_memory();
+    //enviar_mensaje(0, memory_fd);
 
     return 0;
 }
