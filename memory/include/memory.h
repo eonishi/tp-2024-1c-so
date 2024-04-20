@@ -19,4 +19,6 @@ typedef struct
 
 memory_config config;
 
+void inicializar_configuracion();
+
 #endif

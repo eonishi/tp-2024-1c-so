@@ -26,5 +26,8 @@ typedef struct{
 io_config config;
 
 int crear_conexion_kernel();
+int crear_conexion_memory();
+
+void inicializar_configuracion();
 
 #endif

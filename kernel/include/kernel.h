@@ -7,6 +7,7 @@
 #include<commons/string.h>
 #include<commons/config.h>
 #include<readline/readline.h>
+#include <commons/collections/list.h>
 #include "../../shared/include/logger.h"
 #include "../../shared/include/client.h"
 #include "../../shared/include/server.h"
@@ -24,6 +25,13 @@ typedef struct
 
 
 kernel_config config;
+
+void inicializar_configuracion();
+int crear_conexion_cpu();
+int crear_conexion_memoria();
+
+
+void iterator(char* value);
 
 
 

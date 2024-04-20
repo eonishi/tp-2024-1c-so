@@ -23,7 +23,7 @@ typedef struct
 
 cpu_config config;
 
-
+void inicializar_configuracion();
 void iterator(char* value);
 
 #endif

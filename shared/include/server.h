@@ -10,14 +10,9 @@
 #include<commons/collections/list.h>
 #include<string.h>
 #include<assert.h>
+#include "protocolo.h"
 
 #define PUERTO "4444"
-
-typedef enum
-{
-	MENSAJE,
-	PAQUETE
-}op_code;
 
 extern t_log* logger;
 

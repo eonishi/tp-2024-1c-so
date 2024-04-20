@@ -9,14 +9,11 @@
 #include<netdb.h>
 #include<string.h>
 #include<commons/log.h>
+#include "protocolo.h"
+
 
 extern t_log* logger;
 
-typedef enum
-{
-	MENSAJE,
-	PAQUETE
-}op_code;
 
 typedef struct
 {
