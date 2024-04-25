@@ -19,6 +19,7 @@ int main(){
 		case MENSAJE:
             log_info(logger, "Entre a MENSAJE. CODIGO: %d", cod_op);
 			recibir_mensaje(cliente_fd);
+			enviar_mensaje("Respuesta de CPU", cliente_fd);
 			break;
 		case PAQUETE:
 			lista = recibir_paquete(cliente_fd);

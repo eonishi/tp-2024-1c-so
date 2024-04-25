@@ -76,7 +76,17 @@ void iniciar_consola(int conexion_cpu, int conexion_memoria)
 		if (strcmp(leido, "") == 0)
 			ingresoActivado = 0;
 			
-		if(strcmp(leido, "CPU") == 0){
+		if(strcmp(leido, "INICIAR_PROCESO") == 0){
+			log_info(logger, "Enviando mensaje al INICIAR_PROCESO...");
+
+			iniciar_proceso_en_memoria(conexion_memoria);
+
+			// Crear pcb.. etc
+
+			dispatch_proceso(conexion_cpu);
+
+		}
+		else if(strcmp(leido, "CPU") == 0){
 			log_info(logger, "Enviando mensaje al CPU...");
     		enviar_mensaje("0", conexion_cpu);
 			log_info(logger, "Mensaje enviado");
@@ -93,6 +103,18 @@ void iniciar_consola(int conexion_cpu, int conexion_memoria)
 		free(leido);
 	}
 	// ¡No te olvides de liberar las lineas antes de regresar! // TODO Preguntar que onda esto.
+}
+
+void iniciar_proceso_en_memoria(int conexion){
+	enviar_mensaje("X", conexion);	
+	log_info(logger, "Mensaje enviado a memoria");
+	recibir_mensaje(conexion);
+}
+
+void dispatch_proceso(int conexion){
+	enviar_mensaje("X", conexion);	
+	log_info(logger, "Mensaje enviado al cpu");
+	recibir_mensaje(conexion);
 }
 
 void terminar_programa(int conexion_cpu, int conexion_memoria)

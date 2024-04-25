@@ -46,6 +46,7 @@ int esperar_cliente(int socket_servidor)
 int recibir_operacion(int socket_cliente)
 {
 	int cod_op;
+
 	if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) > 0)
 		return cod_op;
 	else
@@ -70,7 +71,7 @@ void recibir_mensaje(int socket_cliente)
 {
 	int size;
 	char* buffer = recibir_buffer(&size, socket_cliente);
-	// log_info(logger, "Me llego el mensaje %s", buffer); // TODO  REVISAR
+	log_info(logger, "Me llego el mensaje %s", buffer); // TODO  REVISAR
 	free(buffer);
 }
 

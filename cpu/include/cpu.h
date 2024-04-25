@@ -9,6 +9,7 @@
 #include <commons/collections/list.h>
 #include "../../shared/include/logger.h"
 #include "../../shared/include/server.h"
+#include "../../shared/include/client.h"
 
 t_log *logger;
 

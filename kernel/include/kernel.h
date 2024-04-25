@@ -41,7 +41,8 @@ void terminar_programa(int conexion_cpu, int conexion_memoria);
 void iniciar_consola(int conexion_cpu, int conexion_memoria);
 void *iniciar_escucha();
 void iniciar_servidor_en_hilo();
-
+void iniciar_proceso_en_memoria(int conexion);
+void dispatch_proceso(int conexion);
 
 void iterator(char* value);
 

@@ -56,6 +56,7 @@ int crear_conexion(char *ip, char* puerto)
 
 void enviar_mensaje(char* mensaje, int socket_cliente)
 {
+	log_info(logger,"Client enviar_mensaje..");
 	t_paquete* paquete = malloc(sizeof(t_paquete));
 
 	paquete->codigo_operacion = MENSAJE;
@@ -69,6 +70,7 @@ void enviar_mensaje(char* mensaje, int socket_cliente)
 	void* a_enviar = serializar_paquete(paquete, bytes);
 
 	send(socket_cliente, a_enviar, bytes, 0);
+
 
 	free(a_enviar);
 	eliminar_paquete(paquete);

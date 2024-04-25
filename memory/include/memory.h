@@ -7,6 +7,7 @@
 #include <commons/config.h>
 #include "../../shared/include/logger.h"
 #include "../../shared/include/server.h"
+#include "../../shared/include/client.h"
 
 t_log* logger;
 
@@ -16,6 +17,7 @@ typedef struct
     char *puerto_memoria;
 } memory_config;
 
+void iterator(char* value);
 
 memory_config config;
 
