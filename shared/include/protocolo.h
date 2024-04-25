@@ -4,7 +4,7 @@
 typedef enum
 {
 	MENSAJE,
-	PAQUETE
+	PAQUETE,
 }op_code;
 
 #endif
