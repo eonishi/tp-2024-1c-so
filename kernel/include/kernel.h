@@ -14,6 +14,7 @@
 #include "../../shared/include/server.h"
 
 t_log *logger;
+int socket_cpu, socket_memoria;
 
 typedef enum
 {
@@ -37,8 +38,8 @@ kernel_config config;
 void inicializar_configuracion();
 int crear_conexion_cpu();
 int crear_conexion_memoria();
-void terminar_programa(int conexion_cpu, int conexion_memoria);
-void iniciar_consola(int conexion_cpu, int conexion_memoria);
+void terminar_programa();
+void iniciar_consola();
 void *iniciar_escucha();
 void iniciar_servidor_en_hilo();
 void iniciar_proceso_en_memoria(int conexion);

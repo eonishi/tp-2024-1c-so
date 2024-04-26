@@ -8,7 +8,7 @@ int main()
     // Esta lógica se repite para cada IO que se quiera crear.
     inicializar_configuracion();
     int kernel_fd = crear_conexion_kernel();
-    enviar_mensaje("0", kernel_fd);
+    enviar_mensaje(MENSAJE, "0", kernel_fd);
 
 
     terminar_programa(kernel_fd);
