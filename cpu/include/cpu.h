@@ -16,11 +16,13 @@ t_log *logger;
 typedef struct
 {
     char *ip_cpu;
-    char *puerto_cpu;
+    char *puerto_dispatch;
+    char *puerto_interrupt;
     char *ip_memoria;
     char *puerto_memoria;
+    unsigned cantidad_entradas_tlb;
+    char *algoritmo_tlb;
 } cpu_config;
-
 
 cpu_config config;
 

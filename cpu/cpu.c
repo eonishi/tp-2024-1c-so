@@ -6,7 +6,7 @@ int main(){
 
 	inicializar_configuracion();
 
-	int server_fd = iniciar_servidor("CPU", config.ip_cpu, config.puerto_cpu);
+	int server_fd = iniciar_servidor("CPU", config.ip_cpu, config.puerto_dispatch);
 	int cliente_fd = esperar_cliente(server_fd);
 
 	t_list* lista;
@@ -47,11 +47,16 @@ void inicializar_configuracion(){
     t_config* config_loader = config_create("cpu.config");;
 
     config.ip_cpu = config_get_string_value(config_loader, "IP_CPU");
-    config.puerto_cpu = config_get_string_value(config_loader, "PUERTO_CPU");
+    config.puerto_dispatch = config_get_string_value(config_loader, "PUERTO_ESCUCHA_DISPATCH");
+    config.puerto_interrupt = config_get_string_value(config_loader, "PUERTO_ESCUCHA_INTERRUPT");
 
     config.ip_memoria = config_get_string_value(config_loader, "IP_MEMORIA");
     config.puerto_memoria = config_get_string_value(config_loader, "PUERTO_MEMORIA");
 
+	config.cantidad_entradas_tlb = config_get_int_value(config_loader, "CANTIDAD_ENTRADAS_TLB");
+	config.algoritmo_tlb = config_get_string_value(config_loader, "ALGORITMO_TLB");
+
+	config_destroy(config_loader);
     log_info(logger, "Configuración iniciadada correctamente.");
 }
 
