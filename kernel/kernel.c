@@ -11,12 +11,13 @@ int main(){
     inicializar_configuracion();
 	iniciar_servidor_en_hilo();
 
-	int conexion_cpu = crear_conexion_cpu();
-    int conexion_memoria = crear_conexion_memoria();
+	crear_conexion_memoria();
+	crear_conexion_cpu();
+    
 
-	iniciar_consola(conexion_cpu, conexion_memoria);
+	iniciar_consola();
 
-	terminar_programa(conexion_cpu, conexion_memoria);
+	terminar_programa();
 
 	return EXIT_SUCCESS;
 }
@@ -49,6 +50,11 @@ int crear_conexion_cpu()
 	int conexion = crear_conexion(config.ip_cpu, config.puerto_cpu);
 	log_info(logger, "Conexión creada. Socket: %i", conexion);
 
+	socket_cpu = conexion;
+
+	enviar_handshake(socket_cpu);
+	esperar_handshake(socket_cpu);
+
     return conexion;
 }
 
@@ -58,17 +64,22 @@ int crear_conexion_memoria()
 	int conexion = crear_conexion(config.ip_memoria, config.puerto_memoria);
 	log_info(logger, "Conexión creada. Socket: %i", conexion);
 
+	socket_memoria = conexion;
+	
+	enviar_handshake(socket_memoria);
+	esperar_handshake(socket_memoria);
+
     return conexion;
 }
 
-void iniciar_consola(int conexion_cpu, int conexion_memoria)
+void iniciar_consola()
 {
 	char* leido;
 	leido = "void";
 	bool ingresoActivado = 1;
 
 	while(ingresoActivado){
-		log_info(logger, "Ingrese CPU o MEMORIA para enviar mensajes a esos modulos: ");
+		log_info(logger, "Ingrese INICIAR_PROCESO:");
 
 		leido = readline("> ");
 		log_info(logger, "Linea ingresada: %s", leido);
@@ -77,23 +88,26 @@ void iniciar_consola(int conexion_cpu, int conexion_memoria)
 			ingresoActivado = 0;
 			
 		if(strcmp(leido, "INICIAR_PROCESO") == 0){
-			log_info(logger, "Enviando mensaje al INICIAR_PROCESO...");
+			log_info(logger, "==============================================");
+			log_info(logger, "Inicio de ejecución de INICIAR_PROCESO");
 
-			iniciar_proceso_en_memoria(conexion_memoria);
+			iniciar_proceso_en_memoria(socket_memoria);
 
 			// Crear pcb.. etc
 
-			dispatch_proceso(conexion_cpu);
+			dispatch_proceso(socket_cpu);
+			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
+			log_info(logger, "==============================================");
 
 		}
 		else if(strcmp(leido, "CPU") == 0){
 			log_info(logger, "Enviando mensaje al CPU...");
-    		enviar_mensaje("0", conexion_cpu);
+    		enviar_mensaje(MENSAJE, "0", socket_cpu);
 			log_info(logger, "Mensaje enviado");
 		}
 		else if(strcmp(leido, "MEMORIA") == 0) {
 			log_info(logger, "Enviando mensaje a la MEMORIA...");
-    		enviar_mensaje("0", conexion_memoria);
+    		enviar_mensaje(MENSAJE,"0", socket_memoria);
 			log_info(logger, "Mensaje enviado");
 		}
 		else{
@@ -102,25 +116,27 @@ void iniciar_consola(int conexion_cpu, int conexion_memoria)
 
 		free(leido);
 	}
-	// ¡No te olvides de liberar las lineas antes de regresar! // TODO Preguntar que onda esto.
 }
 
 void iniciar_proceso_en_memoria(int conexion){
-	enviar_mensaje("X", conexion);	
-	log_info(logger, "Mensaje enviado a memoria");
+	enviar_mensaje(CREAR_PROCESO_EN_MEMORIA, "X", conexion);	
+	log_info(logger, "Solicitud CREAR_PROCESO_EN_MEMORIA enviada a memoria");
 	recibir_mensaje(conexion);
+	log_info(logger, "Respuesta CREAR_PROCESO_EN_MEMORIA recibida");
 }
 
 void dispatch_proceso(int conexion){
-	enviar_mensaje("X", conexion);	
-	log_info(logger, "Mensaje enviado al cpu");
+	enviar_mensaje(DISPATCH_PROCESO, "X", conexion);	
+	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
 	recibir_mensaje(conexion);
+	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
 }
 
-void terminar_programa(int conexion_cpu, int conexion_memoria)
+void terminar_programa()
 {
-    liberar_conexion(conexion_cpu);
-    liberar_conexion(conexion_memoria);
+    liberar_conexion(socket_cpu);
+    liberar_conexion(socket_memoria);
+
     log_info(logger, "Memoria liberada correctamente");
     log_destroy(logger);
 }

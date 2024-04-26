@@ -8,6 +8,9 @@
         "log.h": "c",
         "memory.h": "c",
         "io.h": "c",
-        "functional": "c"
+        "functional": "c",
+        "comunicacion.h": "c",
+        "client.h": "c",
+        "config.h": "c"
     }
 }
