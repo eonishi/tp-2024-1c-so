@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
@@ -28,6 +29,9 @@ cpu_config config;
 
 void inicializar_configuracion();
 void terminar_programa();
-void iterator(char* value);
+
+// Server threads
+void server_dispatch();
+void server_interrupt();
 
 #endif
