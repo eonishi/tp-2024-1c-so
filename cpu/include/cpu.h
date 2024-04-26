@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
@@ -18,18 +19,24 @@ int socket_memoria, socket_kernel;
 typedef struct
 {
     char *ip_cpu;
-    char *puerto_cpu;
+    char *puerto_dispatch;
+    char *puerto_interrupt;
     char *ip_memoria;
     char *puerto_memoria;
+    unsigned cantidad_entradas_tlb;
+    char *algoritmo_tlb;
 } cpu_config;
-
 
 cpu_config config;
 
 void inicializar_configuracion();
 void terminar_programa();
+
 int crear_conexion_memoria();
 void esperar_handshake_kernel(int server);
-void iterator(char* value);
+
+// Server threads
+void server_dispatch();
+void server_interrupt();
 
 #endif
