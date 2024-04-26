@@ -6,7 +6,7 @@ int main()
 	log_info(logger, "Logger CPU Iniciado");
 
 	inicializar_configuracion();  
-  crear_conexion_memoria();
+  	crear_conexion_memoria();
 	
 	pthread_t server_threads[2];
 	pthread_create(&server_threads[0], NULL, (void*)server_dispatch, NULL);
@@ -84,9 +84,17 @@ void server_dispatch()
 
 		switch (cod_op)
 		{
-		case MENSAJE:
-			recibir_mensaje(cliente_fd);
-			enviar_mensaje("Respuesta de CPU-Dispatch", socket_kernel);
+		case DISPATCH_PROCESO:
+            log_info(logger, "DISPATCH_PROCESO recibido. CODIGO: %d", cod_op);
+
+			recibir_mensaje(socket_kernel);
+			// Operaciones correspondientes
+			enviar_mensaje(FETCH_INSTRUCCION, "Solicitud FETCH_INSTRUCCION desde CPU", socket_memoria);		
+			log_info(logger, "Solicitud FETCH_INSTRUCCION enviada a memoria");
+			recibir_mensaje(socket_memoria);
+			log_info(logger, "Respuesta FETCH_INSTRUCCION recibida");
+			// Más operaciones
+			enviar_mensaje(RESPUESTA, "Respuesta DISPATCH_PROCESO de CPU", socket_kernel);
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
@@ -114,7 +122,7 @@ void server_interrupt()
 		{
 		case MENSAJE:
 			recibir_mensaje(cliente_fd);
-			enviar_mensaje("Respuesta de CPU", cliente_fd);
+			enviar_mensaje(MENSAJE, "Respuesta de CPU", cliente_fd);
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
