@@ -5,7 +5,7 @@
 
 typedef struct 
 {
-    uint32_t pc; // Program Counter
+    uint32_t pc; // Program Counter ¿va o no va?
     uint8_t ax;
     uint8_t bx;
     uint8_t cx;
@@ -23,9 +23,10 @@ typedef struct
     unsigned pid;
     unsigned pc; 
     unsigned quantum;
-    registros_t registros_ejecucion;
+    registros_t* registros;
     //state estado; // enum {NEW, READY, EXEC, BLOCKED, EXIT}
     //list_t ios //lista de IOs que usa (es util y vale la pena para el contexto del proyecto? el libro lo recomienda)
 }pcb; 
 
+pcb* crear_pcb(unsigned id, unsigned quantum);
 #endif
