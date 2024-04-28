@@ -1,7 +1,8 @@
 #ifndef PCB_H_
 #define PCB_H_
 
-#include <stdint.h>
+#include "client.h"
+#include "server.h"
 
 typedef struct 
 {
@@ -29,4 +30,7 @@ typedef struct
 }pcb; 
 
 pcb* crear_pcb(unsigned id, unsigned quantum);
+int enviar_pcb(int socket_cliente, pcb* pcb);
+pcb* recibir_pcb(int socket_cliente);
+void iterator(char* value);
 #endif
