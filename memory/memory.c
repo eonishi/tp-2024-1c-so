@@ -172,9 +172,6 @@ void terminar_programa()
     log_destroy(logger);
 }
 
-void iterator(char* value) {
-	log_info(logger,"%s", value);
-}
 
 /**
 
