@@ -6,7 +6,7 @@ void enviar_handshake(int socket) {
 
 int esperar_handshake(int socket) {
     int cod_op = recibir_operacion(socket);
-
+    log_info(logger, "esperar_handshake. Codigo: [%d]", cod_op);
     if(cod_op == HANDSHAKE) {
         recibir_mensaje(socket);
 

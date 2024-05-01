@@ -1,21 +1,6 @@
 #include "../include/client.h"
 
 
-void* serializar_paquete(t_paquete* paquete, int bytes)
-{
-	void * magic = malloc(bytes);
-	int desplazamiento = 0;
-
-	memcpy(magic + desplazamiento, &(paquete->codigo_operacion), sizeof(int));
-	desplazamiento+= sizeof(int);
-	memcpy(magic + desplazamiento, &(paquete->buffer->size), sizeof(int));
-	desplazamiento+= sizeof(int);
-	memcpy(magic + desplazamiento, paquete->buffer->stream, paquete->buffer->size);
-	desplazamiento+= paquete->buffer->size;
-
-	return magic;
-}
-
 int crear_conexion(char *ip, char* puerto)
 {
 	log_info(logger, "Iniciando conexión con servidor");
@@ -67,7 +52,9 @@ void enviar_mensaje(int codigo_op, char* mensaje, int socket_cliente)
 
 	int bytes = paquete->buffer->size + 2*sizeof(int);
 
+	log_info(logger, "Apunto de serializar");
 	void* a_enviar = serializar_paquete(paquete, bytes);
+	log_info(logger, "Serializado");
 
 	send(socket_cliente, a_enviar, bytes, 0);
 
@@ -76,50 +63,22 @@ void enviar_mensaje(int codigo_op, char* mensaje, int socket_cliente)
 	eliminar_paquete(paquete);
 }
 
-
-void crear_buffer(t_paquete* paquete)
-{
-	paquete->buffer = malloc(sizeof(t_buffer));
-	paquete->buffer->size = 0;
-	paquete->buffer->stream = NULL;
-}
-
-t_paquete* crear_paquete(void)
-{
-	t_paquete* paquete = malloc(sizeof(t_paquete));
-	paquete->codigo_operacion = PAQUETE;
-	crear_buffer(paquete);
-	return paquete;
-}
-
-void agregar_a_paquete(t_paquete* paquete, void* valor, int tamanio)
-{
-	paquete->buffer->stream = realloc(paquete->buffer->stream, paquete->buffer->size + tamanio + sizeof(int));
-
-	memcpy(paquete->buffer->stream + paquete->buffer->size, &tamanio, sizeof(int));
-	memcpy(paquete->buffer->stream + paquete->buffer->size + sizeof(int), valor, tamanio);
-
-	paquete->buffer->size += tamanio + sizeof(int);
-}
-
-void enviar_paquete(t_paquete* paquete, int socket_cliente)
-{
-	int bytes = paquete->buffer->size + 2*sizeof(int);
-	void* a_enviar = serializar_paquete(paquete, bytes);
-
-	send(socket_cliente, a_enviar, bytes, 0);
-
-	free(a_enviar);
-}
-
-void eliminar_paquete(t_paquete* paquete)
-{
-	free(paquete->buffer->stream);
-	free(paquete->buffer);
-	free(paquete);
-}
-
 void liberar_conexion(int socket_cliente)
 {
 	close(socket_cliente);
+}
+
+
+int esperar_respuesta(int socket, op_code codigo_esperado){
+	int codigo_recibido = recibir_operacion(socket);
+	log_info(logger, "Esperar_respuesta: Codigo: [%d]", codigo_recibido);
+    if(codigo_recibido == codigo_esperado) {
+        recibir_mensaje(socket);
+
+        return 0;
+    }
+
+    log_error(logger, "El código de respuesta no es el esperado. Esperado: [%d]. Recibido: [%d]", codigo_esperado, codigo_recibido);
+
+	return ERROR;
 }

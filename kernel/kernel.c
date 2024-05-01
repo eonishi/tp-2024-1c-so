@@ -121,7 +121,8 @@ void iniciar_consola()
 void iniciar_proceso_en_memoria(int conexion){
 	enviar_mensaje(CREAR_PROCESO_EN_MEMORIA, "X", conexion);	
 	log_info(logger, "Solicitud CREAR_PROCESO_EN_MEMORIA enviada a memoria");
-	recibir_mensaje(conexion);
+	
+	esperar_respuesta(conexion, CREAR_PROCESO_EN_MEMORIA);
 	log_info(logger, "Respuesta CREAR_PROCESO_EN_MEMORIA recibida");
 }
 

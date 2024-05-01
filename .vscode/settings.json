@@ -11,6 +11,10 @@
         "functional": "c",
         "comunicacion.h": "c",
         "client.h": "c",
-        "config.h": "c"
+        "config.h": "c",
+        "system_error": "c",
+        "paquete.h": "c",
+        "stdio.h": "c",
+        "protocolo.h": "c"
     }
 }

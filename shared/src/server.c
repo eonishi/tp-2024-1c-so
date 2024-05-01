@@ -71,7 +71,7 @@ void recibir_mensaje(int socket_cliente)
 {
 	int size;
 	char* buffer = recibir_buffer(&size, socket_cliente);
-	log_info(logger, "Mensaje recibido: %s", buffer); // TODO  REVISAR
+	log_info(logger, "Mensaje recibido: [%s]", buffer); // TODO  REVISAR
 	free(buffer);
 }
 
