@@ -154,3 +154,22 @@ registros_t* deserializar_registros(void* registros){
 
     return recived_registers;
 }
+
+void loggear_pcb(pcb* pcb){
+    log_info(logger, "==========PCB==========");
+    log_info(logger, "PID: %d", pcb->pid);
+    log_info(logger, "PC: %d", pcb->pc);
+    log_info(logger, "Quantum: %d", pcb->quantum);
+    log_info(logger, "Registros:");
+    log_info(logger, "AX: %d", pcb->registros->ax);
+    log_info(logger, "BX: %d", pcb->registros->bx);
+    log_info(logger, "CX: %d", pcb->registros->cx);
+    log_info(logger, "DX: %d", pcb->registros->dx);
+    log_info(logger, "EAX: %d", pcb->registros->eax);
+    log_info(logger, "EBX: %d", pcb->registros->ebx);
+    log_info(logger, "ECX: %d", pcb->registros->ecx);
+    log_info(logger, "EDX: %d", pcb->registros->edx);
+    log_info(logger, "SI: %d", pcb->registros->si);
+    log_info(logger, "DI: %d", pcb->registros->di);
+    log_info(logger, "====================");
+}
