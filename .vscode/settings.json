@@ -15,6 +15,7 @@
         "system_error": "c",
         "paquete.h": "c",
         "stdio.h": "c",
-        "protocolo.h": "c"
+        "protocolo.h": "c",
+        "netdb.h": "c"
     }
 }
