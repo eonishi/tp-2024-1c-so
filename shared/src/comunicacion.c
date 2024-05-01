@@ -29,9 +29,7 @@ void enviar_mensaje(int codigo_op, char* mensaje, int socket_cliente)
 
 	int bytes = paquete->buffer->size + 2*sizeof(int);
 
-	log_info(logger, "Apunto de serializar");
 	void* a_enviar = serializar_paquete(paquete, bytes);
-	log_info(logger, "Serializado");
 
 	send(socket_cliente, a_enviar, bytes, 0);
 
@@ -52,4 +50,58 @@ int esperar_respuesta(int socket, op_code codigo_esperado){
     log_error(logger, "El código de respuesta no es el esperado. Esperado: [%d]. Recibido: [%d]", codigo_esperado, codigo_recibido);
 
 	return ERROR;
+}
+
+int recibir_operacion(int socket_cliente)
+{
+	int cod_op;
+
+	if(recv(socket_cliente, &cod_op, sizeof(int), MSG_WAITALL) > 0)
+		return cod_op;
+	else
+	{
+		close(socket_cliente);
+		return -1;
+	}
+}
+
+void* recibir_buffer(int* size, int socket_cliente)
+{
+	void * buffer;
+
+	recv(socket_cliente, size, sizeof(int), MSG_WAITALL);
+	buffer = malloc(*size);
+	recv(socket_cliente, buffer, *size, MSG_WAITALL);
+
+	return buffer;
+}
+
+void recibir_mensaje(int socket_cliente)
+{
+	int size;
+	char* buffer = recibir_buffer(&size, socket_cliente);
+	log_info(logger, "Mensaje recibido: [%s]", buffer); // TODO  REVISAR
+	free(buffer);
+}
+
+t_list* recibir_paquete(int socket_cliente)
+{
+	int size;
+	int desplazamiento = 0;
+	void * buffer;
+	t_list* valores = list_create();
+	int tamanio;
+
+	buffer = recibir_buffer(&size, socket_cliente);
+	while(desplazamiento < size)
+	{
+		memcpy(&tamanio, buffer + desplazamiento, sizeof(int));
+		desplazamiento+=sizeof(int);
+		char* valor = malloc(tamanio);
+		memcpy(valor, buffer+desplazamiento, tamanio);
+		desplazamiento+=tamanio;
+		list_add(valores, valor);
+	}
+	free(buffer);
+	return valores;
 }
