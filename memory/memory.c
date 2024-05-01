@@ -88,11 +88,6 @@ void* gestionar_solicitudes_kernel(){
             enviar_mensaje(CREAR_PROCESO_EN_MEMORIA, "X", socket_kernel);
 
 			break;
-		case PAQUETE:
-			lista = recibir_paquete(socket_kernel);
-			log_info(logger, "Me llegaron los siguientes valores:\n");
-			list_iterate(lista, (void*) iterator);
-			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
 		
@@ -146,11 +141,6 @@ void* gestionar_solicitudes_cpu(){
             // Operaciones de obtencion de instrucciones
             enviar_mensaje(FETCH_INSTRUCCION, "Respuesta FETCH_INSTRUCCION de memoria", socket_cpu);
 
-			break;
-		case PAQUETE:
-			lista = recibir_paquete(socket_cpu);
-			log_info(logger, "Me llegaron los siguientes valores:\n");
-			list_iterate(lista, (void*) iterator);
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");

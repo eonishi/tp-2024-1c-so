@@ -18,6 +18,18 @@
         "protocolo.h": "c",
         "netdb.h": "c",
         "pcb.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "array": "c",
+        "*.tcc": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "iterator": "c",
+        "string_view": "c",
+        "algorithm": "c",
+        "memory": "c",
+        "initializer_list": "c",
+        "numeric": "c"
     }
 }

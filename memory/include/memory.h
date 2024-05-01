@@ -24,8 +24,6 @@ typedef struct
     char *puerto_memoria;
 } memory_config;
 
-void iterator(char* value);
-
 memory_config config;
 
 void inicializar_configuracion();

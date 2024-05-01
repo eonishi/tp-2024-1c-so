@@ -40,10 +40,6 @@ void inicializar_configuracion(){
     log_info(logger, "Configuración iniciadada correctamente.");
 }
 
-void iterator(char* value) {
-	log_info(logger,"%s", value);
-}
-
 int crear_conexion_cpu()
 {
     log_info(logger, "Creando conexión con CPU...");
@@ -129,7 +125,7 @@ void iniciar_proceso_en_memoria(int conexion){
 void dispatch_proceso(int conexion){
 	enviar_mensaje(DISPATCH_PROCESO, "X", conexion);	
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
-	recibir_mensaje(conexion);
+	esperar_respuesta(conexion, DISPATCH_PROCESO);
 	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
 }
 
@@ -157,11 +153,6 @@ void *iniciar_escucha(){
 		case MENSAJE:
             log_info(logger, "Entre a MENSAJE. CODIGO: %d", cod_op);
 			recibir_mensaje(cliente_fd);
-			break;
-		case PAQUETE:
-			lista = recibir_paquete(cliente_fd);
-			log_info(logger, "Me llegaron los siguientes valores:\n");
-			list_iterate(lista, (void*) iterator);
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
