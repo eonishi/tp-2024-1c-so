@@ -8,6 +8,8 @@
 #include <commons/config.h>
 #include "../../shared/include/logger.h"
 #include"../../shared/include/client.h"
+#include"../../shared/include/comunicacion.h"
+#include"../../shared/include/protocolo.h"
 
 t_log *logger;
 

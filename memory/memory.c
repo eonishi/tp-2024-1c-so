@@ -85,7 +85,7 @@ void* gestionar_solicitudes_kernel(){
 
 			recibir_mensaje(socket_kernel);
             // Operaciones crear proceso en memoria
-            enviar_mensaje(CREAR_PROCESO_EN_MEMORIA, "Respuesta CREAR_PROCESO_EN_MEMORIA de memoria", socket_kernel);
+            enviar_mensaje(CREAR_PROCESO_EN_MEMORIA, "X", socket_kernel);
 
 			break;
 		case PAQUETE:
@@ -144,7 +144,7 @@ void* gestionar_solicitudes_cpu(){
 
 			recibir_mensaje(socket_cpu);
             // Operaciones de obtencion de instrucciones
-            enviar_mensaje(RESPUESTA, "Respuesta FETCH_INSTRUCCION de memoria", socket_cpu);
+            enviar_mensaje(FETCH_INSTRUCCION, "Respuesta FETCH_INSTRUCCION de memoria", socket_cpu);
 
 			break;
 		case PAQUETE:

@@ -85,16 +85,21 @@ void server_dispatch()
 		switch (cod_op)
 		{
 		case DISPATCH_PROCESO:
+			log_info(logger, "==============================================");
             log_info(logger, "DISPATCH_PROCESO recibido. CODIGO: %d", cod_op);
 
 			recibir_mensaje(socket_kernel);
 			// Operaciones correspondientes
-			enviar_mensaje(FETCH_INSTRUCCION, "Solicitud FETCH_INSTRUCCION desde CPU", socket_memoria);		
+			enviar_mensaje(FETCH_INSTRUCCION, "X", socket_memoria);		
 			log_info(logger, "Solicitud FETCH_INSTRUCCION enviada a memoria");
-			recibir_mensaje(socket_memoria);
+			esperar_respuesta(socket_memoria, FETCH_INSTRUCCION);
+
 			log_info(logger, "Respuesta FETCH_INSTRUCCION recibida");
 			// Más operaciones
-			enviar_mensaje(RESPUESTA, "Respuesta DISPATCH_PROCESO de CPU", socket_kernel);
+			enviar_mensaje(DISPATCH_PROCESO, "X", socket_kernel);
+
+			log_info(logger, "Fin DISPATCH_PROCESO");
+			log_info(logger, "==============================================");
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
