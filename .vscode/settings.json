@@ -16,6 +16,8 @@
         "paquete.h": "c",
         "stdio.h": "c",
         "protocolo.h": "c",
-        "netdb.h": "c"
+        "netdb.h": "c",
+        "pcb.h": "c",
+        "socket.h": "c"
     }
 }

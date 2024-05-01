@@ -1,9 +1,10 @@
 #ifndef PCB_H_
 #define PCB_H_
 
-#include "client.h"
-#include "server.h"
 #include "protocolo.h"
+#include "comunicacion.h"
+#include "paquete.h"
+#include <stdint.h>
 
 typedef struct 
 {
