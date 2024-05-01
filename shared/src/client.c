@@ -39,7 +39,6 @@ int crear_conexion(char *ip, char* puerto)
 	return socket_cliente;
 }
 
-
 void liberar_conexion(int socket_cliente)
 {
 	close(socket_cliente);

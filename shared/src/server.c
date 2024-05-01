@@ -21,6 +21,10 @@ int iniciar_servidor(char* server_name, char* ip, char* puerto)
                          servinfo->ai_socktype,
                          servinfo->ai_protocol);
 
+	// Activamos la reutilización del puerto
+	int activado = 1;
+	setsockopt(socket_servidor, SOL_SOCKET, SO_REUSEADDR, &activado, sizeof(activado));
+
 	// Asociamos el socket a un puerto
 	bind(socket_servidor, servinfo->ai_addr, servinfo->ai_addrlen);
 

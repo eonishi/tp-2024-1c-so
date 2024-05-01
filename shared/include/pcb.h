@@ -1,11 +1,12 @@
 #ifndef PCB_H_
 #define PCB_H_
 
-#include <stdint.h>
+#include "client.h"
+#include "server.h"
+#include "protocolo.h"
 
 typedef struct 
 {
-    uint32_t pc; // Program Counter
     uint8_t ax;
     uint8_t bx;
     uint8_t cx;
@@ -23,9 +24,17 @@ typedef struct
     unsigned pid;
     unsigned pc; 
     unsigned quantum;
-    registros_t registros_ejecucion;
+    registros_t* registros;
     //state estado; // enum {NEW, READY, EXEC, BLOCKED, EXIT}
     //list_t ios //lista de IOs que usa (es util y vale la pena para el contexto del proyecto? el libro lo recomienda)
 }pcb; 
 
+pcb* crear_pcb(unsigned id, unsigned quantum);
+registros_t* crear_registros();
+int enviar_pcb(pcb* pcb, int socket_cliente, op_code code);
+pcb *recibir_pcb(int socket_cliente);
+void *serializar_pcb_data_primitive(pcb *pcb);
+void* serializar_registros(registros_t* registros);
+pcb* deserializar_pcb(void* pcb_data_primitive, void* pcb_data_registers);
+registros_t *deserializar_registros(void *registros);
 #endif
