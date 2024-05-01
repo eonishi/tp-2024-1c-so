@@ -6,7 +6,6 @@
 #include<sys/socket.h>
 #include<netdb.h>
 #include<commons/log.h>
-#include "protocolo.h"
 
 extern t_log* logger;
 
