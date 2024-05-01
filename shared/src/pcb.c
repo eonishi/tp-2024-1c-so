@@ -154,7 +154,3 @@ registros_t* deserializar_registros(void* registros){
 
     return recived_registers;
 }
-
-void iterator(char* value) {
-	log_info(logger,"%u", value);
-}
