@@ -3,10 +3,10 @@
 
 #include "client.h"
 #include "server.h"
+#include "protocolo.h"
 
 typedef struct 
 {
-    uint32_t pc; // Program Counter ¿va o no va?
     uint8_t ax;
     uint8_t bx;
     uint8_t cx;
@@ -30,7 +30,12 @@ typedef struct
 }pcb; 
 
 pcb* crear_pcb(unsigned id, unsigned quantum);
-int enviar_pcb(int socket_cliente, pcb* pcb);
-pcb* recibir_pcb(int socket_cliente);
-void iterator(char* value);
+registros_t* crear_registros();
+int enviar_pcb(pcb* pcb, int socket_cliente, op_code code);
+pcb *recibir_pcb(int socket_cliente);
+void *serializar_pcb_data_primitive(pcb *pcb);
+void* serializar_registros(registros_t* registros);
+pcb* deserializar_pcb(void* pcb_data_primitive, void* pcb_data_registers);
+registros_t *deserializar_registros(void *registros);
+void iterator(char *value);
 #endif
