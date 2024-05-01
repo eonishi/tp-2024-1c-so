@@ -13,8 +13,10 @@
 #include "../../shared/include/client.h"
 #include "../../shared/include/server.h"
 #include "../../shared/include/comunicacion.h"
+#include "../../shared/include/pcb.h"
 
 t_log *logger;
+int pcb_counter = 1;
 int socket_cpu, socket_memoria;
 
 typedef enum
@@ -43,8 +45,8 @@ void terminar_programa();
 void iniciar_consola();
 void *iniciar_escucha();
 void iniciar_servidor_en_hilo();
-void iniciar_proceso_en_memoria(int conexion);
-void dispatch_proceso(int conexion);
+pcb* iniciar_proceso_en_memoria();
+void dispatch_proceso(pcb* pcb);
 
 
 

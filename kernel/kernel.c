@@ -86,12 +86,12 @@ void iniciar_consola()
 		if(strcmp(leido, "INICIAR_PROCESO") == 0){
 			log_info(logger, "==============================================");
 			log_info(logger, "Inicio de ejecución de INICIAR_PROCESO");
+					
+			pcb* pcb = iniciar_proceso_en_memoria(socket_memoria);
 
-			iniciar_proceso_en_memoria(socket_memoria);
+			// Push pcb cola new etc
 
-			// Crear pcb.. etc
-
-			dispatch_proceso(socket_cpu);
+			dispatch_proceso(pcb);
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
 			log_info(logger, "==============================================");
 
@@ -114,18 +114,32 @@ void iniciar_consola()
 	}
 }
 
-void iniciar_proceso_en_memoria(int conexion){
-	enviar_mensaje(CREAR_PROCESO_EN_MEMORIA, "X", conexion);	
+pcb* iniciar_proceso_en_memoria(){
+	pcb* pcb = crear_pcb(pcb_counter++, 4000);
+
+	pcb->registros->ax = 9;
+
+	enviar_pcb(pcb, socket_memoria, CREAR_PROCESO_EN_MEMORIA);
 	log_info(logger, "Solicitud CREAR_PROCESO_EN_MEMORIA enviada a memoria");
 	
-	esperar_respuesta(conexion, CREAR_PROCESO_EN_MEMORIA);
+	int op = recibir_operacion(socket_memoria);
+	pcb = recibir_pcb(socket_memoria);
+
 	log_info(logger, "Respuesta CREAR_PROCESO_EN_MEMORIA recibida");
+	log_info(logger, "Ax es: [%d]", pcb->registros->ax);	
+	
+	return pcb;
 }
 
-void dispatch_proceso(int conexion){
-	enviar_mensaje(DISPATCH_PROCESO, "X", conexion);	
+void dispatch_proceso(pcb* new_pcb){
+	enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO);
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
-	esperar_respuesta(conexion, DISPATCH_PROCESO);
+	
+	int op = recibir_operacion(socket_cpu);
+	pcb* pcb_respuesta;
+	pcb_respuesta = recibir_pcb(socket_cpu);
+	loggear_pcb(pcb_respuesta);
+
 	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
 }
 

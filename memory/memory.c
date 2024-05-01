@@ -83,9 +83,11 @@ void* gestionar_solicitudes_kernel(){
 		case CREAR_PROCESO_EN_MEMORIA:
             log_info(logger, "CREAR_PROCESO_EN_MEMORIA recibido.");
 
-			recibir_mensaje(socket_kernel);
+            pcb* pcb = recibir_pcb(socket_kernel);
+
+            pcb->registros->ax = 1;			
             // Operaciones crear proceso en memoria
-            enviar_mensaje(CREAR_PROCESO_EN_MEMORIA, "X", socket_kernel);
+            enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
 
 			break;
 		case -1:

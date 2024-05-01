@@ -12,6 +12,7 @@
 #include "../../shared/include/server.h"
 #include "../../shared/include/client.h"
 #include "../../shared/include/comunicacion.h"
+#include "../../shared/include/pcb.h"
 
 t_log *logger;
 int socket_memoria, socket_kernel;

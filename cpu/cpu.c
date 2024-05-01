@@ -88,7 +88,7 @@ void server_dispatch()
 			log_info(logger, "==============================================");
             log_info(logger, "DISPATCH_PROCESO recibido. CODIGO: %d", cod_op);
 
-			recibir_mensaje(socket_kernel);
+			pcb* pcb = recibir_pcb(socket_kernel);
 			// Operaciones correspondientes
 			enviar_mensaje(FETCH_INSTRUCCION, "X", socket_memoria);		
 			log_info(logger, "Solicitud FETCH_INSTRUCCION enviada a memoria");
@@ -96,7 +96,8 @@ void server_dispatch()
 
 			log_info(logger, "Respuesta FETCH_INSTRUCCION recibida");
 			// Más operaciones
-			enviar_mensaje(DISPATCH_PROCESO, "X", socket_kernel);
+			
+			enviar_pcb(pcb, socket_kernel, DISPATCH_PROCESO);
 
 			log_info(logger, "Fin DISPATCH_PROCESO");
 			log_info(logger, "==============================================");
