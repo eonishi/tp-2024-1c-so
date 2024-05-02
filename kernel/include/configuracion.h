@@ -1,6 +1,8 @@
 #ifndef CONFIG_KERNEL_H_
 #define CONFIG_KERNEL_H_
 
+#include <stdlib.h>
+#include <string.h>
 #include <commons/log.h>
 #include <commons/config.h>
 
@@ -17,9 +19,9 @@ typedef struct
 
 
 extern t_log *logger;
-extern kernel_config config;
 
 
-void inicializar_configuracion();
+kernel_config* inicializar_config();
+bool cargar_configuracion(kernel_config* config);
 
 #endif

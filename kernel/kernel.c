@@ -5,15 +5,16 @@ pthread_t tid[2];
 
 int main(){
     logger = iniciar_logger("kernel.log", "KERNEL");
+	log_info(logger, "Logger de Kernel iniciado");
 
-    log_info(logger, "Logger de Kernel iniciado");
+	config = inicializar_config();
 
-    inicializar_configuracion();
+	if(!cargar_configuracion(config) || !generar_conexiones(&socket_cpu, &socket_memoria)){
+		log_error(logger, "No se puede iniciar. Se cierra el programa");
+		return EXIT_FAILURE;
+	}
+
 	iniciar_servidor_en_hilo();
-
-	crear_conexion_memoria();
-	crear_conexion_cpu();
-    
 
 	iniciar_consola();
 
@@ -22,33 +23,6 @@ int main(){
 	return EXIT_SUCCESS;
 }
 
-int crear_conexion_cpu()
-{
-    log_info(logger, "Creando conexión con CPU...");
-	int conexion = crear_conexion(config.ip_cpu, config.puerto_cpu);
-	log_info(logger, "Conexión creada. Socket: %i", conexion);
-
-	socket_cpu = conexion;
-
-	enviar_handshake(socket_cpu);
-	esperar_handshake(socket_cpu);
-
-    return conexion;
-}
-
-int crear_conexion_memoria()
-{
-    log_info(logger, "Creando conexión con Memoria...");
-	int conexion = crear_conexion(config.ip_memoria, config.puerto_memoria);
-	log_info(logger, "Conexión creada. Socket: %i", conexion);
-
-	socket_memoria = conexion;
-	
-	enviar_handshake(socket_memoria);
-	esperar_handshake(socket_memoria);
-
-    return conexion;
-}
 
 void iniciar_consola()
 {
@@ -133,7 +107,7 @@ void terminar_programa()
 }
 
 void *iniciar_escucha(){
-	int server_socket = iniciar_servidor("KERNEL", config.ip_kernel, config.puerto_kernel);
+	int server_socket = iniciar_servidor("KERNEL", config->ip_kernel, config->puerto_kernel);
 	int cliente_fd = esperar_cliente(server_socket);
 
 	t_list* lista;

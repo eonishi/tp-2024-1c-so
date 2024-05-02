@@ -30,6 +30,8 @@
         "algorithm": "c",
         "memory": "c",
         "initializer_list": "c",
-        "numeric": "c"
+        "numeric": "c",
+        "configuracion.h": "c",
+        "conexion.h": "c"
     }
 }
