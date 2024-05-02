@@ -122,8 +122,7 @@ pcb* iniciar_proceso_en_memoria(){
 	enviar_pcb(pcb, socket_memoria, CREAR_PROCESO_EN_MEMORIA);
 	log_info(logger, "Solicitud CREAR_PROCESO_EN_MEMORIA enviada a memoria");
 	
-	int op = recibir_operacion(socket_memoria);
-	pcb = recibir_pcb(socket_memoria);
+	pcb = esperar_pcb(socket_memoria, CREAR_PROCESO_EN_MEMORIA);
 
 	log_info(logger, "Respuesta CREAR_PROCESO_EN_MEMORIA recibida");
 	log_info(logger, "Ax es: [%d]", pcb->registros->ax);	
@@ -135,9 +134,8 @@ void dispatch_proceso(pcb* new_pcb){
 	enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO);
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
 	
-	int op = recibir_operacion(socket_cpu);
 	pcb* pcb_respuesta;
-	pcb_respuesta = recibir_pcb(socket_cpu);
+	pcb_respuesta = esperar_pcb(socket_memoria, DISPATCH_PROCESO);
 	loggear_pcb(pcb_respuesta);
 
 	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
