@@ -17,7 +17,6 @@ void enviar_mensaje(int codigo_op, char* mensaje, int socket_cliente);
 // Esperas
 int esperar_handshake(int socket);
 int esperar_respuesta(int socket, op_code codigo_esperado);
-pcb* esperar_pcb(int socket, op_code codigo_esperado);
 t_list* recibir_paquete(int);
 void recibir_mensaje(int);
 int recibir_operacion(int);

@@ -135,7 +135,7 @@ void dispatch_proceso(pcb* new_pcb){
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
 	
 	pcb* pcb_respuesta;
-	pcb_respuesta = esperar_pcb(socket_memoria, DISPATCH_PROCESO);
+	pcb_respuesta = esperar_pcb(socket_cpu, DISPATCH_PROCESO);
 	loggear_pcb(pcb_respuesta);
 
 	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");

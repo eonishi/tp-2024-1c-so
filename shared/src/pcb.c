@@ -173,3 +173,15 @@ void loggear_pcb(pcb* pcb){
     log_info(logger, "DI: %d", pcb->registros->di);
     log_info(logger, "====================");
 }
+
+pcb* esperar_pcb(int socket, op_code codigo_esperado){
+	int codigo_recibido = recibir_operacion(socket);
+	log_info(logger, "Esperar_respuesta: Codigo: [%d]", codigo_recibido);
+    if(codigo_recibido == codigo_esperado) {
+        return recibir_pcb(socket);
+    }
+
+    log_error(logger, "El código de respuesta no es el esperado. Esperado: [%d]. Recibido: [%d]", codigo_esperado, codigo_recibido);
+
+    return NULL;
+}

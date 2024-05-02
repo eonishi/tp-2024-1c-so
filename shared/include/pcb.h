@@ -39,4 +39,5 @@ void* serializar_registros(registros_t* registros);
 pcb* deserializar_pcb(void* pcb_data_primitive, void* pcb_data_registers);
 registros_t *deserializar_registros(void *registros);
 void loggear_pcb(pcb *pcb);
+pcb* esperar_pcb(int socket, op_code codigo_esperado);
 #endif
