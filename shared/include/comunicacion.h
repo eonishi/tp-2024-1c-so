@@ -4,6 +4,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<sys/socket.h>
+#include<unistd.h>
 #include<commons/collections/list.h>
 #include<commons/log.h>
 #include "paquete.h"

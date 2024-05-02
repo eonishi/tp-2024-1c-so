@@ -33,6 +33,8 @@ void crear_hilo_solicitudes_kernel();
 void* gestionar_solicitudes_kernel();
 void crear_hilo_solicitudes_cpu();
 void* gestionar_solicitudes_cpu();
+void esperar_handshake_kernel(int server);
+void esperar_handshake_cpu(int server);
 void terminar_programa();
 
 #endif
