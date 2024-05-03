@@ -185,3 +185,12 @@ pcb* esperar_pcb(int socket, op_code codigo_esperado){
 
     return NULL;
 }
+
+void destruir_pcb(pcb* pcb){
+    free(pcb->registros);
+    free(pcb);
+}
+
+void siguiente_pc(pcb* pcb){
+    pcb->pc++;
+}
