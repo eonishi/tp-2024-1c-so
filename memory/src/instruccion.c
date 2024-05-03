@@ -22,12 +22,27 @@ t_list *leer_archivo_instrucciones(char *path)
     fclose(archivo);
 
     return instrucciones; 
-    // Lista de instrucciones individuales [["SET", "AX", "3"],["SUM", "AX", "BX"],["RESIZE", "89"]]
+    // Lista de instrucciones individuales de todo el archivo: [["SET", "AX", "3"],["SUM", "AX", "BX"],["RESIZE", "89"]]
 }
 
-t_InstrSet* crear_instr_set(char* path, unsigned PID){
+void crear_instr_set(char* path, unsigned PID){
     t_InstrSet* nuevo_set_instruc = malloc(sizeof(t_InstrSet));
     nuevo_set_instruc->PID = PID;
     nuevo_set_instruc->instrucciones = leer_archivo_instrucciones(path);
-    return nuevo_set_instruc;
+
+    //Guardo en una lista los procesos en memoria (Temporal hasta definir como se guardan)
+    list_add(procesos_en_memoria, nuevo_set_instruc);
 } 
+
+void* get_instr_by_pc(unsigned PID, unsigned PC){
+    t_InstrSet* set_buscado = list_get(procesos_en_memoria, PID);
+
+    if(PC >= list_size(set_buscado->instrucciones)){
+        log_error(logger, "No hay más instrucciones");
+        return -1; 
+    }
+    void* instruc_buscado = list_get(set_buscado->instrucciones, PC);
+
+    free(set_buscado);
+    return instruc_buscado;
+}
