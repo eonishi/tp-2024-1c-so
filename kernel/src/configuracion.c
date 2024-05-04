@@ -45,6 +45,8 @@ bool cargar_configuracion(kernel_config* config){
     config->ip_kernel = config_get_string_value(config_loader, "IP_KERNEL");
     config->puerto_kernel = config_get_string_value(config_loader, "PUERTO_KERNEL");
 
+    config->gradoMultiprogramacion = config_get_int_value(config_loader, "GRADOMULTIPROGRAMACION");
+
     log_info(logger, "IP_CPU: %s", config->ip_cpu);
 
     log_info(logger, "Configuración iniciadada correctamente.");

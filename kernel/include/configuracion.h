@@ -12,10 +12,11 @@ typedef struct
     char *ip_kernel;
     char *puerto_kernel;
     char *ip_memoria;
-    char *puerto_memoria;
+    char *puerto_memoria; //por consigna deberia ser numerico
     char *ip_cpu;
     char *puerto_cpu;
-} kernel_config;
+    int *gradoMultiprogramacion;
+} kernel_config;//chequear los parametros y tipos minimos pedidos en la consigna
 
 
 extern t_log *logger;

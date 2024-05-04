@@ -9,6 +9,13 @@ int main(){
 
 	config = inicializar_config();
 
+	//creo colas de estados
+	t_list procesoNew;
+	t_list procesoReady;
+	t_list procesoExecute;
+	t_list procesoBlock; //iniciamos con una, segun consigna va a haber mas (una por cada I/O)
+	t_list procesoExit;
+
 	if(!cargar_configuracion(config) || !generar_conexiones(&socket_cpu, &socket_memoria)){
 		log_error(logger, "No se puede iniciar. Se cierra el programa");
 		return EXIT_FAILURE;
@@ -44,8 +51,16 @@ void iniciar_consola()
 			log_info(logger, "Inicio de ejecución de INICIAR_PROCESO");
 					
 			pcb* pcb = iniciar_proceso_en_memoria(socket_memoria);
-
-			// Push pcb cola new etc
+/*
+			// Push pcb cola new etc //en proceso, falta ordenar para que el planificador tenga sentido
+			list_add(procesoNew,pcb);
+			int pidActual = pcb->pid;
+			log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
+			//planificador L chequea grado multiprogramacion
+			if (sizeof(procesoReady)<config->gradoMultiprogramacion){
+				list_remove(procesoNew,0);//ajustar no va 0
+				list_add(procesoReady,pcb);
+			}dejo comentado para continuar luego*/
 
 			dispatch_proceso(pcb);
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");

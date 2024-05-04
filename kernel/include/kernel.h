@@ -8,7 +8,7 @@
 #include<commons/string.h>
 #include<commons/config.h>
 #include<readline/readline.h>
-#include <commons/collections/list.h>
+#include<commons/collections/list.h>
 #include "configuracion.h"
 #include "conexion.h"
 #include "../../shared/include/logger.h"
@@ -21,6 +21,12 @@ t_log *logger;
 kernel_config* config;
 int pcb_counter = 1;
 int socket_cpu, socket_memoria;
+
+t_list* procesoNew;
+t_list* procesoReady;
+t_list* procesoExecute;
+t_list* procesoBlock;
+t_list* procesoExit;
 
 typedef enum
 {
