@@ -16,6 +16,7 @@ typedef struct
     char *ip_cpu;
     char *puerto_cpu;
     int *gradoMultiprogramacion;
+    char *algoritmoPC;
 } kernel_config;//chequear los parametros y tipos minimos pedidos en la consigna
 
 

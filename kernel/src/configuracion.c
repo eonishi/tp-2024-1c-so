@@ -15,6 +15,8 @@ kernel_config* inicializar_config(){
         (config)->puerto_kernel = NULL;
         (config)->ip_memoria = NULL;
         (config)->puerto_memoria = NULL;
+        (config)->gradoMultiprogramacion = NULL;
+        (config)->algoritmoPC = NULL;
 
         log_info(logger, "Configuración inicializada");
 
@@ -46,6 +48,8 @@ bool cargar_configuracion(kernel_config* config){
     config->puerto_kernel = config_get_string_value(config_loader, "PUERTO_KERNEL");
 
     config->gradoMultiprogramacion = config_get_int_value(config_loader, "GRADOMULTIPROGRAMACION");
+
+    config->algoritmoPC = config_get_string_value(config_loader, "ALGORITMOPC");
 
     log_info(logger, "IP_CPU: %s", config->ip_cpu);
 

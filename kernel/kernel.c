@@ -51,16 +51,15 @@ void iniciar_consola()
 			log_info(logger, "Inicio de ejecución de INICIAR_PROCESO");
 					
 			pcb* pcb = iniciar_proceso_en_memoria(socket_memoria);
-/*
-			// Push pcb cola new etc //en proceso, falta ordenar para que el planificador tenga sentido
-			list_add(procesoNew,pcb);
-			int pidActual = pcb->pid;
-			log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
-			//planificador L chequea grado multiprogramacion
-			if (sizeof(procesoReady)<config->gradoMultiprogramacion){
-				list_remove(procesoNew,0);//ajustar no va 0
-				list_add(procesoReady,pcb);
-			}dejo comentado para continuar luego*/
+
+			//aca estoy RM
+			if(strcmp(config->algoritmoPC,"FIFO")==0){
+					planificadorFIFO(pcb);
+				}else if (strcmp(config->algoritmoPC,"FIFO")==0){
+					planificadorRR(pcb);
+				}else if (strcmp(config->algoritmoPC,"FIFO")==0){
+					planificadorVRR(pcb);
+			}
 
 			dispatch_proceso(pcb);
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
@@ -156,6 +155,25 @@ void iniciar_servidor_en_hilo(){
     	log_info(logger, "El thread de la escucha del servidor inició su ejecución");
 		pthread_detach(tid[0]);
 	}
+}
+
+void planificadorFIFO(pcb* pcb){
+// Push pcb cola new etc //en proceso, falta ordenar para que el planificador tenga sentido
+	list_add(procesoNew,pcb);
+	int pidActual = pcb->pid;
+	log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
+	//planificador L chequea grado multiprogramacion
+	if (sizeof(procesoReady)<config->gradoMultiprogramacion){
+		list_remove(procesoNew,0);//ajustar no va 0
+		list_add(procesoReady,pcb);
+	}
+}
+
+void planificadorRR(pcb* pcb){
+	//TODO
+}
+void planificadorVRR(pcb* pcb){
+	//TODO
 }
 /*
 El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 
