@@ -8,11 +8,13 @@
 #include <commons/log.h>
 #include <commons/config.h>
 #include <commons/collections/list.h>
+#include <commons/string.h>
 #include "../../shared/include/logger.h"
 #include "../../shared/include/server.h"
 #include "../../shared/include/client.h"
 #include "../../shared/include/comunicacion.h"
 #include "../../shared/include/pcb.h"
+#include "ciclo.h"
 
 t_log *logger;
 int socket_memoria, socket_kernel;
