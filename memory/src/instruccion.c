@@ -17,12 +17,12 @@ t_list *leer_archivo_instrucciones(char *path)
     {
         char *mi_linea = string_new();
         string_n_append(&mi_linea, linea, string_length(linea) - 1);
-        list_add(instrucciones, string_split(mi_linea, " "));
+        list_add(instrucciones, mi_linea);
     }
     fclose(archivo);
 
     return instrucciones; 
-    // Lista de instrucciones individuales de todo el archivo: [["SET", "AX", "3"],["SUM", "AX", "BX"],["RESIZE", "89"]]
+    // Lista de instrucciones individuales de todo el archivo: ["SET AX 3","SUM AX BX", "RESIZE 89"]
 }
 
 void crear_instr_set(char* path, unsigned PID){
@@ -34,15 +34,26 @@ void crear_instr_set(char* path, unsigned PID){
     list_add(procesos_en_memoria, nuevo_set_instruc);
 } 
 
-void* get_instr_by_pc(unsigned PID, unsigned PC){
-    t_InstrSet* set_buscado = list_get(procesos_en_memoria, PID);
+char* get_instr_by_pc(unsigned PID, unsigned PC){
+    t_InstrSet* set_buscado = list_get(procesos_en_memoria, PID);  // el PID coincide con el index en la lista
 
     if(PC >= list_size(set_buscado->instrucciones)){
-        log_error(logger, "No hay más instrucciones");
-        return -1; 
+        log_error(logger, "No hay más instrucciones del proceso PID:%u", PID);
+        return "OUT OF BOUNDS"; // Hacer un caso "FAIL" en decode o chequear antes de enviar a CPU
     }
-    void* instruc_buscado = list_get(set_buscado->instrucciones, PC);
+    char* instruc_buscada = list_get(set_buscado->instrucciones, PC);
 
-    free(set_buscado);
-    return instruc_buscado;
+    return instruc_buscada;
+}
+
+void enviar_instruccion_a_cpu(char* instruccion){
+    enviar_mensaje(FETCH_INSTRUCCION,instruccion, socket_cpu);
+}
+
+unsigned recibir_solicitud_de_cpu(){
+    // es la misma implementacion que recibir_mensaje() pero devuelve el PC
+    int size;
+    char *buffer = recibir_buffer(&size, socket_cpu);
+    log_info(logger, "Mensaje recibido: [%s]", buffer);
+    return atoi(buffer);
 }
