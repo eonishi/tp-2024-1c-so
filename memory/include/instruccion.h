@@ -4,10 +4,13 @@
 #include <stdio.h>  
 #include <commons/collections/list.h>
 #include <commons/string.h>
-#include "../../shared/include/logger.h"
+#include <commons/log.h>
+#include "../../shared/include/comunicacion.h"
+#include "../../shared/include/protocolo.h"
 
 extern t_log* logger;
 extern t_list* procesos_en_memoria;
+extern int socket_cpu;
 
 typedef struct {
     unsigned PID;
@@ -16,6 +19,8 @@ typedef struct {
 
 t_list* leer_archivo_instrucciones(char* path);
 void crear_instr_set(char *path, unsigned PID);
-void *get_instr_by_pc(unsigned PID, unsigned PC);
+char *get_instr_by_pc(unsigned PID, unsigned PC);
+void enviar_instruccion_a_cpu(char *instruccion);
+unsigned recibir_solicitud_de_cpu();
 
 #endif
