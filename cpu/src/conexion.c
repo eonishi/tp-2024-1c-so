@@ -1,0 +1,101 @@
+#include "../include/conexion.h"
+
+int socket_memoria, socket_kernel;
+
+int crear_conexion_memoria()
+{
+  log_info(logger, "Creando conexión con Memoria...");
+	int conexion = crear_conexion(config.ip_memoria, config.puerto_memoria);
+	log_info(logger, "Conexión creada. Socket: %i", conexion);
+	socket_memoria = conexion;
+
+	enviar_handshake(socket_memoria);
+	esperar_handshake(socket_memoria);
+
+  return conexion;
+}
+
+void esperar_handshake_kernel(int server) {
+    log_info(logger,"Esperando conexión del modulo Kernel ... ");
+    socket_kernel = esperar_cliente(server);
+	log_info(logger,"Esperando handshake del modulo Kernel ... ");
+    int resultado = esperar_handshake(socket_kernel);
+    if(resultado == -1) {
+        log_error(logger,"No se pudo conectar con el modulo KERNEL");
+        exit(EXIT_FAILURE);
+    }
+
+	log_info(logger,"Respondiendo handshake del modulo Kernel ... ");
+    enviar_handshake(socket_kernel);
+}
+
+void server_dispatch()
+{
+	int dispatch_fd = iniciar_servidor("CPU_DISPATCH", config.ip_cpu, config.puerto_dispatch);
+  
+  esperar_handshake_kernel(dispatch_fd);
+
+	while (1)
+	{
+		log_trace(logger, "Estoy por recibir operacion");
+		int cod_op = recibir_operacion(socket_kernel);
+		log_info(logger, "Codigo recibido: %d", cod_op);
+
+		switch (cod_op)
+		{
+		case DISPATCH_PROCESO:
+			log_info(logger, "==============================================");
+            log_info(logger, "DISPATCH_PROCESO recibido. CODIGO: %d", cod_op);
+
+			pcb* pcb = recibir_pcb(socket_kernel);
+			// Operaciones correspondientes
+			enviar_mensaje(FETCH_INSTRUCCION, "X", socket_memoria);		
+			log_info(logger, "Solicitud FETCH_INSTRUCCION enviada a memoria");
+			esperar_respuesta(socket_memoria, FETCH_INSTRUCCION);
+
+			log_info(logger, "Respuesta FETCH_INSTRUCCION recibida");
+			// Más operaciones
+			
+			enviar_pcb(pcb, socket_kernel, DISPATCH_PROCESO);
+
+			log_info(logger, "Fin DISPATCH_PROCESO");
+			log_info(logger, "==============================================");
+			break;
+		case -1:
+			log_error(logger, "el cliente se desconecto. Terminando servidor");
+			terminar_programa();
+			exit(EXIT_FAILURE);
+		default:
+			log_warning(logger, "Operacion desconocida. No quieras meter la pata");
+			break;
+		}
+		log_info(logger, "==============================================");
+	}
+}
+
+void server_interrupt()
+{
+	int interrupt_fd = iniciar_servidor("CPU_INTERRUPT", config.ip_cpu, config.puerto_interrupt);
+	int cliente_fd = esperar_cliente(interrupt_fd);
+
+	while (1)
+	{
+		int cod_op = recibir_operacion(cliente_fd);
+		log_info(logger, "Codigo recibido: %d", cod_op);
+
+		switch (cod_op)
+		{
+		case MENSAJE:
+			recibir_mensaje(cliente_fd);
+			enviar_mensaje(MENSAJE, "Respuesta de CPU", cliente_fd);
+			break;
+		case -1:
+			log_error(logger, "el cliente se desconecto. Terminando servidor");
+			terminar_programa();
+			exit(EXIT_FAILURE);
+		default:
+			log_warning(logger, "Operacion desconocida. No quieras meter la pata");
+			break;
+		}
+	}
+}
