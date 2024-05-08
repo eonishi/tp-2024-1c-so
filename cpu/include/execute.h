@@ -3,23 +3,13 @@
 
 #include <commons/log.h>
 #include <commons/string.h>
+#include "operacion.h"
 #include "../../shared/include/pcb.h"
 
 extern t_log* logger;
 extern pcb* pcb_actual;
 
-typedef enum
-{
-    SET,
-    SUM,
-    SUB,
-    JNZ,
-    IO_GEN_SLEEP
-    // Agregar las faltantes
-} operacion;
-
 void execute(char** instruccion_tokenizada);
-operacion get_operacion(char** instr_tokenizada);
 void exec_set();
 void exec_sum();
 void exec_sub();

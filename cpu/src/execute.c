@@ -24,17 +24,3 @@ void execute(char** instruccion_tokenizada){
         break;
     }
 }
-
-operacion get_operacion(char** inst_tokenizada){
-    if(string_equals_ignore_case(inst_tokenizada[0], "SET")){
-        return SET;
-    } else if(string_equals_ignore_case(inst_tokenizada[0], "SUM")){
-        return SUM;
-    } else if(string_equals_ignore_case(inst_tokenizada[0], "SUB")){
-        return SUB;
-    } else if(string_equals_ignore_case(inst_tokenizada[0], "JNZ")){
-        return JNZ;
-    } else if(string_equals_ignore_case(inst_tokenizada[0], "IO_GEN_SLEEP")){
-        return IO_GEN_SLEEP;
-    }
-}
