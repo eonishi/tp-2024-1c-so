@@ -1,5 +1,7 @@
 #include "include/memory.h"
 
+t_list *procesos_en_memoria;
+
 int main(){
     logger = iniciar_logger("memory.log", "MEMORY");
     log_info(logger, "Logger de MEMORY iniciado");
@@ -18,47 +20,6 @@ int main(){
 
     return EXIT_SUCCESS;
 }
-
-void inicializar_configuracion(){
-    log_info(logger, "Inicializando configuración...");
-
-    t_config* config_loader = config_create("memoria.config");;
-
-    config.ip_memoria = config_get_string_value(config_loader, "IP_MEMORIA");
-    config.puerto_memoria = config_get_string_value(config_loader, "PUERTO_MEMORIA");
-
-    log_info(logger, "Configuración iniciadada correctamente.");
-}
-
-
-void esperar_handshake_cpu(int server) {
-    log_info(logger,"Esperando conexión del modulo CPU ... ");
-    socket_cpu = esperar_cliente(server);
-	log_info(logger,"Esperando handshake del modulo CPU ... ");
-    int resultado = esperar_handshake(socket_cpu);
-    if(resultado == -1) {
-        log_error(logger,"No se pudo conectar con el modulo CPU");
-        exit(EXIT_FAILURE);
-    }
-
-    log_info(logger,"Respondiendo handshake del modulo CPU ... ");
-    enviar_handshake(socket_cpu);
-}
-
-void esperar_handshake_kernel(int server) {
-    log_info(logger,"Esperando conexión del modulo Kernel ... ");
-    socket_kernel = esperar_cliente(server);
-	log_info(logger,"Esperando handshake del modulo Kernel ... ");
-    int resultado = esperar_handshake(socket_kernel);
-    if(resultado == -1) {
-        log_error(logger,"No se pudo conectar con el modulo KERNEL");
-        exit(EXIT_FAILURE);
-    }
-
-    log_info(logger,"Respondiendo handshake del modulo Kernel ... ");
-    enviar_handshake(socket_kernel);
-}
-
 
 void crear_hilo_solicitudes_kernel(){
 	int err = pthread_create(&(hilo_kernel), NULL, gestionar_solicitudes_kernel, NULL);

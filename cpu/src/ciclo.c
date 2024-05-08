@@ -1,5 +1,6 @@
 #include "../include/ciclo.h"
 
+pcb* pcb_actual;
 /*
     // Algo asi me lo imagino
     cicloDeCPU(){
