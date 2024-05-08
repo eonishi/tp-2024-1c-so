@@ -53,11 +53,11 @@ void iniciar_consola()
 			pcb* pcb = iniciar_proceso_en_memoria(socket_memoria);
 
 			//aca estoy RM
-			if(strcmp(config->algoritmoPC,"FIFO")==0){
+			if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
 					planificadorFIFO(pcb);
-				}else if (strcmp(config->algoritmoPC,"FIFO")==0){
+				}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
 					planificadorRR(pcb);
-				}else if (strcmp(config->algoritmoPC,"FIFO")==0){
+				}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
 					planificadorVRR(pcb);
 			}
 
