@@ -11,6 +11,7 @@
 t_log *logger;
 extern int socket_memoria, socket_kernel;
 extern cpu_config config;
+extern pcb *pcb_actual;
 
 void terminar_programa();
 
