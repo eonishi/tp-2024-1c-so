@@ -8,7 +8,6 @@
 #include<commons/collections/list.h>
 #include<commons/log.h>
 #include "paquete.h"
-#include "pcb.h"
 
 extern t_log* logger;
 // Envios

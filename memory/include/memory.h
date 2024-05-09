@@ -6,7 +6,9 @@
 #include <pthread.h>
 #include "configuracion.h"
 #include "conexion.h"
+#include "instruccion.h"
 #include "../../shared/include/logger.h"
+#include "../../shared/include/pcb.h"
 
 t_log* logger;
 extern memory_config config;

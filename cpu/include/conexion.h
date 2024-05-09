@@ -6,6 +6,7 @@
 #include "../../shared/include/server.h"
 #include "../../shared/include/client.h"
 #include "../../shared/include/comunicacion.h"
+#include "../../shared/include/pcb.h"
 
 extern t_log *logger;
 extern cpu_config config;

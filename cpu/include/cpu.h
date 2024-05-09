@@ -7,6 +7,7 @@
 #include "configuracion.h"
 #include "conexion.h"
 #include "ciclo.h"
+#include "../../shared/include/logger.h"
 
 t_log *logger;
 extern int socket_memoria, socket_kernel;
