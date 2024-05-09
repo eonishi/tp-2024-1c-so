@@ -26,6 +26,7 @@ typedef struct
     unsigned pc; 
     unsigned quantum;
     registros_t* registros;
+    char estado; //N=NEW, E=EXECUTE, X=EXIT, B=BLOCK
     //state estado; // enum {NEW, READY, EXEC, BLOCKED, EXIT}
     //list_t ios //lista de IOs que usa (es util y vale la pena para el contexto del proyecto? el libro lo recomienda)
 }pcb; 

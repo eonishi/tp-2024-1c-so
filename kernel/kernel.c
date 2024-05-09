@@ -53,13 +53,11 @@ void iniciar_consola()
 			pcb* pcb = iniciar_proceso_en_memoria(socket_memoria);
 
 			//aca estoy RM
-			if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorFIFO(pcb);
-				}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorRR(pcb);
-				}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorVRR(pcb);
-			}
+			list_add(procesoNew,pcb); //agrego el pcb creado a cola de new
+			int pidActual = pcb->pid;
+			log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
+
+			planificador();
 
 			dispatch_proceso(pcb);
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
@@ -157,24 +155,54 @@ void iniciar_servidor_en_hilo(){
 	}
 }
 
-void planificadorFIFO(pcb* pcb){
-// Push pcb cola new etc //en proceso, falta ordenar para que el planificador tenga sentido
-	list_add(procesoNew,pcb);
-	int pidActual = pcb->pid;
-	log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
-	//planificador L chequea grado multiprogramacion
-	if (sizeof(procesoReady)<config->gradoMultiprogramacion){
-		list_remove(procesoNew,0);//ajustar no va 0
-		list_add(procesoReady,pcb);
+void planificador(){
+	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
+		planificadorFIFO();
+	}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
+		planificadorRR();
+	}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
+		planificadorVRR();
 	}
 }
 
-void planificadorRR(pcb* pcb){
+void planificadorFIFO(){
+	int cantExecute;
+	int cantReady;
+	int cantBlockIO;
+	//hago conteo de los procesos en cada cola de estado; uso semaforo por buena practica visto en otros tps
+	sem_wait(&bloque);
+		cantExecute = list_size(procesoExecute);
+		cantReady = list_size(procesoReady);
+		cantBlockIO = list_size(procesoBlock);
+	sem_post(&bloque);
+	//me fijo si hay procesos y cuantos en ready y los paso a execute mientras el GM lo permita
+	if (cantReady>0){
+		if(cantExecute<config->gradoMultiprogramacion){
+			int contador=0;
+			while (cantExecute<config->gradoMultiprogramacion && cantReady>0){
+				sem_wait(&bloque);
+				pcb* PCBtemporal = list_get(procesoReady,0);
+				PCBtemporal->estado = 'E'; //cambios de estado se informan a memoria?
+				list_remove(procesoReady,0);
+				list_add(procesoExecute,PCBtemporal);
+				cantReady--;
+				cantExecute++;
+				log_info(logger,"Se paso el proceso <%d> de READY a EXECUTE", PCBtemporal->pid);
+				sem_post(&bloque);
+			}
+		}
+	}
+	
+	
+}
+
+void planificadorRR(){
 	//TODO
 }
-void planificadorVRR(pcb* pcb){
+void planificadorVRR(){
 	//TODO
 }
+
 /*
 El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 
 diferentes procesos que se generen por medio de su consola interactiva.

@@ -16,6 +16,7 @@
 #include "../../shared/include/server.h"
 #include "../../shared/include/comunicacion.h"
 #include "../../shared/include/pcb.h"
+#include <semaphore.h>
 
 t_log *logger;
 kernel_config* config;
@@ -27,6 +28,8 @@ t_list* procesoReady;
 t_list* procesoExecute;
 t_list* procesoBlock;
 t_list* procesoExit;
+
+sem_t bloque; //semaforo para activar y desactivar en un mismo bloque de codigo
 
 typedef enum
 {
