@@ -53,12 +53,16 @@ void iniciar_consola()
 			pcb* pcb = iniciar_proceso_en_memoria(socket_memoria);
 
 			//aca estoy RM
+			list_add(procesoNew,pcb); //agrego el pcb creado a cola de new
+			int pidActual = pcb->pid;
+			log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
+
 			if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorFIFO(pcb);
+					planificadorFIFO();
 				}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorRR(pcb);
+					planificadorRR();
 				}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorVRR(pcb);
+					planificadorVRR();
 			}
 
 			dispatch_proceso(pcb);
@@ -157,22 +161,36 @@ void iniciar_servidor_en_hilo(){
 	}
 }
 
-void planificadorFIFO(pcb* pcb){
+void planificadorFIFO(){
+	int cantExecute;
+	int cantReady;
+	int cantBlockIO;
+	//hago conteo de los procesos en cada cola de estado; uso semaforo por buena practica visto en otros tps
+	sem_wait(&bloque);
+		cantExecute = list_size(procesoExecute);
+		cantReady = list_size(procesoReady);
+		cantBlockIO = list_size(procesoBlock);
+	sem_post(&bloque);
+
 // Push pcb cola new etc //en proceso, falta ordenar para que el planificador tenga sentido
-	list_add(procesoNew,pcb);
-	int pidActual = pcb->pid;
-	log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
-	//planificador L chequea grado multiprogramacion
-	if (sizeof(procesoReady)<config->gradoMultiprogramacion){
-		list_remove(procesoNew,0);//ajustar no va 0
-		list_add(procesoReady,pcb);
+	if (cantReady>0){
+		if(cantExecute<config->gradoMultiprogramacion){
+			int contador=0;
+			while (cantExecute<config->gradoMultiprogramacion && cantReady>0){
+				sem(&bloque);
+				pcb* PCBtemporal = list_get(procesoReady,0);
+
+			}
+		}
 	}
+	
+	
 }
 
-void planificadorRR(pcb* pcb){
+void planificadorRR(){
 	//TODO
 }
-void planificadorVRR(pcb* pcb){
+void planificadorVRR(){
 	//TODO
 }
 /*
