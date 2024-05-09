@@ -38,13 +38,14 @@ int enviar_pcb(pcb* pcb, int socket_cliente, op_code code){
     void* data_primitive = serializar_pcb_data_primitive(pcb); // Datos con tipos de datos primitivos de C dentro del PCB
     void* registros = serializar_registros(pcb->registros);
     
-    agregar_a_paquete(paquete, data_primitive, size_pcb);
+    agregar_a_paquete(paquete, data_primitive, size_primitive_data);
     agregar_a_paquete(paquete, registros, size_registros);
 
     enviar_paquete(paquete, socket_cliente);
 
     free(data_primitive);
     free(registros);
+    free(paquete->buffer);
     free(paquete);
 
     return 0;
@@ -63,7 +64,7 @@ pcb* recibir_pcb(int socket_cliente){
 }
 
 void* serializar_pcb_data_primitive(pcb* pcb){
-    void* stream = malloc(size_pcb); 
+    void* stream = malloc(size_primitive_data); 
     int offset = 0;
 
     // Datos primitivos dentro del PCB
