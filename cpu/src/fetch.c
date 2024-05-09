@@ -18,8 +18,25 @@ char *recibir_instruccion_de_memoria(int socket_memoria){
     return buffer;
 }
 
-void pedir_intruccion_a_memoria(unsigned PC){ // Probablemente haya que mandar tambien el PID
-    //TODO solicitar instruccion a memoria enviando PC y PID (no un string de PC)
-    enviar_mensaje(FETCH_INSTRUCCION, string_itoa(PC), socket_memoria);
-    log_info(logger, "Solicitud FETCH_INSTRUCCION enviada a memoria");
+void pedir_intruccion_a_memoria(){ 
+    t_paquete* paquete_solicitud = crear_paquete(FETCH_INSTRUCCION); // Contiene el PID y el PC
+
+    void *pid_serializado = serializar_u(&(pcb_actual->pid), sizeof(pcb_actual->pid));
+    void *pc_serializado = serializar_u(&(pcb_actual->pc), sizeof(pcb_actual->pc));
+
+    agregar_a_paquete(paquete_solicitud, pid_serializado, sizeof(pcb_actual->pid)); 
+    agregar_a_paquete(paquete_solicitud, pc_serializado, sizeof(pcb_actual->pc));
+    enviar_paquete(paquete_solicitud, socket_memoria);
+    log_info(logger, "Solicitud FETCH_INSTRUCCION_PID:%u_PC:%u enviada a memoria", pcb_actual->pid, pcb_actual->pc);
+
+    // Como siempre no tengo idea todavia si hacer esto free son correctos 
+    eliminar_paquete(paquete_solicitud);
+    free(pid_serializado);
+    free(pc_serializado);
+}
+
+void* serializar_u (void* datos, size_t size){
+    void* datos_serializados = malloc(size);
+    memcpy(datos_serializados, datos, size);
+    return datos_serializados;
 }
