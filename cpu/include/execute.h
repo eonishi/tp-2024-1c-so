@@ -10,10 +10,10 @@ extern t_log* logger;
 extern pcb* pcb_actual;
 
 void execute(char** instruccion_tokenizada);
-void exec_set();
-void exec_sum();
-void exec_sub();
-void exec_jnz();
-void exec_io_gen_sleep();
+void exec_set(char**);
+void exec_sum(char**);
+void exec_sub(char**);
+void exec_jnz(char**);
+void exec_io_gen_sleep(char**);
 
 #endif
