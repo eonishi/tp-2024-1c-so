@@ -2,7 +2,7 @@
 
 // Tamaño de los registros y PCB
 const int size_registros = sizeof(uint8_t) * 4 + sizeof(uint32_t) * 6;
-const int size_primitive_data = sizeof(unsigned) * 3;
+const int size_primitive_data = sizeof(unsigned) * 3 + sizeof(state);
 const int size_pcb = size_primitive_data + size_registros;
 
 pcb* crear_pcb(unsigned id, unsigned quantum){
@@ -73,6 +73,8 @@ void* serializar_pcb_data_primitive(pcb* pcb){
     offset += sizeof(unsigned);
     memcpy(stream + offset, &(pcb->quantum), sizeof(unsigned));
     offset += sizeof(unsigned);
+    memcpy(stream + offset, &(pcb->estado), sizeof(state));
+    offset += sizeof(state);
 
     return stream;
 }
@@ -117,6 +119,8 @@ pcb* deserializar_pcb(void* pcb_data_primitive, void* pcb_data_registers){
     offset += sizeof(unsigned);
     memcpy(&(recived_pcb->quantum), pcb_data_primitive + offset, sizeof(unsigned));
     offset += sizeof(unsigned);
+    memcpy(&(recived_pcb->estado), pcb_data_primitive + offset, sizeof(state));
+    offset += sizeof(state);
 
     // Datos de los registros
     recived_pcb->registros = deserializar_registros(pcb_data_registers);
