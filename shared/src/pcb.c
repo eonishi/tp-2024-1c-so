@@ -13,6 +13,7 @@ pcb* crear_pcb(unsigned id, unsigned quantum){
     nuevo_pcb->quantum = quantum;
     nuevo_pcb->pc = 0;
     nuevo_pcb->registros = crear_registros();
+    nuevo_pcb->estado = 'N';
     return nuevo_pcb;
 }
 

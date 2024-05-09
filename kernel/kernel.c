@@ -57,13 +57,7 @@ void iniciar_consola()
 			int pidActual = pcb->pid;
 			log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
 
-			if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorFIFO();
-				}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorRR();
-				}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
-					planificadorVRR();
-			}
+			planificador();
 
 			dispatch_proceso(pcb);
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
@@ -161,6 +155,16 @@ void iniciar_servidor_en_hilo(){
 	}
 }
 
+void planificador(){
+	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
+		planificadorFIFO();
+	}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
+		planificadorRR();
+	}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
+		planificadorVRR();
+	}
+}
+
 void planificadorFIFO(){
 	int cantExecute;
 	int cantReady;
@@ -171,15 +175,20 @@ void planificadorFIFO(){
 		cantReady = list_size(procesoReady);
 		cantBlockIO = list_size(procesoBlock);
 	sem_post(&bloque);
-
-// Push pcb cola new etc //en proceso, falta ordenar para que el planificador tenga sentido
+	//me fijo si hay procesos y cuantos en ready y los paso a execute mientras el GM lo permita
 	if (cantReady>0){
 		if(cantExecute<config->gradoMultiprogramacion){
 			int contador=0;
 			while (cantExecute<config->gradoMultiprogramacion && cantReady>0){
-				sem(&bloque);
+				sem_wait(&bloque);
 				pcb* PCBtemporal = list_get(procesoReady,0);
-
+				PCBtemporal->estado = 'E'; //cambios de estado se informan a memoria?
+				list_remove(procesoReady,0);
+				list_add(procesoExecute,PCBtemporal);
+				cantReady--;
+				cantExecute++;
+				log_info(logger,"Se paso el proceso <%d> de READY a EXECUTE", PCBtemporal->pid);
+				sem_post(&bloque);
 			}
 		}
 	}
@@ -193,6 +202,7 @@ void planificadorRR(){
 void planificadorVRR(){
 	//TODO
 }
+
 /*
 El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 
 diferentes procesos que se generen por medio de su consola interactiva.
