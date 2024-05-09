@@ -27,7 +27,7 @@ typedef enum {
     IO_FS_TRUNCATE,
     IO_FS_WRITE,
     IO_FS_READ,
-    EXIT
+    EXIT_OP
 }operacion;
 
 typedef struct {

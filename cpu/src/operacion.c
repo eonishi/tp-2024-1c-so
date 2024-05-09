@@ -19,7 +19,7 @@ const table_element tabla_op[] = {
     {"IO_FS_TRUNCATE", IO_FS_TRUNCATE},
     {"IO_FS_WRITE", IO_FS_WRITE},
     {"IO_FS_READ", IO_FS_READ},
-    {"EXIT", EXIT}
+    {"EXIT", EXIT_OP}
 }; // Lo hago para no tener que hacer la funcion con mas if anidados del mundo 
 
 operacion get_operacion(char** inst_tokenizada) {
