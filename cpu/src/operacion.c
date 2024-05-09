@@ -1,6 +1,6 @@
 #include "../include/operacion.h"
 
-table_element tabla_op[] = {
+const table_element tabla_op[] = {
     {"SET", SET},
     {"MOV_IN", MOV_IN},
     {"MOV_OUT", MOV_OUT},
@@ -50,4 +50,11 @@ void* get_registro(char* token_registro){ // OOOHH NO TENGO QUE HACER LA FUNCION
 
 int get_valor(char* token_valor){
     return atoi(token_valor);
+}
+
+bool es8int(char* token_registro){ // Voy lo mas rapido que puedo, NO LLEGO AL CHECKPOINT 2 🏃🏻
+    return string_equals_ignore_case(token_registro, "AX") 
+    || string_equals_ignore_case(token_registro, "BX") 
+    || string_equals_ignore_case(token_registro, "CX") 
+    || string_equals_ignore_case(token_registro, "DX");
 }

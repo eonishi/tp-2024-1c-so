@@ -31,12 +31,13 @@ typedef enum {
 }operacion;
 
 typedef struct {
-    const char* key;
+    char* key;
     operacion value;
 } table_element; // pseudo diccionario estático
 
 operacion get_operacion(char** instr_tokenizada);
 void* get_registro(char* token_registro);
 int get_valor(char* token_valor);
+bool es8int(char* token_registro);
 
 #endif
