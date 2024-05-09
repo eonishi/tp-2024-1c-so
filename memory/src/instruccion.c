@@ -52,8 +52,10 @@ char* get_instr_by_pc(){
     return instruc_buscada;
 }
 
-void enviar_instruccion_a_cpu(char* instruccion){
-    enviar_mensaje(FETCH_INSTRUCCION,instruccion, socket_cpu);
+void enviar_instruccion_a_cpu(){
+    char *instruccion = get_instr_by_pc();
+    enviar_mensaje(FETCH_INSTRUCCION, instruccion, socket_cpu);
+    log_info(logger, "Instruccion enviada a CPU: [%s]", instruccion);
 }
 
 void recibir_solicitud_de_cpu(){
