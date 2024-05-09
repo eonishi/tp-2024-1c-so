@@ -26,7 +26,7 @@ void execute(char **instr_tokenizada)
     }
 
     free(instr_tokenizada);
-    pcb_actual->pc++;
+    siguiente_pc(pcb_actual);
 }
 
 void exec_set(char **instr_tokenizada){
