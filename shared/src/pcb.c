@@ -13,7 +13,7 @@ pcb* crear_pcb(unsigned id, unsigned quantum){
     nuevo_pcb->quantum = quantum;
     nuevo_pcb->pc = 0;
     nuevo_pcb->registros = crear_registros();
-    nuevo_pcb->estado = 'N';
+    nuevo_pcb->estado = NEW;
     return nuevo_pcb;
 }
 
@@ -159,6 +159,7 @@ registros_t* deserializar_registros(void* registros){
 void loggear_pcb(pcb* pcb){
     log_info(logger, "==========PCB==========");
     log_info(logger, "PID: %d", pcb->pid);
+    log_info(logger, "Estado: %c", pcb->estado);
     log_info(logger, "PC: %d", pcb->pc);
     log_info(logger, "Quantum: %d", pcb->quantum);
     log_info(logger, "Registros:");

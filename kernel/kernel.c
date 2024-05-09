@@ -182,7 +182,7 @@ void planificadorFIFO(){
 			while (cantExecute<config->gradoMultiprogramacion && cantReady>0){
 				sem_wait(&bloque);
 				pcb* PCBtemporal = list_get(procesoReady,0);
-				PCBtemporal->estado = 'E'; //cambios de estado se informan a memoria?
+				PCBtemporal->estado = EXECUTE; //cambios de estado se informan a memoria?
 				list_remove(procesoReady,0);
 				list_add(procesoExecute,PCBtemporal);
 				cantReady--;

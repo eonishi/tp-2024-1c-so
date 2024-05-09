@@ -20,14 +20,22 @@ typedef struct
     uint32_t di; // Destination Index de un string
 } registros_t;
 
+typedef enum
+{
+    NEW='N',
+    READY='R',
+    EXECUTE='E',
+    BLOCKED='B',
+    EXIT='X'
+} state;
+
 typedef struct 
 {
     unsigned pid;
     unsigned pc; 
     unsigned quantum;
     registros_t* registros;
-    char estado; //N=NEW, E=EXECUTE, X=EXIT, B=BLOCK
-    //state estado; // enum {NEW, READY, EXEC, BLOCKED, EXIT}
+    state estado; //N=NEW, E=EXECUTE, X=EXIT, B=BLOCKED, R=READY
     //list_t ios //lista de IOs que usa (es util y vale la pena para el contexto del proyecto? el libro lo recomienda)
 }pcb; 
 
