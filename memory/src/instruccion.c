@@ -3,9 +3,12 @@
 static unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
 static unsigned PC_solicitado;
 
-t_list *leer_archivo_instrucciones(char *path)
+t_list *leer_archivo_instrucciones(char *file_name)
 {
     t_list *instrucciones = list_create();
+
+    char *path = string_new();
+    string_append_with_format(&path, "%s%s", config.path_instrucciones, file_name);
 
     FILE *archivo = fopen(path, "r");
     if (archivo == NULL){
@@ -23,6 +26,7 @@ t_list *leer_archivo_instrucciones(char *path)
         list_add(instrucciones, mi_linea);
     }
     fclose(archivo);
+    free(path);
 
     return instrucciones; 
     // Lista de instrucciones individuales de todo el archivo: ["SET AX 3","SUM AX BX", "RESIZE 89"]
