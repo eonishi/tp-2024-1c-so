@@ -53,13 +53,14 @@ void iniciar_consola()
 			pcb* pcb = iniciar_proceso_en_memoria(socket_memoria);
 
 			//aca estoy RM
+
 			list_add(procesoNew,pcb); //agrego el pcb creado a cola de new
 			int pidActual = pcb->pid;
 			log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
 
 			planificador();
 
-			dispatch_proceso(pcb);
+			//redefino dispatch_proceso(pcb); y lo meto en el planificador
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
 			log_info(logger, "==============================================");
 
@@ -97,7 +98,22 @@ pcb* iniciar_proceso_en_memoria(){
 	
 	return pcb;
 }
+void dispatch_proceso(){
+	if(list_size(procesoReady>0)){
+		pcb* new_pcb = list_get(procesoReady,0); //obtengo el primer proceso de la lista ready
+		
+		enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
+		log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
+		pcb* pcb_respuesta;
+		pcb_respuesta = esperar_pcb(socket_cpu, DISPATCH_PROCESO);
+		loggear_pcb(pcb_respuesta);
+		log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
 
+		list_add(procesoExecute,new_pcb); //paso a cola execute el primer proceso de la cola ready
+		list_remove(procesoReady,0); // elimino de ready el proceso enviado a execute
+	}
+}
+/*
 void dispatch_proceso(pcb* new_pcb){
 	enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO);
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
@@ -107,7 +123,7 @@ void dispatch_proceso(pcb* new_pcb){
 	loggear_pcb(pcb_respuesta);
 
 	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
-}
+}*/
 
 void terminar_programa()
 {
@@ -158,9 +174,9 @@ void iniciar_servidor_en_hilo(){
 void planificador(){
 	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
 		planificadorFIFO();
-	}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
+	}else if (strcmp(config->algoritmo_planificacion,"RR")==0){
 		planificadorRR();
-	}else if (strcmp(config->algoritmo_planificacion,"FIFO")==0){
+	}else if (strcmp(config->algoritmo_planificacion,"VRR")==0){
 		planificadorVRR();
 	}
 }
@@ -168,31 +184,55 @@ void planificador(){
 void planificadorFIFO(){
 	int cantExecute;
 	int cantReady;
-	int cantBlockIO;
+	int cantBlock;
+	int cantNew;
 	//hago conteo de los procesos en cada cola de estado; uso semaforo por buena practica visto en otros tps
 	sem_wait(&bloque);
 		cantExecute = list_size(procesoExecute);
 		cantReady = list_size(procesoReady);
-		cantBlockIO = list_size(procesoBlock);
+		cantBlock = list_size(procesoBlock);
+		cantNew = list_size(procesoNew);
 	sem_post(&bloque);
-	//me fijo si hay procesos y cuantos en ready y los paso a execute mientras el GM lo permita
-	if (cantReady>0){
-		if(cantExecute<config->gradoMultiprogramacion){
+	
+	if (cantNew>0){ //planificador pasa de NEW a READY si el grado de multiprogramacion lo permite
+		if(cantReady<config->gradoMultiprogramacion){
 			int contador=0;
-			while (cantExecute<config->gradoMultiprogramacion && cantReady>0){
+			while (cantReady<config->gradoMultiprogramacion && cantNew>0){
 				sem_wait(&bloque);
-				pcb* PCBtemporal = list_get(procesoReady,0);
-				PCBtemporal->estado = EXECUTE; //cambios de estado se informan a memoria?
-				list_remove(procesoReady,0);
-				list_add(procesoExecute,PCBtemporal);
-				cantReady--;
-				cantExecute++;
-				log_info(logger,"Se paso el proceso <%d> de READY a EXECUTE", PCBtemporal->pid);
+				pcb* PCBtemporal = list_get(procesoNew,0);
+				PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
+				list_remove(procesoNew,0);
+				list_add(procesoReady,PCBtemporal);
+				cantNew--;
+				cantReady++;
+				log_info(logger,"Se paso el proceso <%d> de NEW a READY", PCBtemporal->pid);
 				sem_post(&bloque);
 			}
 		}
 	}
-	
+	if(cantBlock>0){ //aca deberia usar semaforos para indicar que se libera un bloqueo de IO?
+		if(cantReady<config->gradoMultiprogramacion){
+			int contador=0;
+			while (cantReady<config->gradoMultiprogramacion && cantBlock>0){
+				sem_wait(&bloque);
+				pcb* PCBtemporal = list_get(procesoBlock,0);
+				PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
+				list_remove(procesoBlock,0);
+				list_add(procesoReady,PCBtemporal);
+				cantBlock--;
+				cantReady++;
+				log_info(logger,"Se paso el proceso <%d> de BLOCK a READY", PCBtemporal->pid);
+				sem_post(&bloque);
+			}
+		}
+	}
+	if (cantReady>0) {
+		while (cantReady>0 && cantExecute<config->gradoMultiprogramacion){
+		dispatch_proceso();
+		cantReady--;
+		cantExecute++;
+		}
+	}
 	
 }
 
