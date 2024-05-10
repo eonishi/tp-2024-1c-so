@@ -1,9 +1,11 @@
 #include "../include/instruccion.h"
 
 static unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
-static unsigned PC_solicitado;
+static unsigned PC_solicitado; // Estas dos variables SOLO deben ser modificadas por recibir_solicitud_de_cpu
 
-t_list *leer_archivo_instrucciones(char *file_name)
+static unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set 
+
+static t_list *leer_archivo_instrucciones(char *file_name)
 {
     t_list *instrucciones = list_create();
 
@@ -41,7 +43,18 @@ void crear_instr_set(char* path, unsigned PID){
     list_add(procesos_en_memoria, nuevo_set_instruc);
 } 
 
-char* get_instr_by_pc(){
+// ----Condiciones de búsqueda----
+static bool setinstr_tiene_pid(void* set_instrucciones, unsigned PID){
+    return ((t_InstrSet*)set_instrucciones)->PID == PID;
+}
+static bool setinstr_tiene_pid_solicitado(void* set_instrucciones){
+    return setinstr_tiene_pid(set_instrucciones, PID_solicitado);
+}
+static bool setinstr_tiene_pid_a_liberar(void* set_instrucciones){
+    return setinstr_tiene_pid(set_instrucciones, PID_a_liberar);
+}//--------
+
+static char* get_instr_by_pc(){
 
     if(!list_any_satisfy(procesos_en_memoria, setinstr_tiene_pid_solicitado)){
         log_error(logger, "No se encontró el PID solicitado");
@@ -59,10 +72,6 @@ char* get_instr_by_pc(){
     return instruc_buscada;
 }
 
-bool setinstr_tiene_pid_solicitado(void* set_instrucciones){
-    return ((t_InstrSet*)set_instrucciones)->PID == PID_solicitado;
-}
-
 void enviar_instruccion_a_cpu(){
     char *instruccion = get_instr_by_pc();
     enviar_mensaje(FETCH_INSTRUCCION, instruccion, socket_cpu);
@@ -77,4 +86,15 @@ void recibir_solicitud_de_cpu(){
     log_info(logger, "PC solicitado: %d", PC_solicitado);
 
     list_destroy(paquete_recibido);
+}
+// ----Liberador de memoria----
+static void setinstr_destroyer(void* set_instrucciones){
+    t_InstrSet* set_a_destruir = (t_InstrSet*)set_instrucciones;
+    list_destroy_and_destroy_elements(set_a_destruir->instrucciones, free);
+    free(set_a_destruir);
+}//--------
+
+void liberar_instr_set(unsigned PID){
+    PID_a_liberar=PID;
+    list_remove_and_destroy_by_condition(procesos_en_memoria, setinstr_tiene_pid_a_liberar, setinstr_destroyer);
 }
