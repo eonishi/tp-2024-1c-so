@@ -38,10 +38,13 @@ void crear_instr_set(char* path, unsigned PID){
 } 
 
 char* get_instr_by_pc(){
-    /* Buscar el set de instrucciones por PID (¡¡TODO!!)
-     Ahora solo funciona porque coincide con el index en la lista, pero si eliminamos un proceso de memoria
-     ya no coincidiria. */
-    t_InstrSet* set_buscado = list_get(procesos_en_memoria, PID_solicitado);
+
+    if(!list_any_satisfy(procesos_en_memoria, setinstr_tiene_pid_solicitado)){
+        log_error(logger, "No se encontró el PID solicitado");
+        return "PID NOT FOUND"; // Hacer un caso "FAIL" en decode o chequear antes de enviar a CPU
+    }
+
+    t_InstrSet* set_buscado = list_find(procesos_en_memoria, setinstr_tiene_pid_solicitado);
     
     if(PC_solicitado >= list_size(set_buscado->instrucciones)){
         log_error(logger, "No hay más instrucciones del proceso PID:%u", PID_solicitado);
@@ -50,6 +53,10 @@ char* get_instr_by_pc(){
     char* instruc_buscada = list_get(set_buscado->instrucciones, PC_solicitado);
 
     return instruc_buscada;
+}
+
+bool setinstr_tiene_pid_solicitado(void* set_instrucciones){
+    return ((t_InstrSet*)set_instrucciones)->PID == PID_solicitado;
 }
 
 void enviar_instruccion_a_cpu(){
