@@ -182,6 +182,7 @@ void planificador(){
 }
 
 void planificadorFIFO(){
+	log_info(logger,"Planificador FIFO iniciado.");
 	int cantExecute;
 	int cantReady;
 	int cantBlock;
@@ -237,7 +238,19 @@ void planificadorFIFO(){
 }
 
 void planificadorRR(){
-	//TODO
+	log_info(logger, "Planificador round robin iniciado.");
+	int cantExecute;
+	int cantReady;
+	int cantBlock;
+	int cantNew;
+	//hago conteo de los procesos en cada cola de estado; uso semaforo por buena practica visto en otros tps
+	sem_wait(&bloque);
+		cantExecute = list_size(procesoExecute);
+		cantReady = list_size(procesoReady);
+		cantBlock = list_size(procesoBlock);
+		cantNew = list_size(procesoNew);
+	sem_post(&bloque);
+	
 }
 void planificadorVRR(){
 	//TODO
