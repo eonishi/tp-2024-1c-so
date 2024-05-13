@@ -188,12 +188,12 @@ void planificadorFIFO(){
 	int cantBlock;
 	int cantNew;
 	//hago conteo de los procesos en cada cola de estado; uso semaforo por buena practica visto en otros tps
-	sem_wait(&bloque);
+	sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
 		cantExecute = list_size(procesoExecute);
 		cantReady = list_size(procesoReady);
 		cantBlock = list_size(procesoBlock);
 		cantNew = list_size(procesoNew);
-	sem_post(&bloque);
+	sem_post(&bloque); //modificar, el uso de semaforos esta mal implementado
 	
 	if (cantNew>0){ //planificador pasa de NEW a READY si el grado de multiprogramacion lo permite
 		if(cantReady<config->gradoMultiprogramacion){
@@ -244,14 +244,36 @@ void planificadorRR(){
 	int cantBlock;
 	int cantNew;
 	//hago conteo de los procesos en cada cola de estado; uso semaforo por buena practica visto en otros tps
-	sem_wait(&bloque);
+	sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
 		cantExecute = list_size(procesoExecute);
 		cantReady = list_size(procesoReady);
 		cantBlock = list_size(procesoBlock);
 		cantNew = list_size(procesoNew);
-	sem_post(&bloque);
+	sem_post(&bloque); //modificar, el uso de semaforos esta mal implementado
 	
+	if (cantNew>0){ //planificador pasa de NEW a READY si el grado de multiprogramacion lo permite
+		if(cantReady<config->gradoMultiprogramacion){
+			int contador=0;
+			while (cantReady<config->gradoMultiprogramacion && cantNew>0){
+				sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
+				pcb* PCBtemporal = list_get(procesoNew,0);
+				PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
+				list_remove(procesoNew,0);
+				list_add(procesoReady,PCBtemporal);
+				cantNew--;
+				cantReady++;
+				log_info(logger,"Se paso el proceso <%d> de NEW a READY", PCBtemporal->pid);
+				sem_post(&bloque);//modificar, el uso de semaforos esta mal implementado
+			}
+		}
+	}
+	//por prioridad sigue de ejecutando a ready segun quantum 
+	if (cantExecute>0){
+
+	}
+	//Luego de Bloqueado a Ready
 }
+
 void planificadorVRR(){
 	//TODO
 }
