@@ -16,6 +16,7 @@
 #include "../../shared/include/server.h"
 #include "../../shared/include/comunicacion.h"
 #include "../../shared/include/pcb.h"
+#include "../../shared/include/protocolo.h"
 #include <semaphore.h>
 
 t_log *logger;
@@ -41,7 +42,7 @@ void terminar_programa();
 void iniciar_consola();
 void *iniciar_escucha();
 void iniciar_servidor_en_hilo();
-pcb* iniciar_proceso_en_memoria();
+pcb* iniciar_proceso_en_memoria(char* filePath);
 void dispatch_proceso(pcb* pcb);
 
 

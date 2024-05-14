@@ -5,6 +5,8 @@ static unsigned PC_solicitado;
 
 t_list *leer_archivo_instrucciones(char *path)
 {
+    log_info(logger, "Leer_archivo_instr path: [%s]", path);
+    
     t_list *instrucciones = list_create();
 
     FILE *archivo = fopen(path, "r");

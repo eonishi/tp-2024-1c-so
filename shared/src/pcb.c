@@ -4,6 +4,9 @@
 const int size_registros = sizeof(uint8_t) * 4 + sizeof(uint32_t) * 6;
 const int size_primitive_data = sizeof(unsigned) * 3 + sizeof(state);
 const int size_pcb = size_primitive_data + size_registros;
+int pcb_size(){
+    return size_pcb;
+}
 
 pcb* crear_pcb(unsigned id, unsigned quantum){
     pcb* nuevo_pcb = (pcb*) malloc(sizeof(pcb));
@@ -63,6 +66,46 @@ pcb* recibir_pcb(int socket_cliente){
     return recived_pcb;
 }
 
+void* serializar_pcb(pcb* pcb){
+    void* stream = malloc(pcb_size()); 
+    int offset = 0;
+
+    // Datos primitivos dentro del PCB
+    memcpy(stream + offset, &(pcb->pid), sizeof(unsigned));
+    offset += sizeof(unsigned);
+    memcpy(stream + offset, &(pcb->pc), sizeof(unsigned));
+    offset += sizeof(unsigned);
+    memcpy(stream + offset, &(pcb->quantum), sizeof(unsigned));
+    offset += sizeof(unsigned);
+    memcpy(stream + offset, &(pcb->estado), sizeof(state));
+    offset += sizeof(state);
+
+    // Datos de los registros
+    memcpy(stream + offset, &(pcb->registros->ax), sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+    memcpy(stream + offset, &(pcb->registros->bx), sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+    memcpy(stream + offset, &(pcb->registros->cx), sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+    memcpy(stream + offset, &(pcb->registros->dx), sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+    memcpy(stream + offset, &(pcb->registros->eax), sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(stream + offset, &(pcb->registros->ebx), sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(stream + offset, &(pcb->registros->ecx), sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(stream + offset, &(pcb->registros->edx), sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(stream + offset, &(pcb->registros->si), sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(stream + offset, &(pcb->registros->di), sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+
+    return stream;
+}
+
+
 void* serializar_pcb_data_primitive(pcb* pcb){
     void* stream = malloc(size_primitive_data); 
     int offset = 0;
@@ -107,6 +150,53 @@ void* serializar_registros(registros_t* registros){
     offset += sizeof(uint32_t);
 
     return stream;
+}
+
+
+pcb* deserializar_pcb_new(void* pcb_bytes){
+    pcb* recived_pcb = (pcb*) malloc(sizeof(pcb));
+    int offset = 0;
+
+    // Datos con tipo de dato primitivo dentro del PCB
+    memcpy(&(recived_pcb->pid), pcb_bytes + offset, sizeof(unsigned));
+    offset += sizeof(unsigned);
+    memcpy(&(recived_pcb->pc), pcb_bytes + offset, sizeof(unsigned));
+    offset += sizeof(unsigned);
+    memcpy(&(recived_pcb->quantum), pcb_bytes + offset, sizeof(unsigned));
+    offset += sizeof(unsigned);
+    memcpy(&(recived_pcb->estado), pcb_bytes + offset, sizeof(state));
+    offset += sizeof(state);
+
+    // Datos de los registros
+    registros_t* recived_registers = (registros_t*) malloc(sizeof(registros_t));
+
+    // Datos de los registros
+    memcpy(&(recived_registers->ax), pcb_bytes + offset, sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+    memcpy(&(recived_registers->bx), pcb_bytes + offset, sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+    memcpy(&(recived_registers->cx), pcb_bytes + offset, sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+    memcpy(&(recived_registers->dx), pcb_bytes + offset, sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+    memcpy(&(recived_registers->eax), pcb_bytes + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(&(recived_registers->ebx), pcb_bytes + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(&(recived_registers->ecx), pcb_bytes + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(&(recived_registers->edx), pcb_bytes + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(&(recived_registers->si), pcb_bytes + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    memcpy(&(recived_registers->di), pcb_bytes + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+
+    recived_pcb->registros = recived_registers;
+
+    free(pcb_bytes);
+
+    return recived_pcb;
 }
 
 pcb* deserializar_pcb(void* pcb_data_primitive, void* pcb_data_registers){

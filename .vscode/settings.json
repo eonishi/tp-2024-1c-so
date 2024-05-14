@@ -32,6 +32,8 @@
         "initializer_list": "c",
         "numeric": "c",
         "configuracion.h": "c",
-        "conexion.h": "c"
+        "conexion.h": "c",
+        "codigos_operacion.h": "c",
+        "semaphore.h": "c"
     }
 }
