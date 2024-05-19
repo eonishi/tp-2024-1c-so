@@ -11,6 +11,9 @@ typedef enum
 	DISPATCH_PROCESO,
 	FETCH_INSTRUCCION,
 	RESPUESTA,
+	INTERRUPCION
 } op_code;
+
+#define ERROR -1
 
 #endif

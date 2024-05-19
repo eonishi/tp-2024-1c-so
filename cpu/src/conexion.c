@@ -88,7 +88,7 @@ void server_interrupt()
 		{
 		case INTERRUPCION:
 			// Recibir PID y checkear si corresponde al PID actual
-			unsigned PID = recibir_interrupcion(cliente_fd);
+			unsigned PID = 1;//recibir_interrupcion(cliente_fd);
 			if(PID == pcb_actual->pid){
 				log_info(logger, "INTERRUPCION recibida. PID: %d", PID);
 				INTERRUPTION_FLAG = 1;
