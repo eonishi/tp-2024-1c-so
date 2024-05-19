@@ -44,9 +44,13 @@ void* gestionar_solicitudes_kernel(){
 		case CREAR_PROCESO_EN_MEMORIA:
             log_info(logger, "CREAR_PROCESO_EN_MEMORIA recibido.");
 
-            pcb* pcb = recibir_pcb(socket_kernel);
+            solicitud_crear_proceso solicitud_crear_proceso = recibir_solicitud_crear_proceso(socket_kernel);
+			pcb* pcb = solicitud_crear_proceso.pcb;
+
+			// crear_instr_set(solicitud_crear_proceso.filePath, pcb->pid); NO FUNCIONA LA LECTURA DEL ARCHIVO
 
             pcb->registros->ax = 1;			
+			
             // Operaciones crear proceso en memoria
             enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
 
