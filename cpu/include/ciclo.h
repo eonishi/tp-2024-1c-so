@@ -6,4 +6,7 @@
 #include "execute.h"
 #include "checkInterrupt.h"
 
+
+void cicloDeCPU();
+
 #endif
