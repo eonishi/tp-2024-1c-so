@@ -7,12 +7,11 @@ static unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set
 
 static t_list *leer_archivo_instrucciones(char *file_name)
 {
-    log_info(logger, "Leer_archivo_instr path: [%s]", path);
-    
     t_list *instrucciones = list_create();
 
     char *path = string_new();
     string_append_with_format(&path, "%s%s", config.path_instrucciones, file_name);
+    log_info(logger, "Leer_archivo_instr path: [%s]", path);
 
     FILE *archivo = fopen(path, "r");
     if (archivo == NULL){
