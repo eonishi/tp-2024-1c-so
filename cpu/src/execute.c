@@ -7,18 +7,22 @@ void execute(char **instr_tokenizada)
     {
     case SET:
         exec_set(instr_tokenizada);
+        siguiente_pc(pcb_actual);
         break;
     case SUM:
         exec_sum(instr_tokenizada);
+        siguiente_pc(pcb_actual);
         break;
     case SUB:
         exec_sub(instr_tokenizada);
+        siguiente_pc(pcb_actual);
         break;
     case JNZ:
         exec_jnz(instr_tokenizada);
         break;
     case IO_GEN_SLEEP:
         exec_io_gen_sleep(instr_tokenizada);
+        siguiente_pc(pcb_actual);
         break;
     default:
         log_error(logger, "MAN esta operación no existe (¬_¬\")");
@@ -26,7 +30,6 @@ void execute(char **instr_tokenizada)
     }
 
     free(instr_tokenizada);
-    siguiente_pc(pcb_actual);
 }
 
 void exec_set(char **instr_tokenizada){
