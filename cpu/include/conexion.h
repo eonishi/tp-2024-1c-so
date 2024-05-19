@@ -10,6 +10,7 @@
 
 extern t_log *logger;
 extern cpu_config config;
+extern pcb* pcb_actual;
 
 int crear_conexion_memoria();
 void esperar_handshake_kernel(int server);

@@ -1,6 +1,7 @@
 #include "../include/conexion.h"
 
 int socket_memoria, socket_kernel;
+int INTERRUPTION_FLAG = 0;
 
 int crear_conexion_memoria()
 {
@@ -78,16 +79,23 @@ void server_interrupt()
 	int interrupt_fd = iniciar_servidor("CPU_INTERRUPT", config.ip_cpu, config.puerto_interrupt);
 	int cliente_fd = esperar_cliente(interrupt_fd);
 
-	while (1)
+	while (cliente_fd != -1)
 	{
 		int cod_op = recibir_operacion(cliente_fd);
 		log_info(logger, "Codigo recibido: %d", cod_op);
 
 		switch (cod_op)
 		{
-		case MENSAJE:
-			recibir_mensaje(cliente_fd);
-			enviar_mensaje(MENSAJE, "Respuesta de CPU", cliente_fd);
+		case INTERRUPCION:
+			// Recibir PID y checkear si corresponde al PID actual
+			unsigned PID = recibir_interrupcion(cliente_fd);
+			if(PID == pcb_actual->pid){
+				log_info(logger, "INTERRUPCION recibida. PID: %d", PID);
+				INTERRUPTION_FLAG = 1;
+			}
+			else{
+				log_info(logger, "INTERRUPCION recibida. PID: %d. No corresponde al PID actual", PID);
+			}
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
