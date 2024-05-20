@@ -3,6 +3,13 @@
 int socket_memoria, socket_kernel;
 int INTERRUPTION_FLAG = 0;
 
+
+static void terminar_programa()
+{
+	log_info(logger, "Memoria liberada correctamente");
+	log_destroy(logger);
+}
+
 int crear_conexion_memoria()
 {
   log_info(logger, "Creando conexión con Memoria...");

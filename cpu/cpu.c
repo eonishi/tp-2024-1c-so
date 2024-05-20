@@ -18,11 +18,6 @@ int main()
 	return EXIT_SUCCESS;
 }
 
-void terminar_programa()
-{
-	log_info(logger, "Memoria liberada correctamente");
-	log_destroy(logger);
-}
 
 /*
 El módulo CPU en nuestro contexto de TP lo que va a hacer es simular los pasos del ciclo de instrucción de una CPU real,
