@@ -100,16 +100,3 @@ void liberar_instr_set(unsigned PID){
     PID_a_liberar=PID;
     list_remove_and_destroy_by_condition(procesos_en_memoria, setinstr_tiene_pid_a_liberar, setinstr_destroyer);
 }
-
-void log_instrucciones(unsigned PID){
-    if(!list_any_satisfy(procesos_en_memoria, setinstr_tiene_pid)){
-        log_error(logger, "No se encontró el PID solicitado");
-        return;
-    }
-
-    t_InstrSet* set_buscado = list_find(procesos_en_memoria, setinstr_tiene_pid);
-    log_info(logger, "Instrucciones del proceso PID:%u:", PID);
-    for(int i=0; i<list_size(set_buscado->instrucciones); i++){
-        log_info(logger, "%s", list_get(set_buscado->instrucciones, i));
-    }
-}

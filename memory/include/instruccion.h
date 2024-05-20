@@ -23,6 +23,5 @@ void crear_instr_set(char *path, unsigned PID);
 void enviar_instruccion_a_cpu();
 void recibir_solicitud_de_cpu();
 void liberar_instr_set(unsigned PID);
-void log_instrucciones(unsigned PID);
 
 #endif

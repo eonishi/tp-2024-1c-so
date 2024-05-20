@@ -52,7 +52,6 @@ void* gestionar_solicitudes_kernel(){
 
 			crear_instr_set(solicitud_crear_proceso.filePath, pcb->pid);
             pcb->registros->ax = 1;
-			log_instrucciones(pcb->pid);
 			
             // Operaciones crear proceso en memoria
             enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
