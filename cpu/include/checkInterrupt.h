@@ -1,5 +1,5 @@
-#ifndef CICLO_H_
-#define CICLO_H_
+#ifndef CHECKINTERRUPT_H_
+#define CHECKINTERRUPT_H_
 
 #include "../../shared/include/codigos_operacion.h"
 #include "../../shared/include/pcb.h"
