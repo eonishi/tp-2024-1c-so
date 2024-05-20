@@ -15,7 +15,7 @@ kernel_config* inicializar_config(){
         (config)->puerto_kernel = NULL;
         (config)->ip_memoria = NULL;
         (config)->puerto_memoria = NULL;
-        (config)->gradoMultiprogramacion = NULL;
+        (config)->gradoMultiprogramacion = 0;
         (config)->algoritmo_planificacion = NULL;
 
         log_info(logger, "Configuración inicializada");
