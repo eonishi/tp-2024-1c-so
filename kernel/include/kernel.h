@@ -43,7 +43,7 @@ void iniciar_consola();
 void *iniciar_escucha();
 void iniciar_servidor_en_hilo();
 pcb* iniciar_proceso_en_memoria(char* filePath);
-void dispatch_proceso(pcb* pcb);
+void dispatch_proceso();
 
 
 

@@ -105,7 +105,7 @@ pcb* iniciar_proceso_en_memoria(char* filePath){
 	return pcb;
 }
 void dispatch_proceso(){
-	if(list_size(procesoReady>0)){
+	if(list_size(procesoReady)>0){
 		pcb* new_pcb = list_get(procesoReady,0); //obtengo el primer proceso de la lista ready
 		
 		enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
@@ -177,17 +177,7 @@ void iniciar_servidor_en_hilo(){
 	}
 }
 
-void planificador(){
-	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
-		planificadorFIFO();
-	}else if (strcmp(config->algoritmo_planificacion,"RR")==0){
-		planificadorRR();
-	}else if (strcmp(config->algoritmo_planificacion,"VRR")==0){
-		planificadorVRR();
-	}
-}
-
-void planificadorFIFO(){
+static void planificadorFIFO(){
 	log_info(logger,"Planificador FIFO iniciado.");
 	int cantExecute;
 	int cantReady;
@@ -243,7 +233,7 @@ void planificadorFIFO(){
 	
 }
 
-void planificadorRR(){
+static void planificadorRR(){
 	log_info(logger, "Planificador round robin iniciado.");
 	int cantExecute;
 	int cantReady;
@@ -280,10 +270,18 @@ void planificadorRR(){
 	//Luego de Bloqueado a Ready
 }
 
-void planificadorVRR(){
+static void planificadorVRR(){
 	//TODO
 }
-
+static void planificador(){
+	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
+		planificadorFIFO();
+	}else if (strcmp(config->algoritmo_planificacion,"RR")==0){
+		planificadorRR();
+	}else if (strcmp(config->algoritmo_planificacion,"VRR")==0){
+		planificadorVRR();
+	}
+}
 /*
 El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 
 diferentes procesos que se generen por medio de su consola interactiva.
