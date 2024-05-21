@@ -10,6 +10,9 @@ int main(){
 
     int server_fd = iniciar_servidor("MEMORY", config.ip_memoria, config.puerto_memoria);
 
+	// Inicializo la lista de procesos en memoria
+	procesos_en_memoria = list_create();
+
 	esperar_handshake_cpu(server_fd);
     esperar_handshake_kernel(server_fd);
 
@@ -44,12 +47,15 @@ void* gestionar_solicitudes_kernel(){
 		case CREAR_PROCESO_EN_MEMORIA:
             log_info(logger, "CREAR_PROCESO_EN_MEMORIA recibido.");
 
-            pcb* pcb = recibir_pcb(socket_kernel);
+            solicitud_crear_proceso solicitud_crear_proceso = recibir_solicitud_crear_proceso(socket_kernel);
+			pcb* pcb = solicitud_crear_proceso.pcb;
 
-            pcb->registros->ax = 1;			
+			crear_instr_set(solicitud_crear_proceso.filePath, pcb->pid);
+            pcb->registros->ax = 1;
+			
             // Operaciones crear proceso en memoria
             enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
-
+			free(pcb);
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");

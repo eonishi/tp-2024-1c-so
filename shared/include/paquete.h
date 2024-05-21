@@ -4,7 +4,7 @@
 #include<stdlib.h>
 #include<sys/socket.h>
 #include<string.h>
-#include "protocolo.h"
+#include "codigos_operacion.h"
 
 typedef struct
 {

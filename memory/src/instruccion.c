@@ -11,6 +11,7 @@ static t_list *leer_archivo_instrucciones(char *file_name)
 
     char *path = string_new();
     string_append_with_format(&path, "%s%s", config.path_instrucciones, file_name);
+    log_info(logger, "Leer_archivo_instr path: [%s]", path);
 
     FILE *archivo = fopen(path, "r");
     if (archivo == NULL){
@@ -41,6 +42,7 @@ void crear_instr_set(char* path, unsigned PID){
 
     //Guardo en una lista los procesos en memoria (Temporal hasta definir como se guardan)
     list_add(procesos_en_memoria, nuevo_set_instruc);
+    log_info(logger, "Instrucciones del proceso PID:%u cargadas en memoria", PID);
 } 
 
 // ----Condiciones de búsqueda----

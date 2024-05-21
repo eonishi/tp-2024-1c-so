@@ -43,34 +43,39 @@ void iniciar_consola()
 		leido = readline("> ");
 		log_info(logger, "Linea ingresada: %s", leido);
 
-		if (strcmp(leido, "") == 0)
+		char** leido_split = string_n_split(leido, 2, " ");
+		char* comando = leido_split[0];
+
+		if (strcmp(comando, "") == 0)
 			ingresoActivado = 0;
 			
-		if(strcmp(leido, "INICIAR_PROCESO") == 0){
+		if(strcmp(comando, "INICIAR_PROCESO") == 0){
 			log_info(logger, "==============================================");
 			log_info(logger, "Inicio de ejecución de INICIAR_PROCESO");
+
+			char* filePath = leido_split[1];
+
+			log_info(logger, "Con argumento: [%s]", filePath);
 					
-			pcb* pcb = iniciar_proceso_en_memoria(socket_memoria);
+			pcb* pcb = iniciar_proceso_en_memoria(filePath);
 
 			//aca estoy RM
-
-			list_add(procesoNew,pcb); //agrego el pcb creado a cola de new
-			int pidActual = pcb->pid;
-			log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
-
-			planificador();
-
+			// list_add(procesoNew,pcb); //agrego el pcb creado a cola de new
+			// int pidActual = pcb->pid;
+			// log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
+			// planificador();
 			//redefino dispatch_proceso(pcb); y lo meto en el planificador
+      
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
 			log_info(logger, "==============================================");
 
 		}
-		else if(strcmp(leido, "CPU") == 0){
+		else if(strcmp(comando, "CPU") == 0){
 			log_info(logger, "Enviando mensaje al CPU...");
     		enviar_mensaje(MENSAJE, "0", socket_cpu);
 			log_info(logger, "Mensaje enviado");
 		}
-		else if(strcmp(leido, "MEMORIA") == 0) {
+		else if(strcmp(comando, "MEMORIA") == 0) {
 			log_info(logger, "Enviando mensaje a la MEMORIA...");
     		enviar_mensaje(MENSAJE,"0", socket_memoria);
 			log_info(logger, "Mensaje enviado");
@@ -83,12 +88,13 @@ void iniciar_consola()
 	}
 }
 
-pcb* iniciar_proceso_en_memoria(){
+pcb* iniciar_proceso_en_memoria(char* filePath){
 	pcb* pcb = crear_pcb(pcb_counter++, 4000);
 
 	pcb->registros->ax = 9;
 
-	enviar_pcb(pcb, socket_memoria, CREAR_PROCESO_EN_MEMORIA);
+	enviar_solicitud_crear_proceso(filePath, pcb, socket_memoria);
+	// enviar_pcb(pcb, socket_memoria, CREAR_PROCESO_EN_MEMORIA);
 	log_info(logger, "Solicitud CREAR_PROCESO_EN_MEMORIA enviada a memoria");
 	
 	pcb = esperar_pcb(socket_memoria, CREAR_PROCESO_EN_MEMORIA);
@@ -99,7 +105,7 @@ pcb* iniciar_proceso_en_memoria(){
 	return pcb;
 }
 void dispatch_proceso(){
-	if(list_size(procesoReady>0)){
+	if(list_size(procesoReady)>0){
 		pcb* new_pcb = list_get(procesoReady,0); //obtengo el primer proceso de la lista ready
 		
 		enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
@@ -171,17 +177,7 @@ void iniciar_servidor_en_hilo(){
 	}
 }
 
-void planificador(){
-	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
-		planificadorFIFO();
-	}else if (strcmp(config->algoritmo_planificacion,"RR")==0){
-		planificadorRR();
-	}else if (strcmp(config->algoritmo_planificacion,"VRR")==0){
-		planificadorVRR();
-	}
-}
-
-void planificadorFIFO(){
+static void planificadorFIFO(){
 	log_info(logger,"Planificador FIFO iniciado.");
 	int cantExecute;
 	int cantReady;
@@ -237,7 +233,7 @@ void planificadorFIFO(){
 	
 }
 
-void planificadorRR(){
+static void planificadorRR(){
 	log_info(logger, "Planificador round robin iniciado.");
 	int cantExecute;
 	int cantReady;
@@ -287,10 +283,18 @@ void planificadorRR(){
 	//Luego de Bloqueado a Ready
 }
 
-void planificadorVRR(){
+static void planificadorVRR(){
 	//TODO
 }
-
+static void planificador(){
+	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
+		planificadorFIFO();
+	}else if (strcmp(config->algoritmo_planificacion,"RR")==0){
+		planificadorRR();
+	}else if (strcmp(config->algoritmo_planificacion,"VRR")==0){
+		planificadorVRR();
+	}
+}
 /*
 El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 
 diferentes procesos que se generen por medio de su consola interactiva.

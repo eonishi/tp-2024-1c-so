@@ -1,9 +1,9 @@
 #ifndef PCB_H_
 #define PCB_H_
 
-#include "protocolo.h"
 #include "comunicacion.h"
 #include "paquete.h"
+#include "codigos_operacion.h"
 #include <stdint.h>
 
 typedef struct 
@@ -43,6 +43,9 @@ pcb* crear_pcb(unsigned id, unsigned quantum);
 registros_t* crear_registros();
 int enviar_pcb(pcb* pcb, int socket_cliente, op_code code);
 pcb *recibir_pcb(int socket_cliente);
+pcb* deserializar_pcb_new(void* pcb_bytes);
+int pcb_size();
+void* serializar_pcb(pcb* pcb);
 void *serializar_pcb_data_primitive(pcb *pcb);
 void* serializar_registros(registros_t* registros);
 pcb* deserializar_pcb(void* pcb_data_primitive, void* pcb_data_registers);
