@@ -199,7 +199,7 @@ void planificadorFIFO(){
 		if(cantReady<config->gradoMultiprogramacion){
 			int contador=0;
 			while (cantReady<config->gradoMultiprogramacion && cantNew>0){
-				sem_wait(&bloque);
+				sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
 				pcb* PCBtemporal = list_get(procesoNew,0);
 				PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
 				list_remove(procesoNew,0);
@@ -207,7 +207,7 @@ void planificadorFIFO(){
 				cantNew--;
 				cantReady++;
 				log_info(logger,"Se paso el proceso <%d> de NEW a READY", PCBtemporal->pid);
-				sem_post(&bloque);
+				sem_post(&bloque);//modificar, el uso de semaforos esta mal implementado
 			}
 		}
 	}
@@ -215,7 +215,7 @@ void planificadorFIFO(){
 		if(cantReady<config->gradoMultiprogramacion){
 			int contador=0;
 			while (cantReady<config->gradoMultiprogramacion && cantBlock>0){
-				sem_wait(&bloque);
+				sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
 				pcb* PCBtemporal = list_get(procesoBlock,0);
 				PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
 				list_remove(procesoBlock,0);
@@ -223,7 +223,7 @@ void planificadorFIFO(){
 				cantBlock--;
 				cantReady++;
 				log_info(logger,"Se paso el proceso <%d> de BLOCK a READY", PCBtemporal->pid);
-				sem_post(&bloque);
+				sem_post(&bloque);//modificar, el uso de semaforos esta mal implementado
 			}
 		}
 	}
@@ -269,6 +269,19 @@ void planificadorRR(){
 	}
 	//por prioridad sigue de ejecutando a ready segun quantum 
 	if (cantExecute>0){
+		//iniciar un contador de milisegundos para monitorear quantum
+		//while contador menor a quantum
+			//loop vacio
+		//contador igual a quantum me lleva a esta linea
+			//envio interrupt al cpu
+			//for i=0, i<cantexecute, i++
+				//if pcb[0]->estado=execute
+					//pcb->quantum - config->quantum
+					//if pcb->quantum >0
+						//envio procesoExecute[0] a ready
+					//else
+						//envio procesoExec[0] a exit
+			
 
 	}
 	//Luego de Bloqueado a Ready
