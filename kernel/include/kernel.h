@@ -24,6 +24,7 @@ t_log *logger;
 kernel_config* config;
 int pcb_counter = 1;
 int socket_cpu, socket_memoria;
+pthread_t hilo_servidor_kernel;
 
 // Largo Plazo
 pthread_t hilo_planificador_largo;

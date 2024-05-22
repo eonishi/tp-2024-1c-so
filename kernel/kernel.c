@@ -1,8 +1,5 @@
 #include "include/kernel.h"
 
-
-pthread_t tid[2];
-
 int main(){
     logger = iniciar_logger("kernel.log", "KERNEL");
 	log_info(logger, "Logger de Kernel iniciado");
@@ -22,16 +19,12 @@ int main(){
 	}
 
 	iniciar_semaforos();
-
 	inicializar_cola_new();
 	inicializar_cola_ready();
 
-	log_info(logger, "Iniciando planificador de largo en hilo");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
+	iniciar_hilo(iniciar_escucha, hilo_servidor_kernel);
 	
-
-	iniciar_servidor_en_hilo();
-
 	iniciar_consola();
 
 	terminar_programa();
@@ -198,17 +191,6 @@ void iniciar_hilo(void* func, pthread_t thread){
 	else{
     	log_info(logger, "El hilo se inició su correctamente");
 		pthread_detach(thread);
-	}
-}
-
-void iniciar_servidor_en_hilo(){
-	int err = pthread_create(&(tid[0]), NULL, iniciar_escucha, NULL);
-    if (err != 0){
-    	log_info(logger, "Hubo un problema al crear el thread de la escucha del servidor [%s]", strerror(err));
-    }
-	else{
-    	log_info(logger, "El thread de la escucha del servidor inició su ejecución");
-		pthread_detach(tid[0]);
 	}
 }
 

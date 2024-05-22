@@ -14,11 +14,10 @@ void insertar_en_cola_new(pcb* pcb){
 
 void *iniciar_planificacion_largo(){
     while(1){
-        log_info(logger, "While planificador largo");
         if(planificador_largo_activado){
             log_info(logger, "Esperando nuevo proceso...");
             sem_wait(&sem_nuevo_proceso);  
-              
+
             log_info(logger, "Ingresó un nuevo proceso");
             pcb* newPcb = queue_pop(colaNew);
             log_info(logger, "Push en cola ready");
