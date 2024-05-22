@@ -68,6 +68,8 @@ void iniciar_consola()
 					
 			pcb* pcb = iniciar_proceso_en_memoria(filePath);
 
+			log_info(logger, "PCB creado. Id: [%d]", pcb->pid);
+
 			queue_push(colaNew, pcb);
 			sem_post(&sem_nuevo_proceso);
 
@@ -171,8 +173,14 @@ void *iniciar_escucha(){
         log_info(logger, "Codigo recibido:");
 
 		switch (cod_op) {
+		case DISPATCH_PROCESO:
+            log_info(logger, "Recibi DISPATCH_PROCESO. CODIGO: %d", cod_op);
+			pcb* pcb = recibir_pcb(cliente_fd);
+			loggear_pcb(pcb);
+			log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
+			break;		
 		case MENSAJE:
-            log_info(logger, "Entre a MENSAJE. CODIGO: %d", cod_op);
+            log_info(logger, "Recibi MENSAJE. CODIGO: %d", cod_op);
 			recibir_mensaje(cliente_fd);
 			break;
 		case -1:
@@ -245,7 +253,7 @@ static void planificadorFIFO(){
 			}
 		}
 		if (cantReady>0) {
-			while (cantReady>0 && cantExecute<config->gradoMultiprogramacion){
+			while (cantReady>0 && cantExecute<config->grado_multiprogramacion){
 			dispatch_proceso();
 			cantReady--;
 			cantExecute++;
@@ -302,12 +310,13 @@ static void planificadorRR() {
 
         // Control del quantum
         if (cantExecute > 0) {
-            long inicioReloj = get_current_time_millis();
+            long inicioReloj = 0; // get_current_time_millis(); // NO EXISTE
             long quantumTranscurrido = 0;
 
             // Bucle while que controla el tiempo de quatum
             while (quantumTranscurrido < config->quantum) {
-                quantumTranscurrido = get_current_time_millis() - inicioReloj;
+                // quantumTranscurrido = get_current_time_millis() - inicioReloj;  // NO EXISTE 
+                quantumTranscurrido = 0 - inicioReloj;
             }
             sem_wait(&bloque);
             for (int i = 0; i < list_size(procesoExecute); i++) {
@@ -324,7 +333,7 @@ static void planificadorRR() {
                 }
             }
             sem_post(&bloque);
-            enviar_interrupt(); 
+            // enviar_interrupt();  // NO EXISTE
         }
     	// Movimiento de BLOCK a READY si el grado de multiprogramación lo permite
         if (cantBlock > 0 && cantReady < config->grado_multiprogramacion) {
