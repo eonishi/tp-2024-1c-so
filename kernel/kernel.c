@@ -23,6 +23,7 @@ int main(){
 	inicializar_cola_ready();
 
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
+	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
 	iniciar_hilo(iniciar_escucha, hilo_servidor_kernel);
 	
 	iniciar_consola();
@@ -35,6 +36,8 @@ int main(){
 
 void iniciar_semaforos() {
 	sem_init(&sem_nuevo_proceso, 0, 0);
+	sem_init(&sem_proceso_en_ready, 0, 0);
+	sem_init(&sem_grado_multiprog, 0, config->grado_multiprogramacion);
 }
 
 void iniciar_consola()
@@ -343,6 +346,7 @@ static void planificadorRR() {
 static void planificadorVRR(){
 	//TODO
 }
+
 static void planificador(){
 	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
 		planificadorFIFO();

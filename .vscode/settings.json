@@ -39,6 +39,7 @@
         "ciclo.h": "c",
         "fetch.h": "c",
         "planificador_largo.h": "c",
-        "queue.h": "c"
+        "queue.h": "c",
+        "planificador_corto.h": "c"
     }
 }
