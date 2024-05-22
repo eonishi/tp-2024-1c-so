@@ -321,7 +321,7 @@ static void planificadorRR() {
                 }
             }
             sem_post(&bloque);
-            enviar_interrupt(); // Simula enviar una interrupción a la CPU
+            enviar_interrupt(); 
         }
     	// Movimiento de BLOCK a READY si el grado de multiprogramación lo permite
         if (cantBlock > 0 && cantReady < config->gradoMultiprogramacion) {
