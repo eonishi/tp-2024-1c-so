@@ -1,8 +1,11 @@
 #include "../include/execute.h"
 
 void execute(char **instr_tokenizada)
-{
+{   
     operacion OP = get_operacion(instr_tokenizada);
+
+    log_info(logger, "Instrucción a ejecutar: [%s]", instr_tokenizada[0]);
+
     switch (OP)
     {
     case SET:
@@ -23,6 +26,9 @@ void execute(char **instr_tokenizada)
     case IO_GEN_SLEEP:
         exec_io_gen_sleep(instr_tokenizada);
         siguiente_pc(pcb_actual);
+        break;
+    case EXIT_OP:
+        tengo_pcb = 0;
         break;
     default:
         log_error(logger, "MAN esta operación no existe (¬_¬\")");

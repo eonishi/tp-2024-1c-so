@@ -1,8 +1,5 @@
 #include "include/kernel.h"
 
-
-pthread_t tid[2];
-
 int main(){
     logger = iniciar_logger("kernel.log", "KERNEL");
 	log_info(logger, "Logger de Kernel iniciado");
@@ -21,8 +18,13 @@ int main(){
 		return EXIT_FAILURE;
 	}
 
-	iniciar_servidor_en_hilo();
+	iniciar_semaforos();
+	inicializar_cola_new();
+	inicializar_cola_ready();
 
+	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
+	iniciar_hilo(iniciar_escucha, hilo_servidor_kernel);
+	
 	iniciar_consola();
 
 	terminar_programa();
@@ -30,6 +32,10 @@ int main(){
 	return EXIT_SUCCESS;
 }
 
+
+void iniciar_semaforos() {
+	sem_init(&sem_nuevo_proceso, 0, 0);
+}
 
 void iniciar_consola()
 {
@@ -59,12 +65,22 @@ void iniciar_consola()
 					
 			pcb* pcb = iniciar_proceso_en_memoria(filePath);
 
+			queue_push(colaNew, pcb);
+			sem_post(&sem_nuevo_proceso);
+
 			//aca estoy RM
 			// list_add(procesoNew,pcb); //agrego el pcb creado a cola de new
 			// int pidActual = pcb->pid;
 			// log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
 			// planificador();
 			//redefino dispatch_proceso(pcb); y lo meto en el planificador
+
+			// enviar_pcb(pcb, socket_cpu, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
+			// log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
+			// esperar_pcb(socket_cpu, DISPATCH_PROCESO);
+
+			// loggear_pcb(pcb_respuesta);
+			// log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
       
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
 			log_info(logger, "==============================================");
@@ -166,14 +182,15 @@ void *iniciar_escucha(){
 	}
 }
 
-void iniciar_servidor_en_hilo(){
-	int err = pthread_create(&(tid[0]), NULL, iniciar_escucha, NULL);
+void iniciar_hilo(void* func, pthread_t thread){
+	int err = pthread_create(&thread, NULL, func, NULL);
+
     if (err != 0){
-    	log_info(logger, "Hubo un problema al crear el thread de la escucha del servidor [%s]", strerror(err));
+    	log_info(logger, "Hubo un problema al crear el hilo. Error: [%s]", strerror(err));
     }
 	else{
-    	log_info(logger, "El thread de la escucha del servidor inició su ejecución");
-		pthread_detach(tid[0]);
+    	log_info(logger, "El hilo se inició su correctamente");
+		pthread_detach(thread);
 	}
 }
 

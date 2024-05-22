@@ -34,6 +34,11 @@
         "configuracion.h": "c",
         "conexion.h": "c",
         "codigos_operacion.h": "c",
-        "semaphore.h": "c"
+        "semaphore.h": "c",
+        "execute.h": "c",
+        "ciclo.h": "c",
+        "fetch.h": "c",
+        "planificador_largo.h": "c",
+        "queue.h": "c"
     }
 }
