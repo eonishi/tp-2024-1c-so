@@ -1,5 +1,5 @@
-#ifndef PLANIFICADOR_LARGO_H_
-#define PLANIFICADOR_LARGO_H_
+#ifndef PLANIFICADOR_CORTO_H_
+#define PLANIFICADOR_CORTO_H_
 
 #include <semaphore.h>
 #include <commons/log.h>
@@ -12,16 +12,14 @@ extern t_log *logger;
 extern kernel_config* config;
 extern int socket_cpu, socket_memoria;
 
-extern t_queue *colaNew;
 extern t_queue *colaReady;
 extern int planificacion_activada;
 // Semaforos
-extern sem_t sem_nuevo_proceso;
-extern sem_t sem_grado_multiprog;
 extern sem_t sem_proceso_en_ready;
 
-void inicializar_cola_new();
-void insertar_en_cola_new(pcb* pcb);
-void *iniciar_planificacion_largo();
+
+void inicializar_cola_ready();
+void *iniciar_planificacion_corto();
+void dispatch_proceso_planificador(pcb* newPcb);
 
 #endif

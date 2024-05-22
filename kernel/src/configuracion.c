@@ -15,7 +15,7 @@ kernel_config* inicializar_config(){
         (config)->puerto_kernel = NULL;
         (config)->ip_memoria = NULL;
         (config)->puerto_memoria = NULL;
-        (config)->gradoMultiprogramacion = 0;
+        (config)->grado_multiprogramacion = 0;
         (config)->algoritmo_planificacion = NULL;
 
         log_info(logger, "Configuración inicializada");
@@ -53,7 +53,7 @@ bool cargar_configuracion(kernel_config* config){
     config->recursos = config_get_array_value(config_loader, "RECURSOS"); // A chequear si anda esto 🤔
     config->instancias_recursos = config_get_array_value(config_loader, "INSTANCIAS_RECURSOS");
 
-    config->gradoMultiprogramacion = config_get_int_value(config_loader, "GRADO_MULTIPROGRAMACION");
+    config->grado_multiprogramacion = config_get_int_value(config_loader, "GRADO_MULTIPROGRAMACION");
 
     config->algoritmo_planificacion = config_get_string_value(config_loader, "ALGORITMOPC");
 

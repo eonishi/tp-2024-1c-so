@@ -20,7 +20,7 @@ typedef struct
     unsigned quantum;
     char** recursos;
     char** instancias_recursos;
-    int gradoMultiprogramacion;
+    int grado_multiprogramacion;
 } kernel_config;
 
 

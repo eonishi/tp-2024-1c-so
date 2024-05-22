@@ -23,6 +23,7 @@ int main(){
 	inicializar_cola_ready();
 
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
+	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
 	iniciar_hilo(iniciar_escucha, hilo_servidor_kernel);
 	
 	iniciar_consola();
@@ -35,6 +36,8 @@ int main(){
 
 void iniciar_semaforos() {
 	sem_init(&sem_nuevo_proceso, 0, 0);
+	sem_init(&sem_proceso_en_ready, 0, 0);
+	sem_init(&sem_grado_multiprog, 0, config->grado_multiprogramacion);
 }
 
 void iniciar_consola()
@@ -209,9 +212,9 @@ static void planificadorFIFO(){
 	sem_post(&bloque); //modificar, el uso de semaforos esta mal implementado
 	
 	if (cantNew>0){ //planificador pasa de NEW a READY si el grado de multiprogramacion lo permite
-		if(cantReady<config->gradoMultiprogramacion){
+		if(cantReady<config->grado_multiprogramacion){
 			int contador=0;
-			while (cantReady<config->gradoMultiprogramacion && cantNew>0){
+			while (cantReady<config->grado_multiprogramacion && cantNew>0){
 				sem_wait(&bloque);
 				pcb* PCBtemporal = list_get(procesoNew,0);
 				PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
@@ -225,9 +228,9 @@ static void planificadorFIFO(){
 		}
 	}
 	if(cantBlock>0){ //aca deberia usar semaforos para indicar que se libera un bloqueo de IO?
-		if(cantReady<config->gradoMultiprogramacion){
+		if(cantReady<config->grado_multiprogramacion){
 			int contador=0;
-			while (cantReady<config->gradoMultiprogramacion && cantBlock>0){
+			while (cantReady<config->grado_multiprogramacion && cantBlock>0){
 				sem_wait(&bloque);
 				pcb* PCBtemporal = list_get(procesoBlock,0);
 				PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
@@ -241,7 +244,7 @@ static void planificadorFIFO(){
 		}
 	}
 	if (cantReady>0) {
-		while (cantReady>0 && cantExecute<config->gradoMultiprogramacion){
+		while (cantReady>0 && cantExecute<config->grado_multiprogramacion){
 		dispatch_proceso();
 		cantReady--;
 		cantExecute++;
@@ -265,9 +268,9 @@ static void planificadorRR(){
 	sem_post(&bloque); //modificar, el uso de semaforos esta mal implementado
 	
 	if (cantNew>0){ //planificador pasa de NEW a READY si el grado de multiprogramacion lo permite
-		if(cantReady<config->gradoMultiprogramacion){
+		if(cantReady<config->grado_multiprogramacion){
 			int contador=0;
-			while (cantReady<config->gradoMultiprogramacion && cantNew>0){
+			while (cantReady<config->grado_multiprogramacion && cantNew>0){
 				sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
 				pcb* PCBtemporal = list_get(procesoNew,0);
 				PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
