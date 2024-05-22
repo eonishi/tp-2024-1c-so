@@ -106,9 +106,8 @@ void* gestionar_solicitudes_cpu(){
 		case FETCH_INSTRUCCION:
             log_info(logger, "FETCH_INSTRUCCION recibido. ");
 
-			recibir_mensaje(socket_cpu);
-            // Operaciones de obtencion de instrucciones
-            enviar_mensaje(FETCH_INSTRUCCION, "Respuesta FETCH_INSTRUCCION de memoria", socket_cpu);
+			recibir_solicitud_de_cpu();
+			enviar_instruccion_a_cpu();		
 
 			break;
 		case -1:

@@ -55,19 +55,19 @@ void server_dispatch()
 			log_info(logger, "==============================================");
             log_info(logger, "DISPATCH_PROCESO recibido. CODIGO: %d", cod_op);
 
-			pcb* pcb = recibir_pcb(socket_kernel);
-			// Operaciones correspondientes
-			enviar_mensaje(FETCH_INSTRUCCION, "X", socket_memoria);		
-			log_info(logger, "Solicitud FETCH_INSTRUCCION enviada a memoria");
-			esperar_respuesta(socket_memoria, FETCH_INSTRUCCION);
+			pcb_actual = recibir_pcb(socket_kernel);
+			tengo_pcb = 1;
 
-			log_info(logger, "Respuesta FETCH_INSTRUCCION recibida");
-			// Más operaciones
-			
-			enviar_pcb(pcb, socket_kernel, DISPATCH_PROCESO);
+			cicloDeCPU();
+
+			enviar_pcb(pcb_actual, socket_kernel, DISPATCH_PROCESO);
 
 			log_info(logger, "Fin DISPATCH_PROCESO");
 			log_info(logger, "==============================================");
+
+			loggear_pcb(pcb_actual);
+
+			free(pcb_actual);
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");

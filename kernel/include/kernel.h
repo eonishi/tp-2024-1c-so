@@ -18,11 +18,21 @@
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 #include <semaphore.h>
+#include "planificador_largo.h"
 
 t_log *logger;
 kernel_config* config;
 int pcb_counter = 1;
 int socket_cpu, socket_memoria;
+
+// Largo Plazo
+pthread_t hilo_planificador_largo;
+t_queue *colaNew;
+t_queue *colaReady;
+int planificador_largo_activado = 1;
+// Semaforos
+sem_t sem_nuevo_proceso;
+//
 
 t_list* procesoNew;
 t_list* procesoReady;
