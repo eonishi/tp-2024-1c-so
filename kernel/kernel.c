@@ -213,9 +213,9 @@ static void planificadorFIFO(){
 		sem_post(&bloque); //modificar, el uso de semaforos esta mal implementado
 		
 		if (cantNew>0){ //planificador pasa de NEW a READY si el grado de multiprogramacion lo permite
-			if(cantReady<config->gradoMultiprogramacion){
+			if(cantReady<config->grado_multiprogramacion){
 				int contador=0;
-				while (cantReady<config->gradoMultiprogramacion && cantNew>0){
+				while (cantReady<config->grado_multiprogramacion && cantNew>0){
 					sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
 					pcb* PCBtemporal = list_get(procesoNew,0);
 					PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
@@ -229,9 +229,9 @@ static void planificadorFIFO(){
 			}
 		}
 		if(cantBlock>0){ //aca deberia usar semaforos para indicar que se libera un bloqueo de IO?
-			if(cantReady<config->gradoMultiprogramacion){
+			if(cantReady<config->grado_multiprogramacion){
 				int contador=0;
-				while (cantReady<config->gradoMultiprogramacion && cantBlock>0){
+				while (cantReady<config->grado_multiprogramacion && cantBlock>0){
 					sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
 					pcb* PCBtemporal = list_get(procesoBlock,0);
 					PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
@@ -271,8 +271,8 @@ static void planificadorRR() {
         sem_post(&bloque);
 
         // Movimiento de NEW a READY si el grado de multiprogramación lo permite
-        if (cantNew > 0 && cantReady < config->gradoMultiprogramacion) {
-            while (cantReady < config->gradoMultiprogramacion && cantNew > 0) {
+        if (cantNew > 0 && cantReady < config->grado_multiprogramacion) {
+            while (cantReady < config->grado_multiprogramacion && cantNew > 0) {
                 sem_wait(&bloque);
                 pcb *PCBtemporal = list_get(procesoNew, 0);
                 PCBtemporal->estado = READY;
@@ -286,8 +286,8 @@ static void planificadorRR() {
         }
 
         // Despachar procesos a EXECUTE hasta el grado de multiprogramación
-        if (cantReady > 0 && cantExecute < config->gradoMultiprogramacion) {
-            while (cantReady > 0 && cantExecute < config->gradoMultiprogramacion) {
+        if (cantReady > 0 && cantExecute < config->grado_multiprogramacion) {
+            while (cantReady > 0 && cantExecute < config->grado_multiprogramacion) {
                 sem_wait(&bloque);
                 pcb *PCBtemporal = list_get(procesoReady, 0);
                 PCBtemporal->estado = EXECUTE;
@@ -327,8 +327,8 @@ static void planificadorRR() {
             enviar_interrupt(); 
         }
     	// Movimiento de BLOCK a READY si el grado de multiprogramación lo permite
-        if (cantBlock > 0 && cantReady < config->gradoMultiprogramacion) {
-            while (cantReady < config->gradoMultiprogramacion && cantBlock > 0) {
+        if (cantBlock > 0 && cantReady < config->grado_multiprogramacion) {
+            while (cantReady < config->grado_multiprogramacion && cantBlock > 0) {
                 sem_wait(&bloque);
                 pcb *PCBtemporal = list_get(procesoBlock, 0);
                 PCBtemporal->estado = READY;
