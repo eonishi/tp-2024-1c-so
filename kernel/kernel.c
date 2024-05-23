@@ -63,7 +63,13 @@ void iniciar_consola()
 		if (strcmp(comando, "") == 0)
 			ingresoActivado = 0;
 			
-		if(strcmp(comando, "INICIAR_PROCESO") == 0){
+		if(strcmp(comando, "INICIAR_PLANIFICACION") == 0){
+			planificacion_activada = 1;
+		}
+		else if(strcmp(comando, "DETENER_PLANIFICACION") == 0){
+			planificacion_activada = 0;
+		}
+		else if(strcmp(comando, "INICIAR_PROCESO") == 0){
 			log_info(logger, "==============================================");
 			log_info(logger, "Inicio de ejecución de INICIAR_PROCESO");
 
@@ -95,16 +101,6 @@ void iniciar_consola()
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
 			log_info(logger, "==============================================");
 
-		}
-		else if(strcmp(comando, "INICIAR_PLANIFICACION") == 0){
-			log_info(logger, "Enviando mensaje al CPU...");
-    		enviar_mensaje(MENSAJE, "0", socket_cpu);
-			log_info(logger, "Mensaje enviado");
-		}
-		else if(strcmp(comando, "MEMORIA") == 0) {
-			log_info(logger, "Enviando mensaje a la MEMORIA...");
-    		enviar_mensaje(MENSAJE,"0", socket_memoria);
-			log_info(logger, "Mensaje enviado");
 		}
 		else{
 			log_info(logger, "Comando desconocido");

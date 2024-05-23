@@ -31,7 +31,7 @@ pthread_t hilo_servidor_kernel;
 pthread_t hilo_escucha_cpu;
 
 // Variables Planificador
-int planificacion_activada = 1;
+int planificacion_activada = 0;
 // -- Colas
 t_queue *cola_new;
 t_queue *cola_exit;
