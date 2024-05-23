@@ -30,18 +30,20 @@ int socket_cpu, socket_memoria;
 pthread_t hilo_servidor_kernel;
 pthread_t hilo_escucha_cpu;
 
-// Planificadores
+// Variables Planificador
 int planificacion_activada = 1;
-// Largo Plazo
-sem_t sem_nuevo_proceso;
-sem_t sem_grado_multiprog;
-pthread_t hilo_planificador_largo;
+// -- Colas
 t_queue *cola_new;
 t_queue *cola_exit;
-// Corto plazo
-sem_t sem_proceso_en_ready;
 t_queue *cola_ready;
+// -- Semaforos
+sem_t sem_nuevo_proceso;
+sem_t sem_grado_multiprog;
+sem_t sem_proceso_en_ready;
+// -- Hilos
+pthread_t hilo_planificador_largo;
 pthread_t hilo_planificador_corto;
+// Fin variables planificador
 
 
 t_list* procesoNew;

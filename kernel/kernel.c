@@ -19,9 +19,7 @@ int main(){
 	}
 
 	iniciar_semaforos();
-	inicializar_cola_new();
-	inicializar_cola_ready();
-	inicializar_cola_exit();
+	inicializar_colas_planificador();
 
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
@@ -76,7 +74,7 @@ void iniciar_consola()
 
 			log_info(logger, "PCB creado. Id: [%d]", pcb->pid);
 
-			queue_push(cola_new, pcb);
+			push_cola_new(pcb);
 			sem_post(&sem_nuevo_proceso);
 
 			//aca estoy RM
