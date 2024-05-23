@@ -12,10 +12,12 @@ extern t_log *logger;
 extern kernel_config* config;
 extern int socket_cpu, socket_memoria;
 
-extern t_queue *colaReady;
+extern t_queue *cola_ready;
+extern t_queue *cola_exit;
 extern int planificacion_activada;
 // Semaforos
 extern sem_t sem_proceso_en_ready;
+extern sem_t sem_grado_multiprog;
 
 
 void inicializar_cola_ready();

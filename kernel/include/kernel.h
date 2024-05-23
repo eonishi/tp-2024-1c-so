@@ -36,10 +36,11 @@ int planificacion_activada = 1;
 sem_t sem_nuevo_proceso;
 sem_t sem_grado_multiprog;
 pthread_t hilo_planificador_largo;
-t_queue *colaNew;
+t_queue *cola_new;
+t_queue *cola_exit;
 // Corto plazo
 sem_t sem_proceso_en_ready;
-t_queue *colaReady;
+t_queue *cola_ready;
 pthread_t hilo_planificador_corto;
 
 

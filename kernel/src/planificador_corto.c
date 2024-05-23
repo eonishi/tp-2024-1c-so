@@ -1,7 +1,7 @@
 #include "../include/planificador_corto.h"
 
 void inicializar_cola_ready(){
-    colaReady = queue_create();
+    cola_ready = queue_create();
 }
 
 void *iniciar_planificacion_corto(){
@@ -9,11 +9,11 @@ void *iniciar_planificacion_corto(){
         if(planificacion_activada){        
             sem_wait(&sem_proceso_en_ready);  
 
-            pcb* pcb = queue_pop(colaReady);
+            pcb* pcb = queue_pop(cola_ready);
             pcb->estado = EXECUTE;
 
             dispatch_proceso_planificador(pcb);
-                        
+
             gestionar_respuesta_cpu();
         }
     }
@@ -37,7 +37,9 @@ void gestionar_respuesta_cpu(){
             log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
 			pcb* pcb = recibir_pcb(socket_cpu);
 			loggear_pcb(pcb);
-			// Push cola exit
+
+            queue_push(cola_exit, pcb);
+            sem_post(&sem_grado_multiprog);
 			break;		
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
