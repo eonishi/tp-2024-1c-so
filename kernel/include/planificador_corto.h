@@ -17,6 +17,7 @@ extern int planificacion_activada;
 // Semaforos
 extern sem_t sem_proceso_en_ready;
 extern sem_t sem_grado_multiprog;
+extern sem_t sem_cpu_libre;
 
 
 void *iniciar_planificacion_corto();

@@ -9,6 +9,7 @@
 extern t_log* logger;
 extern pcb* pcb_actual;
 extern int tengo_pcb;
+extern int socket_kernel;
 
 void execute(char** instruccion_tokenizada);
 void exec_set(char**);

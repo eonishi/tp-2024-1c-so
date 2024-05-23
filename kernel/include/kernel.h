@@ -40,6 +40,7 @@ t_queue *cola_ready;
 sem_t sem_nuevo_proceso;
 sem_t sem_grado_multiprog;
 sem_t sem_proceso_en_ready;
+sem_t sem_cpu_libre;
 // -- Hilos
 pthread_t hilo_planificador_largo;
 pthread_t hilo_planificador_corto;

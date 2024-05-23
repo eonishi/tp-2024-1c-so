@@ -29,6 +29,8 @@ void execute(char **instr_tokenizada)
         break;
     case EXIT_OP:
         tengo_pcb = 0;
+        
+        enviar_pcb(pcb_actual, socket_kernel, PROCESO_TERMINADO);
         break;
     default:
         log_error(logger, "MAN esta operación no existe (¬_¬\")");
