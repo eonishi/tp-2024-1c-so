@@ -60,7 +60,6 @@ typedef enum
 void terminar_programa();
 void iniciar_consola();
 void *iniciar_escucha_servidor();
-void *iniciar_escucha_cpu();
 void iniciar_servidor_en_hilo();
 pcb* iniciar_proceso_en_memoria(char* filePath);
 void dispatch_proceso();

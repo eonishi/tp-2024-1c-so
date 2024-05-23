@@ -26,8 +26,8 @@ int main(){
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
 	log_info(logger, "Creando hilo para el planificador de corto plazo...");
 	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
-	log_info(logger, "Creando hilo para escucha CPU...");
-	iniciar_hilo(iniciar_escucha_cpu, hilo_escucha_cpu);
+	// log_info(logger, "Creando hilo para escucha CPU...");
+	// iniciar_hilo(iniciar_escucha_cpu, hilo_escucha_cpu);
 	log_info(logger, "Creando hilo para el servidor del kernel...");
 	iniciar_hilo(iniciar_escucha_servidor, hilo_servidor_kernel);
 	
@@ -96,7 +96,7 @@ void iniciar_consola()
 			log_info(logger, "==============================================");
 
 		}
-		else if(strcmp(comando, "CPU") == 0){
+		else if(strcmp(comando, "INICIAR_PLANIFICACION") == 0){
 			log_info(logger, "Enviando mensaje al CPU...");
     		enviar_mensaje(MENSAJE, "0", socket_cpu);
 			log_info(logger, "Mensaje enviado");
@@ -161,33 +161,6 @@ void terminar_programa()
 
     log_info(logger, "Memoria liberada correctamente");
     log_destroy(logger);
-}
-
-void *iniciar_escucha_cpu(){
-	t_list* lista;
-	bool on = 1;
-	while (on) {
-		int cod_op = recibir_operacion(socket_cpu);
-        log_info(logger, "Codigo recibido desde el cpu: [%d]", cod_op);
-
-		switch (cod_op) {
-		case PROCESO_TERMINADO:
-            log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
-			pcb* pcb = recibir_pcb(socket_cpu);
-			loggear_pcb(pcb);
-			break;		
-		case MENSAJE:
-            log_info(logger, "Recibi MENSAJE. CODIGO: %d", cod_op);
-			recibir_mensaje(socket_cpu);
-			break;
-		case -1:
-			log_error(logger, "el cliente se desconecto. Terminando servidor");
-			on = 0;
-		default:
-			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-			break;
-		}
-	}
 }
 
 void *iniciar_escucha_servidor(){

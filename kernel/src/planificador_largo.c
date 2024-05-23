@@ -10,7 +10,7 @@ void insertar_en_cola_new(pcb* pcb){
 
 void *iniciar_planificacion_largo(){
     while(1){
-        if(planificacion_activada){        
+        if(planificacion_activada){       
             sem_wait(&sem_grado_multiprog);  
             sem_wait(&sem_nuevo_proceso);  
 
