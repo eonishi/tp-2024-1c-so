@@ -22,9 +22,14 @@ int main(){
 	inicializar_cola_new();
 	inicializar_cola_ready();
 
+	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
+	log_info(logger, "Creando hilo para el planificador de corto plazo...");
 	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
-	iniciar_hilo(iniciar_escucha, hilo_servidor_kernel);
+	log_info(logger, "Creando hilo para escucha CPU...");
+	iniciar_hilo(iniciar_escucha_cpu, hilo_escucha_cpu);
+	log_info(logger, "Creando hilo para el servidor del kernel...");
+	iniciar_hilo(iniciar_escucha_servidor, hilo_servidor_kernel);
 	
 	iniciar_consola();
 
@@ -112,10 +117,7 @@ void iniciar_consola()
 pcb* iniciar_proceso_en_memoria(char* filePath){
 	pcb* pcb = crear_pcb(pcb_counter++, 4000);
 
-	pcb->registros->ax = 9;
-
 	enviar_solicitud_crear_proceso(filePath, pcb, socket_memoria);
-	// enviar_pcb(pcb, socket_memoria, CREAR_PROCESO_EN_MEMORIA);
 	log_info(logger, "Solicitud CREAR_PROCESO_EN_MEMORIA enviada a memoria");
 	
 	pcb = esperar_pcb(socket_memoria, CREAR_PROCESO_EN_MEMORIA);
@@ -161,7 +163,34 @@ void terminar_programa()
     log_destroy(logger);
 }
 
-void *iniciar_escucha(){
+void *iniciar_escucha_cpu(){
+	t_list* lista;
+	bool on = 1;
+	while (on) {
+		int cod_op = recibir_operacion(socket_cpu);
+        log_info(logger, "Codigo recibido desde el cpu: [%d]", cod_op);
+
+		switch (cod_op) {
+		case PROCESO_TERMINADO:
+            log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
+			pcb* pcb = recibir_pcb(socket_cpu);
+			loggear_pcb(pcb);
+			break;		
+		case MENSAJE:
+            log_info(logger, "Recibi MENSAJE. CODIGO: %d", cod_op);
+			recibir_mensaje(socket_cpu);
+			break;
+		case -1:
+			log_error(logger, "el cliente se desconecto. Terminando servidor");
+			on = 0;
+		default:
+			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			break;
+		}
+	}
+}
+
+void *iniciar_escucha_servidor(){
 	int server_socket = iniciar_servidor("KERNEL", config->ip_kernel, config->puerto_kernel);
 	int cliente_fd = esperar_cliente(server_socket);
 

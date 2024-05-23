@@ -28,6 +28,7 @@ kernel_config* config;
 int pcb_counter = 1;
 int socket_cpu, socket_memoria;
 pthread_t hilo_servidor_kernel;
+pthread_t hilo_escucha_cpu;
 
 // Planificadores
 int planificacion_activada = 1;
@@ -58,7 +59,8 @@ typedef enum
 
 void terminar_programa();
 void iniciar_consola();
-void *iniciar_escucha();
+void *iniciar_escucha_servidor();
+void *iniciar_escucha_cpu();
 void iniciar_servidor_en_hilo();
 pcb* iniciar_proceso_en_memoria(char* filePath);
 void dispatch_proceso();

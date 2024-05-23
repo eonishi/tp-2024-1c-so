@@ -20,7 +20,4 @@ void *iniciar_planificacion_corto(){
 void dispatch_proceso_planificador(pcb* newPcb){
     enviar_pcb(newPcb, socket_cpu, DISPATCH_PROCESO); 
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
-	pcb* pcb_respuesta = esperar_pcb(socket_cpu, DISPATCH_PROCESO);
-	loggear_pcb(pcb_respuesta);
-	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
 }

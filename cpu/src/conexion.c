@@ -60,7 +60,7 @@ void server_dispatch()
 
 			cicloDeCPU();
 
-			enviar_pcb(pcb_actual, socket_kernel, DISPATCH_PROCESO);
+			enviar_pcb(pcb_actual, socket_kernel, PROCESO_TERMINADO);
 
 			log_info(logger, "Fin DISPATCH_PROCESO");
 			log_info(logger, "==============================================");
