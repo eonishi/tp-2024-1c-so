@@ -13,7 +13,7 @@ int main(){
 	t_list procesoBlock; //iniciamos con una, segun consigna va a haber mas (una por cada I/O)
 	t_list procesoExit;
 
-	if(!cargar_configuracion(config) || !generar_conexiones(&socket_cpu, &socket_memoria)){
+	if(!cargar_configuracion(config) || !generar_conexiones(&socket_cpu_dispatch, &socket_memoria)){
 		log_error(logger, "No se puede iniciar. Se cierra el programa");
 		return EXIT_FAILURE;
 	}
@@ -132,10 +132,10 @@ void dispatch_proceso(){
 	if(list_size(procesoReady)>0){
 		pcb* new_pcb = list_get(procesoReady,0); //obtengo el primer proceso de la lista ready
 		
-		enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
+		enviar_pcb(new_pcb, socket_cpu_dispatch, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
 		log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
 		pcb* pcb_respuesta;
-		pcb_respuesta = esperar_pcb(socket_cpu, DISPATCH_PROCESO);
+		pcb_respuesta = esperar_pcb(socket_cpu_dispatch, DISPATCH_PROCESO);
 		loggear_pcb(pcb_respuesta);
 		log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
 
@@ -145,11 +145,11 @@ void dispatch_proceso(){
 }
 /*
 void dispatch_proceso(pcb* new_pcb){
-	enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO);
+	enviar_pcb(new_pcb, socket_cpu_dispatch, DISPATCH_PROCESO);
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
 	
 	pcb* pcb_respuesta;
-	pcb_respuesta = esperar_pcb(socket_cpu, DISPATCH_PROCESO);
+	pcb_respuesta = esperar_pcb(socket_cpu_dispatch, DISPATCH_PROCESO);
 	loggear_pcb(pcb_respuesta);
 
 	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
@@ -157,7 +157,7 @@ void dispatch_proceso(pcb* new_pcb){
 
 void terminar_programa()
 {
-    liberar_conexion(socket_cpu);
+    liberar_conexion(socket_cpu_dispatch);
     liberar_conexion(socket_memoria);
 
     log_info(logger, "Memoria liberada correctamente");

@@ -26,7 +26,7 @@
 t_log *logger;
 kernel_config* config;
 int pcb_counter = 1;
-int socket_cpu, socket_memoria;
+int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria;
 pthread_t hilo_servidor_kernel;
 pthread_t hilo_escucha_cpu;
 
