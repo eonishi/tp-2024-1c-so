@@ -1,7 +1,6 @@
 #include "../include/planificador_corto.h"
 #include "../../cpu/include/checkInterrupt.h"
 
-//pthread_t hilo_quantum;
 int inicio_quantum=0;
 
 void *iniciar_planificacion_corto(){
@@ -64,7 +63,7 @@ void gestionar_respuesta_cpu(){
         case INTERRUPCION:
             log_info(logger, "Recibi INTERRUPCION. CODIGO: %d", cod_op);
 
-            pcb = recibir_pcb(socket_cpu);
+            pcb = recibir_pcb(socket_cpu_dispatch);
             pcb->estado = READY;
 
             loggear_pcb(pcb);
