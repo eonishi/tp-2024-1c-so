@@ -32,21 +32,35 @@ void gestionar_respuesta_cpu(){
 	int cod_op = recibir_operacion(socket_cpu);
 	log_info(logger, "Codigo recibido desde el cpu: [%d]", cod_op);
 
+	pcb* pcb;
+
 	switch (cod_op) {
-	case PROCESO_TERMINADO:
-		log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
-		pcb* pcb = recibir_pcb(socket_cpu);
-		loggear_pcb(pcb);
+		case PROCESO_TERMINADO:
+			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
+			pcb = recibir_pcb(socket_cpu);
+			loggear_pcb(pcb);
 
-		push_cola_exit(pcb);
+			push_cola_exit(pcb);
 
-		sem_post(&sem_cpu_libre);
-		sem_post(&sem_grado_multiprog);		
-		break;		
-	case -1:
-		log_error(logger, "el cliente se desconecto. Terminando servidor");
-	default:
-		log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-		break;
+			sem_post(&sem_cpu_libre);
+			sem_post(&sem_grado_multiprog);		
+			break;		
+		case PROCESO_BLOQUEADO:
+			log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
+
+			pcb = recibir_pcb(socket_cpu);
+			pcb->estado = BLOCKED;
+
+			loggear_pcb(pcb);
+
+			push_cola_blocked(pcb);
+
+			sem_post(&sem_cpu_libre);		
+			break;
+		case -1:
+			log_error(logger, "el cliente se desconecto. Terminando servidor");
+		default:
+			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+			break;
 	}
 }

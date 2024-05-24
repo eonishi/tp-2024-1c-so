@@ -62,8 +62,11 @@ void iniciar_consola()
 
 		if (strcmp(comando, "") == 0)
 			ingresoActivado = 0;
-			
-		if(strcmp(comando, "INICIAR_PLANIFICACION") == 0){
+		
+		if(strcmp(comando, "PROCESO_ESTADO") == 0){
+			imprimir_colas();
+		}
+		else if(strcmp(comando, "INICIAR_PLANIFICACION") == 0){
 			planificacion_activada = 1;
 		}
 		else if(strcmp(comando, "DETENER_PLANIFICACION") == 0){

@@ -24,12 +24,15 @@ void execute(char **instr_tokenizada)
         exec_jnz(instr_tokenizada);
         break;
     case IO_GEN_SLEEP:
+        tengo_pcb = 0;
+
         exec_io_gen_sleep(instr_tokenizada);
         siguiente_pc(pcb_actual);
+        enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO);
         break;
     case EXIT_OP:
         tengo_pcb = 0;
-        
+
         enviar_pcb(pcb_actual, socket_kernel, PROCESO_TERMINADO);
         break;
     default:
