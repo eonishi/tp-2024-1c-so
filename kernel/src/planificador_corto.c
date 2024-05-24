@@ -50,3 +50,39 @@ void gestionar_respuesta_cpu(){
 		break;
 	}
 }
+///////////////////////////////////////////////////////////////////////////////////////
+void *iniciar_planificacion_corto_RR(){
+    while(1){
+        if(planificacion_activada){   
+			log_info(logger, "CortoRR: Esperando otro proceso en ready");					
+            sem_wait(&sem_proceso_en_ready);  			
+			log_info(logger, "CortoRR: Llegó proceso en ready");		
+			log_info(logger, "CortoRR: Esperando que el cpu este libre o se cumpla quantum...");	
+			pthread_create(hilo_quantum);
+            pthread_detach(hilo_quantum);
+            sem_wait(&sem_cpu_libre);
+            //en este punto corren en paralelo la espera de quantum y el bloqueo de este semaforo
+            //Si cumple el quantum se hace interrupt, nos devuelven el pcb en ejecucion y se libera el semaforo
+			pthread_cancel(hilo_quantum);
+
+            log_info(logger, "Corto: Cpu libre! pasando proximo proceso a execute..");	
+            pcb* pcb = pop_cola_ready();
+            pcb->estado = EXECUTE;
+
+            dispatch_proceso_planificador(pcb);
+
+            gestionar_respuesta_cpu();
+        }
+    }
+}
+
+void hilo_quantum(){
+  sleep(config->quantum);
+  send_interrupt();
+}
+
+void send_interrupt(){
+    log_info(logger, "hago interrupt por qantum");
+    pcb* pcbDevuelto = checkInterrupt(); //la funcion real va por checkInterrupt que nos devuelve un pcb?
+    push_cola_ready(pcbDevuelto);
+}
