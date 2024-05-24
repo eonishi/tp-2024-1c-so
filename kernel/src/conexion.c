@@ -1,11 +1,11 @@
 #include "../include/conexion.h"
 
-bool generar_conexiones(int* socket_cpu, int* socket_memoria){
+bool generar_conexiones(int* socket_cpu_dispatch, int* socket_memoria){
     log_info(logger, "Creando conexión con CPU...");
 
-    *socket_cpu = generar_conexion(config->ip_cpu, config->puerto_cpu_dispatch);
+    *socket_cpu_dispatch = generar_conexion(config->ip_cpu, config->puerto_cpu_dispatch);
 
-    if(*socket_cpu == -1)
+    if(*socket_cpu_dispatch == -1)
         return false;
 
     log_info(logger, "Creando conexión con MEMORIA...");

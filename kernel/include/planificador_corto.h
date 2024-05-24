@@ -11,7 +11,7 @@
 
 extern t_log *logger;
 extern kernel_config* config;
-extern int socket_cpu, socket_memoria;
+extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria;
 
 extern int planificacion_activada;
 // Semaforos

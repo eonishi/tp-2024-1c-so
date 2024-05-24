@@ -22,14 +22,14 @@ void *iniciar_planificacion_corto(){
 
 
 void dispatch_proceso_planificador(pcb* newPcb){
-    enviar_pcb(newPcb, socket_cpu, DISPATCH_PROCESO); 
+    enviar_pcb(newPcb, socket_cpu_dispatch, DISPATCH_PROCESO); 
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");    
 }
 
 void gestionar_respuesta_cpu(){
 	t_list* lista;
 
-	int cod_op = recibir_operacion(socket_cpu);
+	int cod_op = recibir_operacion(socket_cpu_dispatch);
 	log_info(logger, "Codigo recibido desde el cpu: [%d]", cod_op);
 
 	pcb* pcb;
@@ -37,7 +37,7 @@ void gestionar_respuesta_cpu(){
 	switch (cod_op) {
 		case PROCESO_TERMINADO:
 			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
-			pcb = recibir_pcb(socket_cpu);
+			pcb = recibir_pcb(socket_cpu_dispatch);
 			loggear_pcb(pcb);
 
 			push_cola_exit(pcb);
@@ -48,7 +48,7 @@ void gestionar_respuesta_cpu(){
 		case PROCESO_BLOQUEADO:
 			log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
 
-			pcb = recibir_pcb(socket_cpu);
+			pcb = recibir_pcb(socket_cpu_dispatch);
 			pcb->estado = BLOCKED;
 
 			loggear_pcb(pcb);
