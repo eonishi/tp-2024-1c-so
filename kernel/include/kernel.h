@@ -45,6 +45,8 @@ sem_t sem_cpu_libre;
 // -- Hilos
 pthread_t hilo_planificador_largo;
 pthread_t hilo_planificador_corto;
+pthread_t hilo_planificador_corto_RR;
+pthread_t hilo_quantum;
 // Fin variables planificador
 
 
@@ -68,6 +70,7 @@ void *iniciar_escucha_servidor();
 void iniciar_servidor_en_hilo();
 pcb* iniciar_proceso_en_memoria(char* filePath);
 void dispatch_proceso();
+void iniciar_hilo(void* func, pthread_t thread);
 
 
 

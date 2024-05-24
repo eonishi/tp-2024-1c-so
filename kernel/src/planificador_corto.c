@@ -1,4 +1,8 @@
 #include "../include/planificador_corto.h"
+#include "../../cpu/include/checkInterrupt.h"
+
+//pthread_t hilo_quantum;
+int inicio_quantum=0;
 
 void *iniciar_planificacion_corto(){
     while(1){
@@ -57,6 +61,18 @@ void gestionar_respuesta_cpu(){
 
 			sem_post(&sem_cpu_libre);		
 			break;
+        case INTERRUPCION:
+            log_info(logger, "Recibi INTERRUPCION. CODIGO: %d", cod_op);
+
+            pcb = recibir_pcb(socket_cpu);
+            pcb->estado = READY;
+
+            loggear_pcb(pcb);
+
+            push_cola_ready(pcb);
+
+            sem_post(&sem_cpu_libre);		
+            break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
 		default:
@@ -64,22 +80,26 @@ void gestionar_respuesta_cpu(){
 			break;
 	}
 }
-///////////////////////////////////////////////////////////////////////////////////////
+
 void *iniciar_planificacion_corto_RR(){
+    
+    
+
     while(1){
         if(planificacion_activada){   
 			log_info(logger, "CortoRR: Esperando otro proceso en ready");					
             sem_wait(&sem_proceso_en_ready);  			
 			log_info(logger, "CortoRR: Llegó proceso en ready");		
 			log_info(logger, "CortoRR: Esperando que el cpu este libre o se cumpla quantum...");	
-			pthread_create(hilo_quantum);
-            pthread_detach(hilo_quantum);
+
+            inicio_quantum = 1;
+            log_info(logger, "CortoRR: VALOR INICIO_QUANTUM = %d",inicio_quantum);
             sem_wait(&sem_cpu_libre);
             //en este punto corren en paralelo la espera de quantum y el bloqueo de este semaforo
             //Si cumple el quantum se hace interrupt, nos devuelven el pcb en ejecucion y se libera el semaforo
-			pthread_cancel(hilo_quantum);
+			pthread_cancel(monitoreo_quantum);
 
-            log_info(logger, "Corto: Cpu libre! pasando proximo proceso a execute..");	
+            log_info(logger, "CortoRR: Cpu libre! pasando proximo proceso a execute..");	
             pcb* pcb = pop_cola_ready();
             pcb->estado = EXECUTE;
 
@@ -90,13 +110,21 @@ void *iniciar_planificacion_corto_RR(){
     }
 }
 
-void hilo_quantum(){
-  sleep(config->quantum);
-  send_interrupt();
+void *monitoreo_quantum(){
+    log_info(logger,"mi funcion monitoreo funciona");
+    while(1){
+        while(inicio_quantum){
+                //sleep(2);
+                log_info(logger, "hago interrupt por qantum");
+                inicio_quantum = 0;
+        }
+    }
+  //send_interrupt();
 }
 
 void send_interrupt(){
-    log_info(logger, "hago interrupt por qantum");
-    pcb* pcbDevuelto = checkInterrupt(); //la funcion real va por checkInterrupt que nos devuelve un pcb?
-    push_cola_ready(pcbDevuelto);
+    log_info(logger, "hago send interrupt");
+    //sem_post(&hilo_quantum);
+    /*checkInterrupt(); //la funcion real va por checkInterrupt que nos devuelve un pcb?
+    gestionar_respuesta_cpu();*/
 }

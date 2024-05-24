@@ -24,7 +24,9 @@ int main(){
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
 	log_info(logger, "Creando hilo para el planificador de corto plazo...");
-	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+	iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
+	log_info(logger, "Creando hilo para el contador de quantum...");
+	iniciar_hilo(monitoreo_quantum, hilo_quantum);
 	// log_info(logger, "Creando hilo para escucha CPU...");
 	// iniciar_hilo(iniciar_escucha_cpu, hilo_escucha_cpu);
 	log_info(logger, "Creando hilo para el servidor del kernel...");
