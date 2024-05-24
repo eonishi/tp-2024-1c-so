@@ -5,53 +5,42 @@ int main()
     logger = iniciar_logger("io.log", "IO");
     log_info(logger, "Logger IO Iniciado");
 
-    // Esta lógica se repite para cada IO que se quiera crear.
-    inicializar_configuracion();
-    int kernel_fd = crear_conexion_kernel();
-    enviar_mensaje(MENSAJE, "0", kernel_fd);
+    config = inicializar_config();
 
+	if(!cargar_configuracion(config) || !generar_conexiones()){
+		log_error(logger, "No se puede iniciar. Se cierra el programa");
+		return EXIT_FAILURE;
+	}
 
-    terminar_programa(kernel_fd);
+    iniciar_escucha_kernel();
 
-    // esto a chequear
-    //int memory_fd = crear_conexion_memory();
-    //enviar_mensaje(0, memory_fd);
+    terminar_programa(socket_kernel);
 
     return 0;
 }
 
-int crear_conexion_kernel()
-{
-    log_info(logger, "Creando conexión con CPU...");
-    int conexion = crear_conexion(config.IP_KERNEL, config.PUERTO_KERNEL);
-    log_info(logger, "Conexión creada. Socket: %i", conexion);
+void iniciar_escucha_kernel(){
+	t_list* lista;
+	bool on = 1;
+	while (on) {
+        log_info(logger, "Esperando recibir operacion desde el Kernel...");
+		int cod_op = recibir_operacion(socket_kernel);
 
-    return conexion;
+		switch (cod_op) {	
+            case MENSAJE:
+                log_info(logger, "Recibi MENSAJE. CODIGO: %d", cod_op);
+                recibir_mensaje(socket_kernel);
+                break;
+            case -1:
+                log_error(logger, "el cliente se desconecto. Terminando servidor");
+                on = 0;
+            default:
+                log_warning(logger,"Operacion desconocida. No quieras meter la pata");
+                break;
+		}
+	}
 }
 
-int crear_conexion_memory()
-{
-    log_info(logger, "Creando conexión con CPU...");
-    int conexion = crear_conexion(config.IP_MEMORIA, config.PUERTO_MEMORIA);
-    log_info(logger, "Conexión creada. Socket: %i", conexion);
-
-    return conexion;
-}
-
-void inicializar_configuracion()
-{
-    log_info(logger, "Inicializando configuración...");
-
-    t_config *config_loader = config_create("io.config");
-
-    config.IP_KERNEL = config_get_string_value(config_loader, "IP_KERNEL");
-    config.PUERTO_KERNEL = config_get_string_value(config_loader, "PUERTO_KERNEL");
-
-    config.IP_MEMORIA = config_get_string_value(config_loader, "IP_MEMORIA");
-    config.PUERTO_MEMORIA = config_get_string_value(config_loader, "PUERTO_MEMORIA");
-
-    log_info(logger, "Configuración iniciadada correctamente.");
-}
 
 
 void terminar_programa(int conexion_kernel)

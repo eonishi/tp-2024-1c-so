@@ -13,7 +13,7 @@ int main(){
 	t_list procesoBlock; //iniciamos con una, segun consigna va a haber mas (una por cada I/O)
 	t_list procesoExit;
 
-	if(!cargar_configuracion(config) || !generar_conexiones(&socket_cpu_dispatch, &socket_memoria)){
+	if(!cargar_configuracion(config) || !generar_conexiones()){
 		log_error(logger, "No se puede iniciar. Se cierra el programa");
 		return EXIT_FAILURE;
 	}
@@ -24,7 +24,7 @@ int main(){
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
 	log_info(logger, "Creando hilo para el planificador de corto plazo...");
-	iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
+	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto_RR);
 	log_info(logger, "Creando hilo para el contador de quantum...");
 	iniciar_hilo(monitoreo_quantum, hilo_quantum);
 	// log_info(logger, "Creando hilo para escucha CPU...");

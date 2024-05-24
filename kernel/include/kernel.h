@@ -26,7 +26,7 @@
 t_log *logger;
 kernel_config* config;
 int pcb_counter = 1;
-int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria;
+int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io;
 pthread_t hilo_servidor_kernel;
 pthread_t hilo_escucha_cpu;
 
@@ -65,6 +65,7 @@ typedef enum
 } cod_mensaje;
 
 void terminar_programa();
+void iniciar_semaforos();
 void iniciar_consola();
 void *iniciar_escucha_servidor();
 void iniciar_servidor_en_hilo();

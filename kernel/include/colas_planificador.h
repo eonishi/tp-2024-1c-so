@@ -28,5 +28,6 @@ pcb* pop_cola_blocked();
 void push_cola_exit(pcb* pcb);
 
 void imprimir_colas();
+void imprimir_cola(char* nombre, t_queue* cola);
 
 #endif
