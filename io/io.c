@@ -1,65 +1,33 @@
 #include "include/io.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    logger = iniciar_logger("io.log", "IO");
-    log_info(logger, "Logger IO Iniciado");
+    char* nombre_interfaz;
+    char* path_config;
+  
+    check_args(argc, argv, &nombre_interfaz, &path_config);
+    inicializar_io(nombre_interfaz, path_config);
 
-    // Esta lógica se repite para cada IO que se quiera crear.
-    inicializar_configuracion();
-    int kernel_fd = crear_conexion_kernel();
-    enviar_mensaje("0", kernel_fd);
-
-
-    terminar_programa(kernel_fd);
-
-    // esto a chequear
-    //int memory_fd = crear_conexion_memory();
-    //enviar_mensaje(0, memory_fd);
-
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-int crear_conexion_kernel()
-{
-    log_info(logger, "Creando conexión con CPU...");
-    int conexion = crear_conexion(config.IP_KERNEL, config.PUERTO_KERNEL);
-    log_info(logger, "Conexión creada. Socket: %i", conexion);
-
-    return conexion;
-}
-
-int crear_conexion_memory()
-{
-    log_info(logger, "Creando conexión con CPU...");
-    int conexion = crear_conexion(config.IP_MEMORIA, config.PUERTO_MEMORIA);
-    log_info(logger, "Conexión creada. Socket: %i", conexion);
-
-    return conexion;
-}
-
-void inicializar_configuracion()
-{
-    log_info(logger, "Inicializando configuración...");
-
-    t_config *config_loader = config_create("io.config");
-
-    config.IP_KERNEL = config_get_string_value(config_loader, "IP_KERNEL");
-    config.PUERTO_KERNEL = config_get_string_value(config_loader, "PUERTO_KERNEL");
-
-    config.IP_MEMORIA = config_get_string_value(config_loader, "IP_MEMORIA");
-    config.PUERTO_MEMORIA = config_get_string_value(config_loader, "PUERTO_MEMORIA");
-
-    log_info(logger, "Configuración iniciadada correctamente.");
+void check_args(int argc, char* argv[], char** nombre_interfaz, char** path_config){
+    if(argc < 2){
+        printf("Falta el nombre de la interfaz\n");
+        exit(EXIT_FAILURE);
+    }else{
+        *nombre_interfaz = argv[1];
+    }
+    if(argc < 3) {
+        *path_config = "io.config";
+    }
+    else {
+        *path_config = argv[2];
+    }
 }
 
 
-void terminar_programa(int conexion_kernel)
-{
-    liberar_conexion(conexion_kernel);
-    log_info(logger, "Memoria liberada correctamente");
-    log_destroy(logger);
-}
+
 
 /*
 Las interfaces de I/O pueden ser varias, en la realidad las conocemos como Teclados, Mouse, Discos, Monitores o hasta Impresoras.

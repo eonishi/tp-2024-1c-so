@@ -3,28 +3,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <commons/log.h>
-#include <commons/config.h>
-#include <commons/collections/list.h>
+#include <pthread.h>
+#include "configuracion.h"
+#include "conexion.h"
+#include "ciclo.h"
 #include "../../shared/include/logger.h"
-#include "../../shared/include/server.h"
 
 t_log *logger;
+extern int socket_memoria, socket_kernel;
+extern cpu_config config;
+extern pcb *pcb_actual;
 
-typedef struct
-{
-    char *ip_cpu;
-    char *puerto_cpu;
-    char *ip_memoria;
-    char *puerto_memoria;
-} cpu_config;
-
-
-cpu_config config;
-
-void inicializar_configuracion();
 void terminar_programa();
-void iterator(char* value);
 
 #endif
