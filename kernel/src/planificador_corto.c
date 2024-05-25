@@ -1,7 +1,8 @@
 #include "../include/planificador_corto.h"
 #include "../../cpu/include/checkInterrupt.h"
 
-int inicio_quantum=0;
+int inicio_quantum = 0;
+pthread_mutex_t mutex_quantum = PTHREAD_MUTEX_INITIALIZER;
 
 void *iniciar_planificacion_corto(){
     while(1){
@@ -94,13 +95,14 @@ void *iniciar_planificacion_corto_RR(){
             sem_wait(&sem_proceso_en_ready);  			
 			log_info(logger, "CortoRR: Llegó proceso en ready");		
 			log_info(logger, "CortoRR: Esperando que el cpu este libre o se cumpla quantum...");	
-
+            log_info(logger, "inicio_quantum %d", inicio_quantum);
             inicio_quantum = 1; //con esto activo el contador de quantum
-            
+            log_info(logger, "inicio_quantum %d", inicio_quantum);
+            pthread_mutex_unlock(&mutex_quantum);
             sem_wait(&sem_cpu_libre);
             //en este punto corren en paralelo la espera de quantum y el bloqueo de este semaforo
             //Si cumple el quantum se hace interrupt, nos devuelven el pcb en ejecucion y se libera el semaforo
-			pthread_cancel((unsigned)monitoreo_quantum);
+			//pthread_cancel(monitoreo_quantum);
 
             log_info(logger, "CortoRR: Cpu libre! pasando proximo proceso a execute..");	
             pcb* pcb = pop_cola_ready();
@@ -115,19 +117,18 @@ void *iniciar_planificacion_corto_RR(){
 
 void *monitoreo_quantum(){
     log_info(logger,"Inicio conteo quantum");
+    pthread_mutex_lock(&mutex_quantum);
     while(1){
-        while(inicio_quantum){
-                sleep(config->quantum);
-                send_interrupt();
-                inicio_quantum = 0;
-        }
+        pthread_mutex_lock(&mutex_quantum);
+        sleep(5);
+        send_interrupt();
     }
-  //
 }
 
 void send_interrupt(){
     log_info(logger, "hago send interrupt");
-    //sem_post(&hilo_quantum);
-    /*checkInterrupt(); //la funcion real va por checkInterrupt que nos devuelve un pcb?
-    gestionar_respuesta_cpu();*/
+    pcb* pcbInt = list_get(cola_ready,0);
+    //enviar_pcb(pcbInt, socket_cpu_interrupt, INTERRUPCION); 
+	log_info(logger, "Solicitud INTERRUPCION enviada a CPU");
+    //gestionar_respuesta_cpu();
 }
