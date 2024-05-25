@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include "configuracion.h"
 #include "colas_planificador.h"
+#include "conexion.h"
+#include "gestor_io.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 
@@ -15,6 +17,7 @@
 extern t_log *logger;
 extern kernel_config* config;
 extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io;
+extern t_list *lista_conexiones_io;
 
 extern int planificacion_activada;
 // Semaforos
