@@ -34,6 +34,9 @@ void *escuchar_io(void *socket){
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
+            // Escuchar_IO deberia traer como parametro tambien el nombre de la interfaz
+            // para poder eliminarla de la lista de conexiones cuando se desconecte.
+            // eliminar_conexion_io(nombre_interfaz);
 			on = 0;
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
@@ -52,11 +55,13 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
 
     conexion_io = obtener_conexion_io_por_nombre(instruc_io_tokenizadas[1]);
 
+    // SOLO admite operaciones de tipo IO_GEN_SLEEP
     if(!io_acepta_operacion(*conexion_io, instruc_io_tokenizadas[0])){
         log_error(logger, "La IO no acepta la operacion: [%s]", instruc_io_tokenizadas[0]);
         return false;
     }
 
+    // TODO: Deberia gestionarse con semaforos
     if(!io_disponible(*conexion_io)){
         // Pediente logica de esperar si IO no está disponible
         log_error(logger, "La IO no está disponible");
@@ -68,9 +73,15 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
     return true;
 }
 
+static char *interfaz_buscada;
+static bool interfaz_es_la_buscada(conexion_io *conexion_io){
+    return string_equals_ignore_case(conexion_io->nombre_interfaz, interfaz_buscada);
+}
 
 conexion_io* obtener_conexion_io_por_nombre(char* nombre_io){
-    return (conexion_io*) list_get(lista_conexiones_io, 0);
+    interfaz_buscada = nombre_io;
+    conexion_io* result = list_find(lista_conexiones_io, (void*) interfaz_es_la_buscada);
+    return result;
 }
 
 // Validaciones
@@ -79,23 +90,24 @@ bool existe_io_conectada(char* nombre_io){
     log_info(logger, "validando si existe io...");
     log_info(logger, "Nombre_io: [%s]", nombre_io);
 
-    //t_list_iterator* iterator = list_iterator_create(lista_conexiones_io);
-
-    //for(; list_iterator_has_next(iterator); iterator->next){
-      //  conexion_io* conex = iterator->actual;
-        
-        //log_info(logger, "conex->nombre_interfaz: [%s]", conex->nombre_interfaz);
-        //if(strcmp(nombre_io, conex->nombre_interfaz) == 0)
-          //  return true;
-    //}
-
-    return true;
+    interfaz_buscada = nombre_io;
+    bool result  = list_any_satisfy(lista_conexiones_io, (void*) interfaz_es_la_buscada);
+    return result;
 }
 
-bool io_acepta_operacion(conexion_io conexion_io,char* operacion_io){
-    return true;
+bool io_acepta_operacion(conexion_io conexion_io, char* operacion_io){
+    if(conexion_io.tipo == GENERICA){
+        return string_equals_ignore_case(operacion_io, "IO_GEN_SLEEP");
+    } 
+    // Conexion_io deberia tener las operaciones que acepta y deberiamos iterar sobre esa lista
+    return false;
 }
 
 bool io_disponible(conexion_io conexion_io){
     return true;
+}
+
+void eliminar_conexion_io(char* nombre_io){
+    interfaz_buscada = nombre_io;
+    list_remove_by_condition(lista_conexiones_io, (void*) interfaz_es_la_buscada);
 }
