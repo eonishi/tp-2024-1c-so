@@ -21,7 +21,8 @@ void io_generica() {
                 usleep(tiempo_retardo);
                 
                 // devolver status
-                enviar_status(SUCCESS, kernel_socket);
+                enviar_mensaje(FIN_EJECUCION_IO, "", kernel_socket);
+                // enviar_status(SUCCESS, kernel_socket);
                 log_info(logger, "Instruccion IO ejecutada");
                 break;
                 case -1:
