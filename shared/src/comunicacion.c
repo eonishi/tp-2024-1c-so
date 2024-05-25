@@ -121,3 +121,26 @@ t_list* recibir_paquete(int socket_cliente)
 	free(buffer);
 	return valores;
 }
+
+
+int recibir_interrupcion(int socket_cliente)
+{
+	unsigned pid;
+	void* buffer = malloc(sizeof(unsigned int));
+	recv(socket_cliente, buffer, sizeof(unsigned int),0);
+	pid = deserializar_interrupcion(buffer);
+	free(buffer);
+	if(pid > 0)
+		return pid;
+	else
+	{
+		close(socket_cliente);
+		return -1;
+	}
+}
+
+unsigned int deserializar_interrupcion(void* buffer) {
+    unsigned int valor;
+    memcpy(&valor, buffer, sizeof(unsigned int));
+    return valor;
+}

@@ -93,7 +93,22 @@ void server_interrupt()
 		{
 		case INTERRUPCION:
 			// Recibir PID y checkear si corresponde al PID actual
-			unsigned PID = 1;//recibir_interrupcion(cliente_fd);
+			/*unsigned PID = recibir_interrupcion(cliente_fd);//recibir_interrupcion(cliente_fd);
+			if(PID == pcb_actual->pid){
+				log_info(logger, "INTERRUPCION recibida. PID: %d", PID);
+				INTERRUPTION_FLAG = 1;
+			}
+			else{
+				log_info(logger, "INTERRUPCION recibida. PID: %d. No corresponde al PID actual", PID);
+			}
+			break;*/
+		case -1:
+			log_error(logger, "el cliente se desconecto. Terminando servidor");
+			terminar_programa();
+			exit(EXIT_FAILURE);
+		default:
+			
+			unsigned PID = recibir_interrupcion(cliente_fd);
 			if(PID == pcb_actual->pid){
 				log_info(logger, "INTERRUPCION recibida. PID: %d", PID);
 				INTERRUPTION_FLAG = 1;
@@ -102,13 +117,8 @@ void server_interrupt()
 				log_info(logger, "INTERRUPCION recibida. PID: %d. No corresponde al PID actual", PID);
 			}
 			break;
-		case -1:
-			log_error(logger, "el cliente se desconecto. Terminando servidor");
-			terminar_programa();
-			exit(EXIT_FAILURE);
-		default:
-			log_warning(logger, "Operacion desconocida. No quieras meter la pata");
-			break;
+			//log_warning(logger, "Operacion desconocida. No quieras meter la pata");
+			//break;
 		}
 	}
 }

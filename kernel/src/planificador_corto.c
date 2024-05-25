@@ -127,8 +127,24 @@ void *monitoreo_quantum(){
 
 void send_interrupt(){
     log_info(logger, "hago send interrupt");
-    pcb* pcbInt = list_get(cola_ready,0);
-    //enviar_pcb(pcbInt, socket_cpu_interrupt, INTERRUPCION); 
+    pcb* pcb_en_cpu = queue_peek(cola_ready);
+    enviar_interrupcion(socket_cpu_interrupt, pcb_en_cpu->pid); 
 	log_info(logger, "Solicitud INTERRUPCION enviada a CPU");
-    //gestionar_respuesta_cpu();
+    gestionar_respuesta_cpu();
 }
+
+void enviar_interrupcion(int socket_cliente, unsigned pid_enviado){
+    size_t size;
+    void* buffer = serializar_interrupcion(pid_enviado, &size);
+    int bytes_enviados = send(socket_cliente, buffer,size ,0);
+    free(buffer);
+    return bytes_enviados;
+}
+
+void* serializar_interrupcion(unsigned int valor, size_t* size) {
+    *size = sizeof(unsigned int);
+    void* buffer = malloc(*size);
+    memcpy(buffer, &valor, *size);
+    return buffer;
+}
+
