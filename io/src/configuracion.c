@@ -2,7 +2,7 @@
 
 io_config config;
 
-void incializar_configuracion(char* path_config){
+void inicializar_configuracion(char* path_config){
 
     log_info(logger, "Cargando configuración desde archivo: %s", path_config);
 
