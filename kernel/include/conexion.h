@@ -12,10 +12,20 @@
 
 extern t_log *logger;
 extern kernel_config* config;
-extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io;
+extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, socket_server_kernel;
+
+typedef struct{
+    int socket;
+    char *nombre_interfaz;
+    io_tipo tipo;
+} conexion_io;
+
+extern t_list* lista_conexiones_io;
+
 
 bool generar_conexiones();
 int generar_conexion(char* ip, char* puerto);
-int recibir_conexion_io(int server);
+
+conexion_io recibir_conexion_io(int server);
 
 #endif

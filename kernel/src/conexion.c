@@ -13,19 +13,17 @@ bool generar_conexiones(){
 
     if(socket_memoria == -1)
         return false;
-
-    log_info(logger, "Creando conexión con IO...");
     
-    int server_socket = iniciar_servidor("KERNEL", config->ip_kernel, config->puerto_kernel);
-	socket_io = recibir_conexion_io(server_socket);
+    socket_server_kernel = iniciar_servidor("KERNEL", config->ip_kernel, config->puerto_kernel);
+	// socket_io = recibir_conexion_io(socket_server_kernel);
 
-    if(socket_io == -1)
-        return false;
+    //if(socket_io == -1)
+     //   return false;
 
     return true;
 }
 
-int recibir_conexion_io(int server) {
+conexion_io recibir_conexion_io(int server) {
     log_info(logger,"Esperando conexión del modulo IO ... ");
     int socket = esperar_cliente(server);
 
@@ -36,15 +34,14 @@ int recibir_conexion_io(int server) {
 
     log_info(logger,"Respondiendo handshake del modulo IO... ");
     enviar_status(SUCCESS, socket);
-    //int resultado = esperar_handshake(socket);
-    //if(resultado == -1) {
-    //    log_error(logger,"No se pudo conectar con el modulo IO");
-    //    exit(EXIT_FAILURE);
-    //}
+    
+    conexion_io conexion_io;
 
-    //enviar_handshake(socket);
+    conexion_io.socket = socket;
+    conexion_io.nombre_interfaz = solicitud.nombre_interfaz;
+    conexion_io.tipo = solicitud.tipo;
 
-    return socket;
+    return conexion_io;
 }
 
 int generar_conexion(char* ip, char* puerto){

@@ -18,13 +18,19 @@ int main(){
 		return EXIT_FAILURE;
 	}
 
+	log_info(logger, "Iniciando semaforos");
 	iniciar_semaforos();
 	inicializar_colas_planificador();
 
+	log_info(logger, "Creando hilo para recibir conexiones io...");
+	iniciar_hilo(esperar_y_escuchar_conexiones_io, hilo_conexiones_io);
+
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
+
 	log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
 	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+
 	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
 	if(strcmp(config->algoritmo_planificacion, "FIFO") == 0){
 		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
@@ -40,14 +46,30 @@ int main(){
 	}
 	// log_info(logger, "Creando hilo para escucha CPU...");
 	// iniciar_hilo(iniciar_escucha_cpu, hilo_escucha_cpu);
-	log_info(logger, "Creando hilo para el servidor del kernel...");
-	iniciar_hilo(iniciar_escucha_servidor, hilo_servidor_kernel);
+	//log_info(logger, "Creando hilo para el servidor del kernel...");
+	//iniciar_hilo(iniciar_escucha_servidor, hilo_servidor_kernel);
 	
 	iniciar_consola();
 
 	terminar_programa();
 
 	return EXIT_SUCCESS;
+}
+
+void* esperar_y_escuchar_conexiones_io(){
+    lista_conexiones_io = list_create();
+	pthread_t io_threads[10]; // TODO Mejorar
+	int io_thread_index = 0;
+
+    while(1){
+        conexion_io conexion_io = recibir_conexion_io(socket_server_kernel);
+
+		list_add(lista_conexiones_io, &conexion_io);
+
+		int socket = conexion_io.socket;
+
+		iniciar_hilo_con_args(iniciar_escucha_servidor, io_threads[io_thread_index++], &socket);
+    }
 }
 
 
@@ -175,10 +197,10 @@ void terminar_programa()
     log_destroy(logger);
 }
 
-void *iniciar_escucha_servidor(){
-	// int server_socket = iniciar_servidor("KERNEL", config->ip_kernel, config->puerto_kernel);
-	// int cliente_fd = esperar_cliente(socket_io);
-	int cliente_fd = socket_io;
+void *iniciar_escucha_servidor(void *socket){
+	int cliente_fd = *((int*) socket);
+
+	log_info(logger, "Socket io: [%d]", cliente_fd);
 
 	t_list* lista;
 	bool on = 1;
@@ -228,6 +250,20 @@ void iniciar_hilo(void* func, pthread_t thread){
 		pthread_detach(thread);
 	}
 }
+
+void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void* args){
+	int err = pthread_create(&thread, NULL, func, args);
+
+    if (err != 0){
+    	log_info(logger, "Hubo un problema al crear el hilo. Error: [%s]", strerror(err));
+    }
+	else{
+    	log_info(logger, "El hilo se inició su correctamente");
+		pthread_detach(thread);
+	}
+}
+
+
 
 /*static void planificadorFIFO(){
 	log_info(logger,"Planificador FIFO iniciado.");
