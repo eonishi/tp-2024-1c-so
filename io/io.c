@@ -27,9 +27,14 @@ void iniciar_escucha_kernel(){
 		int cod_op = recibir_operacion(socket_kernel);
 
 		switch (cod_op) {	
-            case MENSAJE:
-                log_info(logger, "Recibi MENSAJE. CODIGO: %d", cod_op);
-                recibir_mensaje(socket_kernel);
+            case EJECUTAR_INSTRUCCION_IO:
+                log_info(logger, "Recibi EJECUTAR_INSTRUCCION_IO. CODIGO: %d", cod_op);
+                char** instrucciones_tokenizadas = recibir_instruccion_io(socket_kernel);
+
+                sleep(3);
+
+                log_info(logger, "Pasaron 3 segundos, desbloqueamos");
+                
                 break;
             case -1:
                 log_error(logger, "el cliente se desconecto. Terminando servidor");

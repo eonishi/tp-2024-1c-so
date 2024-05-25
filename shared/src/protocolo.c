@@ -1,11 +1,46 @@
 #include "../include/protocolo.h"
 
+// Usar siempre como última serializacion. Ejemplo: {pcb: "", lista_string: []}
+void serializar_lista_strings_y_agregar_a_paquete(char** lista_strings, t_paquete* paquete){
+
+    void* cantidad_tokens = serializar_int(string_array_size(lista_strings));
+
+    agregar_a_paquete(paquete, cantidad_tokens, sizeof(int));
+
+    for(int index = 0 ; index < string_array_size(lista_strings); index++){
+        void* token = serializar_char(lista_strings[index]);
+
+        agregar_a_paquete(paquete, token, strlen(lista_strings[index]) + 1);
+    }
+}
+
+char** deserializar_lista_strings(t_list* bytes, int index_cantidad_tokens){ 
+    int cantidad_tokens = deserializar_int(list_get(bytes, index_cantidad_tokens)); 
+
+    char** tokens = string_array_new();
+    
+    for(int i = index_cantidad_tokens+1;i < cantidad_tokens+index_cantidad_tokens; i++){
+        char* token = list_get(bytes, i);
+
+        string_array_push(&tokens, token);
+    }    
+
+    return tokens;
+}
+
 
 void* serializar_int8(int8_t value){
     void* stream = malloc(sizeof(int8_t)); 
 
-  // Datos de los registros
     memcpy(stream, &value, sizeof(int8_t));
+    
+    return stream;
+}
+
+void* serializar_int(int value){
+    void* stream = malloc(sizeof(int)); 
+
+    memcpy(stream, &value, sizeof(int));
     
     return stream;
 }
@@ -14,17 +49,25 @@ int8_t deserializar_int8(void* int_bytes){
     int8_t* result =malloc(sizeof(int8_t));
     int offset = 0;
 
-    // Datos con tipo de dato primitivo dentro del PCB
     memcpy(result, int_bytes, sizeof(int8_t));
 
     return *result;
 }
 
+int deserializar_int(void* int_bytes){
+    int* result =malloc(sizeof(int));
+    int offset = 0;
+
+    memcpy(result, int_bytes, sizeof(int));
+
+    return *result;
+}
+
+
 void* serializar_char(char* string){
     size_t size = strlen(string) + 1;
     void* stream = malloc(size); 
 
-  // Datos de los registros
     memcpy(stream, string, size);
     
     return stream;
@@ -34,7 +77,6 @@ char* deserializar_char(void* char_bytes, int8_t size){
     char* string = (char*) malloc(size);
     int offset = 0;
 
-    // Datos con tipo de dato primitivo dentro del PCB
     memcpy(string, char_bytes, size);
 
     return string;
@@ -87,3 +129,55 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
 
     return respuesta;
 }
+
+
+int enviar_bloqueo_por_io(solicitud_bloqueo_por_io solicitud, int socket_cliente){
+    t_paquete* paquete = crear_paquete(PROCESO_BLOQUEADO);
+
+    void* pcb_serializado = serializar_pcb(solicitud.pcb);    
+
+    agregar_a_paquete(paquete, pcb_serializado, pcb_size());
+
+    serializar_lista_strings_y_agregar_a_paquete(solicitud.instruc_io_tokenizadas, paquete);
+
+    enviar_paquete(paquete, socket_cliente);
+}
+
+solicitud_bloqueo_por_io recibir_solicitud_bloqueo_por_io(int socket_cliente){
+    log_info(logger,"Recibido en solicitud bloqueo por io");
+
+    t_list* bytes = recibir_paquete(socket_cliente);
+    
+    void* pcb_bytes = list_get(bytes, 0);
+    pcb* pcb = deserializar_pcb_new(pcb_bytes);
+
+    char** tokens = deserializar_lista_strings(bytes, 1);
+
+    solicitud_bloqueo_por_io solicitud;
+
+    solicitud.pcb = pcb;
+    solicitud.instruc_io_tokenizadas = tokens;
+
+    return solicitud;
+}
+
+
+int enviar_instruccion_io(char** instruccion_tokenizada, int socket_cliente){
+    t_paquete* paquete = crear_paquete(EJECUTAR_INSTRUCCION_IO);
+
+    serializar_lista_strings_y_agregar_a_paquete(instruccion_tokenizada, paquete);
+
+    enviar_paquete(paquete, socket_cliente);
+}
+
+char** recibir_instruccion_io(int socket_cliente){
+    log_info(logger,"Recibido en solicitud instruccion io");
+    t_list* bytes = recibir_paquete(socket_cliente);
+
+    log_info(logger,"Paquete recibido");
+
+    char** tokens = deserializar_lista_strings(bytes, 0);
+
+    return tokens;
+}
+

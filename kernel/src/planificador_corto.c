@@ -51,12 +51,18 @@ void gestionar_respuesta_cpu(){
 		case PROCESO_BLOQUEADO:
 			log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
 
-			pcb = recibir_pcb(socket_cpu_dispatch);
-			pcb->estado = BLOCKED;
+			solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
+			solicitud.pcb->estado = BLOCKED;
 
-			loggear_pcb(pcb);
+			
+			loggear_pcb(solicitud.pcb);			
 
-			push_cola_blocked(pcb);
+			// Validacion IO valida
+			// - No -> EXIT
+
+			push_cola_blocked(solicitud.pcb);
+
+			enviar_instruccion_io(solicitud.instruc_io_tokenizadas,socket_io);
 
 			sem_post(&sem_cpu_libre);		
 			break;
