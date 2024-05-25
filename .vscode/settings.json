@@ -43,6 +43,7 @@
         "planificador_corto.h": "c",
         "colas_planificador.h": "c",
         "random": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "gestor_io.h": "c"
     }
 }

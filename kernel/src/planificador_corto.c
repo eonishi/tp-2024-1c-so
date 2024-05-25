@@ -53,21 +53,18 @@ void gestionar_respuesta_cpu(){
 
 			solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
 			solicitud.pcb->estado = BLOCKED;
-
-			
 			loggear_pcb(solicitud.pcb);			
 
-			// Validacion IO valida
-			// - No -> EXIT
+            push_cola_blocked(solicitud.pcb);
 
-			push_cola_blocked(solicitud.pcb);
+            log_info(logger, "Tokens de instr: [%s][%s][%s]", solicitud.instruc_io_tokenizadas[0],solicitud.instruc_io_tokenizadas[1], solicitud.instruc_io_tokenizadas[2]);
 
-            log_info(logger, "Voy a enviar [%s]", solicitud.instruc_io_tokenizadas[0]);
-            log_info(logger, "Voy a enviar [%s]", solicitud.instruc_io_tokenizadas[1]);
-            log_info(logger, "Voy a enviar [%s]", solicitud.instruc_io_tokenizadas[2]);
-            
-			enviar_instruccion_io(solicitud.instruc_io_tokenizadas,socket_io);
-			sem_post(&sem_cpu_libre);		
+            bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas);
+
+            if(!enviado)
+                log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
+
+            sem_post(&sem_cpu_libre);
 			break;
         case INTERRUPCION:
             log_info(logger, "Recibi INTERRUPCION. CODIGO: %d", cod_op);
