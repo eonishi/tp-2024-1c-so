@@ -100,9 +100,7 @@ int enviar_solicitud_crear_proceso(char* filePath, pcb* pcb, int socket_cliente)
     free(pcb_serializado);
     free(filepath_serializado);
     free(tamanio_path_serializado);
-    free(paquete->buffer);
-    free(paquete);
-    
+    eliminar_paquete(paquete);
 }
 
 solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
@@ -128,6 +126,43 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
     respuesta.pcb = pcb;
 
     return respuesta;
+}
+
+
+static void* serializar_enum(int un_enum){
+    void* stream = malloc(sizeof(int)); 
+    memcpy(stream, &un_enum, sizeof(int));
+    return stream;
+}
+
+void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel solicitud, int kernel_skt){
+    size_t size_nombre = strlen(solicitud.nombre_interfaz) + 1;
+    t_paquete* paquete = crear_paquete(HANDSHAKE);
+
+    void* stream_nombre_interfaz = serializar_char(solicitud.nombre_interfaz);
+    agregar_a_paquete(paquete, stream_nombre_interfaz, size_nombre);
+
+    void* stream_tipo = serializar_enum(solicitud.tipo);
+    agregar_a_paquete(paquete, stream_tipo, sizeof(io_tipo));
+
+    enviar_paquete(paquete, kernel_skt);
+    log_info(logger, "Solicitud de [%s] conexion enviada", solicitud.nombre_interfaz);
+
+    free(stream_nombre_interfaz);
+    free(stream_tipo);
+    eliminar_paquete(paquete);
+}
+
+solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_de_una_io){
+    t_list* lista_bytes = recibir_paquete(socket_de_una_io);
+
+    char* nombre_interfaz = list_get(lista_bytes, 0);
+    io_tipo tipo = list_get(lista_bytes, 1);
+
+    free(lista_bytes);
+
+    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo};
+    return solicitud;
 }
 
 
@@ -180,4 +215,5 @@ char** recibir_instruccion_io(int socket_cliente){
 
     return tokens;
 }
+
 

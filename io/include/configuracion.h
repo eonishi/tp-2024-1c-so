@@ -1,29 +1,27 @@
-#ifndef CONFIG_IO_H_
-#define CONFIG_IO_H_
 
-#include <stdlib.h>
-#include <string.h>
-#include <commons/log.h>
+#ifndef CONFIGURACION_IO_H_
+#define CONFIGURACION_IO_H_
+
 #include <commons/config.h>
-
-
-typedef struct{
-    char *IP_KERNEL;
-    char *PUERTO_KERNEL;
-    char *IP_MEMORIA;
-    char *PUERTO_MEMORIA;
-    //char *TIPO_INTERFAZ;
-    //unsigned TIEMPO_UNIDAD_TRABAJO;
-    //char *PATH_BASE_DIALFS;
-    //unsigned BLOCK_SIZE;
-    //unsigned BLOCK_COUNT;
-    //unsigned RETRASO_COMPACTACION;
-} io_config;
+#include <commons/log.h>
 
 extern t_log *logger;
 
+typedef struct 
+{
+    char *interfaz_tipo;
+    unsigned unidad_trabajo; // Tiempo numerico
+    char *ip_kernel;
+    char* puerto_kernel;
+    char* ip_memoria;
+    char* puerto_memoria;
+    char *path_base_dialfs;
+    unsigned block_size;
+    unsigned block_count;
+    unsigned retraso_compatacion;
+} io_config;
 
-io_config* inicializar_config();
-bool cargar_configuracion(io_config* config);
+void inicializar_configuracion(char*);
+
 
 #endif
