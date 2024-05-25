@@ -105,7 +105,7 @@ void *iniciar_planificacion_corto_RR(){
             sem_wait(&sem_cpu_libre);
             //en este punto corren en paralelo la espera de quantum y el bloqueo de este semaforo
             //Si cumple el quantum se hace interrupt, nos devuelven el pcb en ejecucion y se libera el semaforo
-			pthread_cancel((unsigned)monitoreo_quantum);
+			//pthread_cancel(monitoreo_quantum);
 
             log_info(logger, "CortoRR: Cpu libre! pasando proximo proceso a execute..");	
             pcb* pcb = pop_cola_ready();
@@ -120,17 +120,23 @@ void *iniciar_planificacion_corto_RR(){
 
 void *monitoreo_quantum(){
     log_info(logger,"Inicio conteo quantum");
+    pthread_mutex_lock(&mutex_quantum);
     while(1){
+        pthread_mutex_lock(&mutex_quantum);
+        sleep(10);
+        send_interrupt();
+        //log_info(logger, "hago send interrupt");
+        /*
         pthread_mutex_lock(&mutex_quantum);
         while(inicio_quantum){
             log_info(logger, "QUANTUM: %d", config->quantum);
             pthread_mutex_unlock(&mutex_quantum);
             sleep(2);
             log_info(logger, "hago send interrupt");
-            //send_interrupt();
+            //
             //pthread_mutex_lock(&mutex_quantum);
             inicio_quantum = 0;
-        }
+        }*/
     }
 }
 
