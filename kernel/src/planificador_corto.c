@@ -123,26 +123,15 @@ void *monitoreo_quantum(){
     pthread_mutex_lock(&mutex_quantum);
     while(1){
         pthread_mutex_lock(&mutex_quantum);
-        sleep(10);
+        sleep(5);
         send_interrupt();
-        //log_info(logger, "hago send interrupt");
-        /*
-        pthread_mutex_lock(&mutex_quantum);
-        while(inicio_quantum){
-            log_info(logger, "QUANTUM: %d", config->quantum);
-            pthread_mutex_unlock(&mutex_quantum);
-            sleep(2);
-            log_info(logger, "hago send interrupt");
-            //
-            //pthread_mutex_lock(&mutex_quantum);
-            inicio_quantum = 0;
-        }*/
     }
 }
 
 void send_interrupt(){
     log_info(logger, "hago send interrupt");
-    //sem_post(&hilo_quantum);
-    /*checkInterrupt(); //la funcion real va por checkInterrupt que nos devuelve un pcb?
-    gestionar_respuesta_cpu();*/
+    pcb* pcbInt = list_get(cola_ready,0);
+    //enviar_pcb(pcbInt, socket_cpu_interrupt, INTERRUPCION); 
+	log_info(logger, "Solicitud INTERRUPCION enviada a CPU");
+    //gestionar_respuesta_cpu();
 }
