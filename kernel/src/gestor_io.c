@@ -75,6 +75,7 @@ conexion_io* obtener_conexion_io_por_nombre(char* nombre_io){
 // Validaciones
 
 bool existe_io_conectada(char* nombre_io){
+    // lista_conexiones_io
     return true;
 }
 
