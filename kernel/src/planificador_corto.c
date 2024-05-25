@@ -127,7 +127,7 @@ void *monitoreo_quantum(){
 
 void send_interrupt(){
     log_info(logger, "hago send interrupt");
-    pcb* pcbInt = list_get(cola_ready,0);
+    //pcb* pcbInt = list_get(cola_ready,0);
     //enviar_pcb(pcbInt, socket_cpu_interrupt, INTERRUPCION); 
 	log_info(logger, "Solicitud INTERRUPCION enviada a CPU");
     //gestionar_respuesta_cpu();

@@ -5,6 +5,8 @@
 #include <semaphore.h>
 #include <commons/log.h>
 #include <commons/collections/queue.h>
+#include <commons/collections/list.h>
+#include <semaphore.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "conexion.h"

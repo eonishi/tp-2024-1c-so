@@ -69,5 +69,6 @@ pcb* iniciar_proceso_en_memoria(char* filePath);
 void dispatch_proceso();
 void iniciar_hilo(void *func, pthread_t thread);
 void *esperar_y_escuchar_conexiones_io();
+void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void *args);
 
 #endif
