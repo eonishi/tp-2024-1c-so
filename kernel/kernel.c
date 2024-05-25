@@ -23,10 +23,21 @@ int main(){
 
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
-	log_info(logger, "Creando hilo para el planificador de corto plazo...");
-	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto_RR);
-	log_info(logger, "Creando hilo para el contador de quantum...");
-	iniciar_hilo(monitoreo_quantum, hilo_quantum);
+	log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
+	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
+	if(strcmp(config->algoritmo_planificacion, "FIFO") == 0){
+		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
+		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+	}else if(strcmp(config->algoritmo_planificacion, "RR") == 0){
+		log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
+		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
+		log_info(logger, "Creando hilo para el contador de quantum...");
+		iniciar_hilo(monitoreo_quantum, hilo_quantum);
+	}else if(strcmp(config->algoritmo_planificacion, "VRR")==0){ //SE DEBE MODIFICAR AL IMPLEMENTAR VRR
+		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
+		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+	}
 	// log_info(logger, "Creando hilo para escucha CPU...");
 	// iniciar_hilo(iniciar_escucha_cpu, hilo_escucha_cpu);
 	log_info(logger, "Creando hilo para el servidor del kernel...");
@@ -208,7 +219,7 @@ void iniciar_hilo(void* func, pthread_t thread){
 	}
 }
 
-static void planificadorFIFO(){
+/*static void planificadorFIFO(){
 	log_info(logger,"Planificador FIFO iniciado.");
 	int cantExecute;
 	int cantReady;
@@ -353,9 +364,9 @@ static void planificadorRR() {
             }
         }
 	}
-}
+}*/
 
-static void planificadorVRR(){
+/*static void planificadorVRR(){
 	//TODO
 }
 
@@ -367,7 +378,7 @@ static void planificador(){
 	}else if (strcmp(config->algoritmo_planificacion,"VRR")==0){
 		planificadorVRR();
 	}
-}
+}*/
 /*
 El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 
 diferentes procesos que se generen por medio de su consola interactiva.

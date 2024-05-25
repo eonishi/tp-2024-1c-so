@@ -55,8 +55,6 @@ bool cargar_configuracion(kernel_config* config){
 
     config->grado_multiprogramacion = config_get_int_value(config_loader, "GRADO_MULTIPROGRAMACION");
 
-    config->algoritmo_planificacion = config_get_string_value(config_loader, "ALGORITMOPC");
-
     log_info(logger, "IP_CPU: %s", config->ip_cpu);
 
     log_info(logger, "Configuración iniciadada correctamente.");
