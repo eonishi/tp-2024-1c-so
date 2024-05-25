@@ -6,6 +6,6 @@
 
 extern t_log *logger;
 
-void check_args(int argc, char** argv, char*, char*);
+void check_args(int argc, char** argv, char**, char**);
 
 #endif
