@@ -1,7 +1,8 @@
 #include "../include/planificador_corto.h"
 #include "../../cpu/include/checkInterrupt.h"
 
-int inicio_quantum=0;
+int inicio_quantum = 0;
+pthread_mutex_t mutex_quantum = PTHREAD_MUTEX_INITIALIZER;
 
 void *iniciar_planificacion_corto(){
     while(1){
@@ -97,9 +98,10 @@ void *iniciar_planificacion_corto_RR(){
             sem_wait(&sem_proceso_en_ready);  			
 			log_info(logger, "CortoRR: Llegó proceso en ready");		
 			log_info(logger, "CortoRR: Esperando que el cpu este libre o se cumpla quantum...");	
-
+            log_info(logger, "inicio_quantum %d", inicio_quantum);
             inicio_quantum = 1; //con esto activo el contador de quantum
-            
+            log_info(logger, "inicio_quantum %d", inicio_quantum);
+            pthread_mutex_unlock(&mutex_quantum);
             sem_wait(&sem_cpu_libre);
             //en este punto corren en paralelo la espera de quantum y el bloqueo de este semaforo
             //Si cumple el quantum se hace interrupt, nos devuelven el pcb en ejecucion y se libera el semaforo
@@ -119,13 +121,17 @@ void *iniciar_planificacion_corto_RR(){
 void *monitoreo_quantum(){
     log_info(logger,"Inicio conteo quantum");
     while(1){
+        pthread_mutex_lock(&mutex_quantum);
         while(inicio_quantum){
-                sleep(config->quantum);
-                send_interrupt();
-                inicio_quantum = 0;
+            log_info(logger, "QUANTUM: %d", config->quantum);
+            pthread_mutex_unlock(&mutex_quantum);
+            sleep(2);
+            log_info(logger, "hago send interrupt");
+            //send_interrupt();
+            //pthread_mutex_lock(&mutex_quantum);
+            inicio_quantum = 0;
         }
     }
-  //
 }
 
 void send_interrupt(){

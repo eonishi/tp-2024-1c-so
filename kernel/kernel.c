@@ -23,8 +23,8 @@ int main(){
 
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
-	log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
-	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+	//log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
+	//iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
 	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
 	if(strcmp(config->algoritmo_planificacion, "FIFO") == 0){
 		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
@@ -34,7 +34,7 @@ int main(){
 		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
 		log_info(logger, "Creando hilo para el contador de quantum...");
 		iniciar_hilo(monitoreo_quantum, hilo_quantum);
-	}else if(strcmp(config->algoritmo_planificacion, "VRR")==0){ //SE DEBE MODIFICAR AL IMPLEMENTAR VRR
+	}else if(strcmp(config->algoritmo_planificacion, "VRR") == 0){ //SE DEBE MODIFICAR AL IMPLEMENTAR VRR
 		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
 		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
 	}
