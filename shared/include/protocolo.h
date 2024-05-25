@@ -7,6 +7,7 @@
 #include "pcb.h"
 #include "paquete.h"
 #include "codigos_operacion.h"
+#include "io_tipos.h"
 #include<commons/log.h>
 #include<string.h>
 
@@ -21,6 +22,14 @@ typedef struct
 
 int enviar_solicitud_crear_proceso(char* filePath, pcb* pcb, int socket_cliente);
 solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente);
+
+typedef struct{
+    char *nombre_interfaz;
+    io_tipo tipo;
+} solicitud_conexion_kernel;
+
+void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel, int socket_cliente);
+solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_cliente);
 
 // Temporales
 void* serializar_char(char* string);
