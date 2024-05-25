@@ -6,11 +6,11 @@ void incializar_configuracion(char* path_config){
 
     log_info(logger, "Cargando configuración desde archivo: %s", path_config);
 
-    t_config* config_loader = config_create(path_config);;
+    t_config* config_loader = config_create(path_config);
 
     if(config_loader == NULL) {
         log_error(logger, "No se encontro el archivo: [%s]", path_config);
-        exit(EXIT_FAILURE)
+        exit(EXIT_FAILURE);
     }
 
     // TODO: Validacion si el archivo de configuracion existe y contiene todo lo necesario

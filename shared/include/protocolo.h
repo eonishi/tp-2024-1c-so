@@ -31,7 +31,6 @@ typedef struct
 int enviar_solicitud_crear_proceso(char* filePath, pcb* pcb, int socket_cliente);
 solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente);
 
-<
 typedef struct{
     char *nombre_interfaz;
     io_tipo tipo;
@@ -53,5 +52,6 @@ void* serializar_int(int number);
 char* deserializar_char(void* char_bytes, int8_t size);
 void* serializar_lista_strings(char** strings);
 char** deserializar_lista_strings(t_list* bytes, int index_cantidad_tokens);
+int deserializar_int(void *int_bytes);
 
 #endif

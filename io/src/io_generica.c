@@ -6,7 +6,7 @@ void io_generica() {
 
     while (kernel_socket != -1){
         switch (cod_op){
-            case EJECUTAR_INTRUCCION_IO:
+            case EJECUTAR_INSTRUCCION_IO:
                 log_info(logger, "Ejecutar instruccion IO");
                 char** instruccion_tokenizada = recibir_instruccion_io(kernel_socket);
 

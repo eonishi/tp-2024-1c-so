@@ -157,7 +157,7 @@ solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_de_una_io
     t_list* lista_bytes = recibir_paquete(socket_de_una_io);
 
     char* nombre_interfaz = list_get(lista_bytes, 0);
-    io_tipo tipo = list_get(lista_bytes, 1);
+    io_tipo tipo = (io_tipo) list_get(lista_bytes, 1);
 
     free(lista_bytes);
 

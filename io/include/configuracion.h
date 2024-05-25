@@ -1,7 +1,7 @@
-
 #ifndef CONFIGURACION_IO_H_
 #define CONFIGURACION_IO_H_
 
+#include <stdlib.h>
 #include <commons/config.h>
 #include <commons/log.h>
 
@@ -21,7 +21,7 @@ typedef struct
     unsigned retraso_compatacion;
 } io_config;
 
-void inicializar_configuracion(char*);
+void inicializar_configuracion(char* path_config);
 
 
 #endif

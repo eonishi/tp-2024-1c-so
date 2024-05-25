@@ -59,7 +59,7 @@ void enviar_status(int codigo_op, int socket_cliente)
 	memcpy(stream_cod_op, &codigo_op, sizeof(codigo_op));
 
     // Enviar el código de operación
-    if (send(socket, &stream_cod_op, sizeof(stream_cod_op), 0) == -1) {
+    if (send(socket_cliente, &stream_cod_op, sizeof(stream_cod_op), 0) == -1) {
         log_error(logger, "Error al enviar el código de operación");
     }
 }
