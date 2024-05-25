@@ -54,15 +54,6 @@ pthread_t hilo_planificador_corto_RR;
 pthread_t hilo_quantum;
 // Fin variables planificador
 
-
-t_list* procesoNew;
-t_list* procesoReady;
-t_list* procesoExecute;
-t_list* procesoBlock;
-t_list* procesoExit;
-
-sem_t bloque; //semaforo para activar y desactivar en un mismo bloque de codigo
-
 typedef enum
 {
 	CPU,

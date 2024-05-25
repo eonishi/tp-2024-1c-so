@@ -6,13 +6,6 @@ int main(){
 
 	config = inicializar_config();
 
-	//creo colas de estados
-	t_list procesoNew;
-	t_list procesoReady;
-	t_list procesoExecute;
-	t_list procesoBlock; //iniciamos con una, segun consigna va a haber mas (una por cada I/O)
-	t_list procesoExit;
-
 	if(!cargar_configuracion(config) || !generar_conexiones()){
 		log_error(logger, "No se puede iniciar. Se cierra el programa");
 		return EXIT_FAILURE;
@@ -114,20 +107,6 @@ void iniciar_consola()
 
 			push_cola_new(pcb);
 			sem_post(&sem_nuevo_proceso);
-
-			//aca estoy RM
-			// list_add(procesoNew,pcb); //agrego el pcb creado a cola de new
-			// int pidActual = pcb->pid;
-			// log_info(logger, "Se crea el proceso <%d> en NEW",pidActual); //log requerido por consigna
-			// planificador();
-			//redefino dispatch_proceso(pcb); y lo meto en el planificador
-
-			// enviar_pcb(pcb, socket_cpu, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
-			// log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
-			// esperar_pcb(socket_cpu, DISPATCH_PROCESO);
-
-			// loggear_pcb(pcb_respuesta);
-			// log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
       
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
 			log_info(logger, "==============================================");
@@ -154,32 +133,6 @@ pcb* iniciar_proceso_en_memoria(char* filePath){
 	
 	return pcb;
 }
-void dispatch_proceso(){
-	if(list_size(procesoReady)>0){
-		pcb* new_pcb = list_get(procesoReady,0); //obtengo el primer proceso de la lista ready
-		
-		enviar_pcb(new_pcb, socket_cpu_dispatch, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
-		log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
-		pcb* pcb_respuesta;
-		pcb_respuesta = esperar_pcb(socket_cpu_dispatch, DISPATCH_PROCESO);
-		loggear_pcb(pcb_respuesta);
-		log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
-
-		list_add(procesoExecute,new_pcb); //paso a cola execute el primer proceso de la cola ready
-		list_remove(procesoReady,0); // elimino de ready el proceso enviado a execute
-	}
-}
-/*
-void dispatch_proceso(pcb* new_pcb){
-	enviar_pcb(new_pcb, socket_cpu_dispatch, DISPATCH_PROCESO);
-	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
-	
-	pcb* pcb_respuesta;
-	pcb_respuesta = esperar_pcb(socket_cpu_dispatch, DISPATCH_PROCESO);
-	loggear_pcb(pcb_respuesta);
-
-	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
-}*/
 
 void terminar_programa()
 {
@@ -255,171 +208,3 @@ void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void* args){
 		pthread_detach(thread);
 	}
 }
-
-
-
-/*static void planificadorFIFO(){
-	log_info(logger,"Planificador FIFO iniciado.");
-	int cantExecute;
-	int cantReady;
-	int cantBlock;
-	int cantNew;
-	while(1){
-		//hago conteo de los procesos en cada cola de estado; uso semaforo por buena practica visto en otros tps
-		sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
-			cantExecute = list_size(procesoExecute);
-			cantReady = list_size(procesoReady);
-			cantBlock = list_size(procesoBlock);
-			cantNew = list_size(procesoNew);
-		sem_post(&bloque); //modificar, el uso de semaforos esta mal implementado
-		
-		if (cantNew>0){ //planificador pasa de NEW a READY si el grado de multiprogramacion lo permite
-			if(cantReady<config->grado_multiprogramacion){
-				int contador=0;
-				while (cantReady<config->grado_multiprogramacion && cantNew>0){
-					sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
-					pcb* PCBtemporal = list_get(procesoNew,0);
-					PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
-					list_remove(procesoNew,0);
-					list_add(procesoReady,PCBtemporal);
-					cantNew--;
-					cantReady++;
-					log_info(logger,"Se paso el proceso <%d> de NEW a READY", PCBtemporal->pid);
-					sem_post(&bloque);//modificar, el uso de semaforos esta mal implementado
-				}
-			}
-		}
-		if(cantBlock>0){ //aca deberia usar semaforos para indicar que se libera un bloqueo de IO?
-			if(cantReady<config->grado_multiprogramacion){
-				int contador=0;
-				while (cantReady<config->grado_multiprogramacion && cantBlock>0){
-					sem_wait(&bloque);//modificar, el uso de semaforos esta mal implementado
-					pcb* PCBtemporal = list_get(procesoBlock,0);
-					PCBtemporal->estado = READY; //cambios de estado se informan a memoria?
-					list_remove(procesoBlock,0);
-					list_add(procesoReady,PCBtemporal);
-					cantBlock--;
-					cantReady++;
-					log_info(logger,"Se paso el proceso <%d> de BLOCK a READY", PCBtemporal->pid);
-					sem_post(&bloque);//modificar, el uso de semaforos esta mal implementado
-				}
-			}
-		}
-		if (cantReady>0) {
-			while (cantReady>0 && cantExecute<config->grado_multiprogramacion){
-			dispatch_proceso();
-			cantReady--;
-			cantExecute++;
-			}
-		}
-	}
-}
-
-static void planificadorRR() {
-    log_info(logger, "Planificador Round Robin iniciado.");
-    int cantExecute;
-    int cantReady;
-    int cantBlock;
-    int cantNew;
-
-    while (1) {
-        // Conteo de procesos en cada cola de estado
-        sem_wait(&bloque);
-        cantExecute = list_size(procesoExecute);
-        cantReady = list_size(procesoReady);
-        cantBlock = list_size(procesoBlock);
-        cantNew = list_size(procesoNew);
-        sem_post(&bloque);
-
-        // Movimiento de NEW a READY si el grado de multiprogramación lo permite
-        if (cantNew > 0 && cantReady < config->grado_multiprogramacion) {
-            while (cantReady < config->grado_multiprogramacion && cantNew > 0) {
-                sem_wait(&bloque);
-                pcb *PCBtemporal = list_get(procesoNew, 0);
-                PCBtemporal->estado = READY;
-                list_remove(procesoNew, 0);
-                list_add(procesoReady, PCBtemporal);
-                cantNew--;
-                cantReady++;
-                log_info(logger, "Se pasó el proceso <%d> de NEW a READY", PCBtemporal->pid);
-                sem_post(&bloque);
-            }
-        }
-
-        // Despachar procesos a EXECUTE hasta el grado de multiprogramación
-        if (cantReady > 0 && cantExecute < config->grado_multiprogramacion) {
-            while (cantReady > 0 && cantExecute < config->grado_multiprogramacion) {
-                sem_wait(&bloque);
-                pcb *PCBtemporal = list_get(procesoReady, 0);
-                PCBtemporal->estado = EXECUTE;
-                list_remove(procesoReady, 0);
-                list_add(procesoExecute, PCBtemporal);
-                dispatch_proceso(PCBtemporal);
-                cantReady--;
-                cantExecute++;
-                sem_post(&bloque);
-            }
-        }
-
-        // Control del quantum
-        if (cantExecute > 0) {
-            long inicioReloj = 0; // get_current_time_millis(); // NO EXISTE
-            long quantumTranscurrido = 0;
-
-            // Bucle while que controla el tiempo de quatum
-            while (quantumTranscurrido < config->quantum) {
-                // quantumTranscurrido = get_current_time_millis() - inicioReloj;  // NO EXISTE 
-                quantumTranscurrido = 0 - inicioReloj;
-            }
-            sem_wait(&bloque);
-            for (int i = 0; i < list_size(procesoExecute); i++) {
-                pcb *PCBtemporal = list_get(procesoExecute, i);
-                PCBtemporal->quantum -= config->quantum;
-                if (PCBtemporal->quantum <= 0) {
-                    PCBtemporal->estado = EXIT;
-                    list_remove(procesoExecute, i);
-                } else {
-                    PCBtemporal->estado = READY;
-                    list_remove(procesoExecute, i);
-                    list_add(procesoReady, PCBtemporal);
-                    log_info(logger, "Se pasó el proceso <%d> de EXECUTE a READY", PCBtemporal->pid);
-                }
-            }
-            sem_post(&bloque);
-            // enviar_interrupt();  // NO EXISTE
-        }
-    	// Movimiento de BLOCK a READY si el grado de multiprogramación lo permite
-        if (cantBlock > 0 && cantReady < config->grado_multiprogramacion) {
-            while (cantReady < config->grado_multiprogramacion && cantBlock > 0) {
-                sem_wait(&bloque);
-                pcb *PCBtemporal = list_get(procesoBlock, 0);
-                PCBtemporal->estado = READY;
-                list_remove(procesoBlock, 0);
-                list_add(procesoReady, PCBtemporal);
-                cantBlock--;
-                cantReady++;
-                log_info(logger, "Se pasó el proceso <%d> de BLOCK a READY", PCBtemporal->pid);
-                sem_post(&bloque);
-            }
-        }
-	}
-}*/
-
-/*static void planificadorVRR(){
-	//TODO
-}
-
-static void planificador(){
-	if(strcmp(config->algoritmo_planificacion,"FIFO")==0){
-		planificadorFIFO();
-	}else if (strcmp(config->algoritmo_planificacion,"RR")==0){
-		planificadorRR();
-	}else if (strcmp(config->algoritmo_planificacion,"VRR")==0){
-		planificadorVRR();
-	}
-}*/
-/*
-El módulo Kernel, en el contexto de nuestro trabajo práctico, será el encargado de gestionar la ejecución de los 
-diferentes procesos que se generen por medio de su consola interactiva.
-
-*/
