@@ -37,6 +37,14 @@ void enviar_mensaje(int codigo_op, char* mensaje, int socket_cliente)
 	free(a_enviar);
 	eliminar_paquete(paquete);
 }
+void enviar_status(int codigo_op, int socket_cliente)
+{
+	void * buffer = malloc(sizeof(int));
+	memcpy(buffer, &codigo_op, sizeof(int));
+
+	send(socket_cliente, buffer, sizeof(int), 0);
+	free(buffer);
+}
 
 int esperar_respuesta(int socket, op_code codigo_esperado){
 	int codigo_recibido = recibir_operacion(socket);
@@ -52,17 +60,6 @@ int esperar_respuesta(int socket, op_code codigo_esperado){
 	return ERROR;
 }
 
-void enviar_status(int codigo_op, int socket_cliente)
-{
-	// Convertir el código de operación a formato de red
-    void* stream_cod_op = malloc(sizeof(codigo_op));
-	memcpy(stream_cod_op, &codigo_op, sizeof(codigo_op));
-
-    // Enviar el código de operación
-    if (send(socket_cliente, &stream_cod_op, sizeof(stream_cod_op), 0) == -1) {
-        log_error(logger, "Error al enviar el código de operación");
-    }
-}
 
 
 int recibir_operacion(int socket_cliente)
