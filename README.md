@@ -1,14 +1,23 @@
 # TP C-Comenta
 
-## Check point 1
+## Check point 2
 ### Orden de ejecucion de los modulos
 1. Memoria
 2. CPU
 3. Kernel
-4. IO
+4. IO (Conexion dinámica en tiempo de ejecución)
 
-Esta es una plantilla de proyecto diseñada para generar un TP de Sistemas
-Operativos de la UTN FRBA.
+### Operaciones admitidas por la Terminal:
++ INICIAR_PROCESO archivo_de_instrucciones.txt
++ INICIAR_PLANIFICACION ( ⚠️ Hay que arrancar manualmente la planificacion, arranca detenida )
++ DETENER_PLANIFICACION
++ PROCESO_ESTADO
+
+### Operaciones admitidas por la CPU:
+[ SET, SUM, SUB, JNZ, IO_GEN_SLEEP, EXIT ]
+
+
+------
 
 ## Dependencias
 
