@@ -165,8 +165,9 @@ void terminar_programa()
 }
 
 void *iniciar_escucha_servidor(){
-	int server_socket = iniciar_servidor("KERNEL", config->ip_kernel, config->puerto_kernel);
-	int cliente_fd = esperar_cliente(server_socket);
+	// int server_socket = iniciar_servidor("KERNEL", config->ip_kernel, config->puerto_kernel);
+	// int cliente_fd = esperar_cliente(socket_io);
+	int cliente_fd = socket_io;
 
 	t_list* lista;
 	bool on = 1;
@@ -176,6 +177,15 @@ void *iniciar_escucha_servidor(){
         log_info(logger, "Codigo recibido:");
 
 		switch (cod_op) {
+		case FIN_EJECUCION_IO:
+			log_info(logger, "Recibi FIN_EJECUCION_IO. CODIGO: %d", cod_op);
+			recibir_mensaje(cliente_fd);
+
+			pcb* pcb_blocked = pop_cola_blocked();
+			pcb_blocked->estado = READY;
+			push_cola_ready(pcb_blocked);
+			sem_post(&sem_proceso_en_ready);
+			break;
 		case DISPATCH_PROCESO:
             log_info(logger, "Recibi DISPATCH_PROCESO. CODIGO: %d", cod_op);
 			pcb* pcb = recibir_pcb(cliente_fd);
