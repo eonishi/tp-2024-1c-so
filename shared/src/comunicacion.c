@@ -37,6 +37,14 @@ void enviar_mensaje(int codigo_op, char* mensaje, int socket_cliente)
 	free(a_enviar);
 	eliminar_paquete(paquete);
 }
+void enviar_status(int codigo_op, int socket_cliente)
+{
+	void * buffer = malloc(sizeof(int));
+	memcpy(buffer, &codigo_op, sizeof(int));
+
+	send(socket_cliente, buffer, sizeof(int), 0);
+	free(buffer);
+}
 
 int esperar_respuesta(int socket, op_code codigo_esperado){
 	int codigo_recibido = recibir_operacion(socket);
@@ -51,6 +59,7 @@ int esperar_respuesta(int socket, op_code codigo_esperado){
 
 	return ERROR;
 }
+
 
 
 int recibir_operacion(int socket_cliente)
@@ -83,6 +92,12 @@ void recibir_mensaje(int socket_cliente)
 	char* buffer = recibir_buffer(&size, socket_cliente);
 	log_info(logger, "Mensaje recibido: [%s]", buffer); // TODO  REVISAR
 	free(buffer);
+}
+
+char* recibir_respuesta(int socket){
+	int size;
+	char* buffer = recibir_buffer(&size, socket);
+	return buffer;
 }
 
 t_list* recibir_paquete(int socket_cliente)

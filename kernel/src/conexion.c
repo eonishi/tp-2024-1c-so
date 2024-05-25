@@ -28,15 +28,21 @@ bool generar_conexiones(){
 int recibir_conexion_io(int server) {
     log_info(logger,"Esperando conexión del modulo IO ... ");
     int socket = esperar_cliente(server);
+
 	log_info(logger,"Esperando handshake del modulo IO ... ");
-    int resultado = esperar_handshake(socket);
-    if(resultado == -1) {
-        log_error(logger,"No se pudo conectar con el modulo IO");
-        exit(EXIT_FAILURE);
-    }
+    int cod = recibir_operacion(socket);
+    solicitud_conexion_kernel solicitud = recibir_solicitud_conexion_kernel(socket);
+    log_info(logger,"Recibido handshake del modulo IO. Interfaz: [%s] Tipo: [%d]", solicitud.nombre_interfaz, solicitud.tipo);
 
     log_info(logger,"Respondiendo handshake del modulo IO... ");
-    enviar_handshake(socket);
+    enviar_status(SUCCESS, socket);
+    //int resultado = esperar_handshake(socket);
+    //if(resultado == -1) {
+    //    log_error(logger,"No se pudo conectar con el modulo IO");
+    //    exit(EXIT_FAILURE);
+    //}
+
+    //enviar_handshake(socket);
 
     return socket;
 }

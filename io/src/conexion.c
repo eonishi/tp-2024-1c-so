@@ -1,31 +1,39 @@
 #include "../include/conexion.h"
 
-bool generar_conexiones(){
-    log_info(logger, "Creando conexión con Kernel...");
+int kernel_socket, memory_socket;
 
-    socket_kernel = generar_conexion(config->IP_KERNEL, config->PUERTO_KERNEL);
-
-    if(socket_kernel == -1)
-        return false;
-
-    return true;
+void crear_conexion_kernel(){
+    kernel_socket = crear_conexion(config.ip_kernel, config.puerto_kernel);
+    if(kernel_socket == -1){
+        log_error(logger, "No se pudo conectar con el kernel");
+        exit(EXIT_FAILURE);
+    }
+    log_info(logger, "Conexión con el kernel establecida");
 }
 
-int generar_conexion(char* ip, char* puerto){
-	int conexion = crear_conexion(ip, puerto);
-    if(conexion == -1){
-        log_error(logger, "No se pudo conectar al servidor. IP: [%s] Puerto: [%s] Socket:[%d]", ip, puerto, conexion);    
-        return -1;
+void crear_conexion_memoria(){
+    int memory_socket = crear_conexion(config.ip_memoria, config.puerto_memoria);
+    if(memory_socket == -1){
+        log_error(logger, "No se pudo conectar con la memoria");
+        exit(EXIT_FAILURE);
     }
+    log_info(logger, "Conexión con la memoria establecida");
+}
 
-	log_info(logger, "Conexión creada. Socket: %i", conexion);
+ static int conexion_fue_exitosa(int socket){
+    op_code status = recibir_operacion(socket);
+    log_info(logger, "Status de la conexión: [%d]", status);
 
-	enviar_handshake(conexion);
-	if(esperar_handshake(conexion) == -1){
-        log_error(logger, "Respuesta erronea de handshake");
-    };
+    if(status != SUCCESS){
+        log_error(logger, "Ya existe una interfaz con ese nombre. Intente con otro nombre ;)");
+        return 0;
+    }
+    return 1;
+ }
 
-    log_info(logger, "Handshake realizado enviado y recibido correctamente");
+int conectar_al_kernel(char* nombre_interfaz, io_tipo tipo){
+    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo};
+    enviar_solicitud_conexion_kernel(solicitud, kernel_socket);
+    return conexion_fue_exitosa(kernel_socket);
 
-    return conexion;
 }

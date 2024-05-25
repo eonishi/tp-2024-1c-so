@@ -1,54 +1,33 @@
 #include "include/io.h"
 
-int main()
+int main(int argc, char* argv[])
 {
-    logger = iniciar_logger("io.log", "IO");
-    log_info(logger, "Logger IO Iniciado");
+    char* nombre_interfaz;
+    char* path_config;
+  
+    check_args(argc, argv, &nombre_interfaz, &path_config);
+    inicializar_io(nombre_interfaz, path_config);
 
-    config = inicializar_config();
-
-	if(!cargar_configuracion(config) || !generar_conexiones()){
-		log_error(logger, "No se puede iniciar. Se cierra el programa");
-		return EXIT_FAILURE;
-	}
-
-    iniciar_escucha_kernel();
-
-    terminar_programa(socket_kernel);
-
-    return 0;
+    return EXIT_SUCCESS;
 }
 
-void iniciar_escucha_kernel(){
-	t_list* lista;
-	bool on = 1;
-	while (on) {
-        log_info(logger, "Esperando recibir operacion desde el Kernel...");
-		int cod_op = recibir_operacion(socket_kernel);
-
-		switch (cod_op) {	
-            case MENSAJE:
-                log_info(logger, "Recibi MENSAJE. CODIGO: %d", cod_op);
-                recibir_mensaje(socket_kernel);
-                break;
-            case -1:
-                log_error(logger, "el cliente se desconecto. Terminando servidor");
-                on = 0;
-            default:
-                log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-                break;
-		}
-	}
+void check_args(int argc, char* argv[], char** nombre_interfaz, char** path_config){
+    if(argc < 2){
+        printf("Falta el nombre de la interfaz\n");
+        exit(EXIT_FAILURE);
+    }else{
+        *nombre_interfaz = argv[1];
+    }
+    if(argc < 3) {
+        *path_config = "io.config";
+    }
+    else {
+        *path_config = argv[2];
+    }
 }
 
 
 
-void terminar_programa(int conexion_kernel)
-{
-    liberar_conexion(conexion_kernel);
-    log_info(logger, "Memoria liberada correctamente");
-    log_destroy(logger);
-}
 
 /*
 Las interfaces de I/O pueden ser varias, en la realidad las conocemos como Teclados, Mouse, Discos, Monitores o hasta Impresoras.

@@ -25,10 +25,9 @@ void execute(char **instr_tokenizada)
         break;
     case IO_GEN_SLEEP:
         tengo_pcb = 0;
-
-        exec_io_gen_sleep(instr_tokenizada);
         siguiente_pc(pcb_actual);
-        enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO);
+
+        exec_io_gen_sleep(instr_tokenizada);                
         break;
     case EXIT_OP:
         tengo_pcb = 0;
@@ -113,5 +112,11 @@ void exec_jnz(char** instr_tokenizada){
 
 void exec_io_gen_sleep(char** instr_tokenizada){
     // IO_GEN_SLEEP interfaz unidades_trabajo
+    solicitud_bloqueo_por_io solicitud;
+    solicitud.instruc_io_tokenizadas = instr_tokenizada;
+    solicitud.pcb = pcb_actual;
+
+    enviar_bloqueo_por_io(solicitud, socket_kernel);
+    // enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO);
     //TODO
 }

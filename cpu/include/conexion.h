@@ -2,6 +2,7 @@
 #define CONEXION_CPU_H_
 
 #include "configuracion.h"
+#include "ciclo.h"
 #include <commons/log.h>
 #include "../../shared/include/server.h"
 #include "../../shared/include/client.h"

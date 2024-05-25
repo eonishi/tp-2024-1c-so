@@ -7,10 +7,12 @@
 #include "../../shared/include/client.h"
 #include "../../shared/include/comunicacion.h"
 #include "../../shared/include/server.h"
+#include "../../shared/include/protocolo.h"
+#include "../../shared/include/io_tipos.h"
 
 extern t_log *logger;
 extern kernel_config* config;
-extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io;;
+extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io;
 
 bool generar_conexiones();
 int generar_conexion(char* ip, char* puerto);

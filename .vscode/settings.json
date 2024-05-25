@@ -42,6 +42,7 @@
         "queue.h": "c",
         "planificador_corto.h": "c",
         "colas_planificador.h": "c",
-        "random": "c"
+        "random": "c",
+        "string.h": "c"
     }
 }
