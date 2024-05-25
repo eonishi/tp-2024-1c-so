@@ -68,7 +68,7 @@ void* esperar_y_escuchar_conexiones_io(){
 
 		int socket = conexion_io.socket;
 
-		iniciar_hilo_con_args(iniciar_escucha_servidor, io_threads[io_thread_index++], &socket);
+		iniciar_hilo_con_args(escuchar_io, io_threads[io_thread_index++], &socket);
     }
 }
 

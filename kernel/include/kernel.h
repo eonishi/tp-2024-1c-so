@@ -15,6 +15,7 @@
 #include "conexion.h"
 #include "planificador_largo.h"
 #include "planificador_corto.h"
+#include "gestor_io.h"
 
 #include "../../shared/include/logger.h"
 #include "../../shared/include/client.h"
