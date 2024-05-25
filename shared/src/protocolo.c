@@ -19,7 +19,7 @@ char** deserializar_lista_strings(t_list* bytes, int index_cantidad_tokens){
 
     char** tokens = string_array_new();
     
-    for(int i = index_cantidad_tokens+1;i < cantidad_tokens+index_cantidad_tokens; i++){
+    for(int i = index_cantidad_tokens+1;i < cantidad_tokens+index_cantidad_tokens+1; i++){
         char* token = list_get(bytes, i);
 
         string_array_push(&tokens, token);
@@ -128,13 +128,6 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
     return respuesta;
 }
 
-
-static void* serializar_enum(int un_enum){
-    void* stream = malloc(sizeof(int)); 
-    memcpy(stream, &un_enum, sizeof(int));
-    return stream;
-}
-
 void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel solicitud, int kernel_skt){
     size_t size_nombre = strlen(solicitud.nombre_interfaz) + 1;
     t_paquete* paquete = crear_paquete(HANDSHAKE);
@@ -142,8 +135,8 @@ void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel solicitud, int k
     void* stream_nombre_interfaz = serializar_char(solicitud.nombre_interfaz);
     agregar_a_paquete(paquete, stream_nombre_interfaz, size_nombre);
 
-    void* stream_tipo = serializar_enum(solicitud.tipo);
-    agregar_a_paquete(paquete, stream_tipo, sizeof(io_tipo));
+    void* stream_tipo = serializar_int(solicitud.tipo);
+    agregar_a_paquete(paquete, stream_tipo, sizeof(int));
 
     enviar_paquete(paquete, kernel_skt);
     log_info(logger, "Solicitud de [%s] conexion enviada", solicitud.nombre_interfaz);
@@ -157,11 +150,13 @@ solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_de_una_io
     t_list* lista_bytes = recibir_paquete(socket_de_una_io);
 
     char* nombre_interfaz = list_get(lista_bytes, 0);
-    io_tipo tipo = (io_tipo) list_get(lista_bytes, 1);
+    void* tipo = list_get(lista_bytes, 1);
+
+    io_tipo tipo_enum = deserializar_int(tipo);
 
     free(lista_bytes);
 
-    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo};
+    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo_enum};
     return solicitud;
 }
 
