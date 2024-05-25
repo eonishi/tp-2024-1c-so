@@ -1,3 +1,4 @@
+
 #ifndef CONFIGURACION_IO_H_
 #define CONFIGURACION_IO_H_
 
@@ -21,5 +22,6 @@ typedef struct
 } io_config;
 
 void inicializar_configuracion(char*);
+
 
 #endif

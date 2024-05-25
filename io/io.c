@@ -4,7 +4,7 @@ int main(int argc, char* argv[])
 {
     char* nombre_interfaz;
     char* path_config;
-
+  
     check_args(argc, argv, &nombre_interfaz, &path_config);
     inicializar_io(nombre_interfaz, path_config);
 
@@ -24,6 +24,10 @@ void check_args(int argc, char* argv[], char** nombre_interfaz, char** path_conf
         *path_config = argv[2];
     }
 }
+
+
+
+
 /*
 Las interfaces de I/O pueden ser varias, en la realidad las conocemos como Teclados, Mouse, Discos, Monitores o hasta Impresoras.
 Las mismas irán recibiendo desde Kernel distintas operaciones a realizar para determinado proceso,

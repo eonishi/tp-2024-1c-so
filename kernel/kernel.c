@@ -13,7 +13,7 @@ int main(){
 	t_list procesoBlock; //iniciamos con una, segun consigna va a haber mas (una por cada I/O)
 	t_list procesoExit;
 
-	if(!cargar_configuracion(config) || !generar_conexiones(&socket_cpu, &socket_memoria)){
+	if(!cargar_configuracion(config) || !generar_conexiones()){
 		log_error(logger, "No se puede iniciar. Se cierra el programa");
 		return EXIT_FAILURE;
 	}
@@ -24,7 +24,9 @@ int main(){
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
 	log_info(logger, "Creando hilo para el planificador de corto plazo...");
-	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+	iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto_RR);
+	log_info(logger, "Creando hilo para el contador de quantum...");
+	iniciar_hilo(monitoreo_quantum, hilo_quantum);
 	// log_info(logger, "Creando hilo para escucha CPU...");
 	// iniciar_hilo(iniciar_escucha_cpu, hilo_escucha_cpu);
 	log_info(logger, "Creando hilo para el servidor del kernel...");
@@ -62,8 +64,11 @@ void iniciar_consola()
 
 		if (strcmp(comando, "") == 0)
 			ingresoActivado = 0;
-			
-		if(strcmp(comando, "INICIAR_PLANIFICACION") == 0){
+		
+		if(strcmp(comando, "PROCESO_ESTADO") == 0){
+			imprimir_colas();
+		}
+		else if(strcmp(comando, "INICIAR_PLANIFICACION") == 0){
 			planificacion_activada = 1;
 		}
 		else if(strcmp(comando, "DETENER_PLANIFICACION") == 0){
@@ -127,10 +132,10 @@ void dispatch_proceso(){
 	if(list_size(procesoReady)>0){
 		pcb* new_pcb = list_get(procesoReady,0); //obtengo el primer proceso de la lista ready
 		
-		enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
+		enviar_pcb(new_pcb, socket_cpu_dispatch, DISPATCH_PROCESO); //a partir de aca es el mismo codigo de Dani
 		log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
 		pcb* pcb_respuesta;
-		pcb_respuesta = esperar_pcb(socket_cpu, DISPATCH_PROCESO);
+		pcb_respuesta = esperar_pcb(socket_cpu_dispatch, DISPATCH_PROCESO);
 		loggear_pcb(pcb_respuesta);
 		log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
 
@@ -140,11 +145,11 @@ void dispatch_proceso(){
 }
 /*
 void dispatch_proceso(pcb* new_pcb){
-	enviar_pcb(new_pcb, socket_cpu, DISPATCH_PROCESO);
+	enviar_pcb(new_pcb, socket_cpu_dispatch, DISPATCH_PROCESO);
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");
 	
 	pcb* pcb_respuesta;
-	pcb_respuesta = esperar_pcb(socket_cpu, DISPATCH_PROCESO);
+	pcb_respuesta = esperar_pcb(socket_cpu_dispatch, DISPATCH_PROCESO);
 	loggear_pcb(pcb_respuesta);
 
 	log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
@@ -152,7 +157,7 @@ void dispatch_proceso(pcb* new_pcb){
 
 void terminar_programa()
 {
-    liberar_conexion(socket_cpu);
+    liberar_conexion(socket_cpu_dispatch);
     liberar_conexion(socket_memoria);
 
     log_info(logger, "Memoria liberada correctamente");

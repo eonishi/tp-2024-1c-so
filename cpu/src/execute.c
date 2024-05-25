@@ -24,12 +24,14 @@ void execute(char **instr_tokenizada)
         exec_jnz(instr_tokenizada);
         break;
     case IO_GEN_SLEEP:
-        exec_io_gen_sleep(instr_tokenizada);
+        tengo_pcb = 0;
         siguiente_pc(pcb_actual);
+
+        exec_io_gen_sleep(instr_tokenizada);                
         break;
     case EXIT_OP:
         tengo_pcb = 0;
-        
+
         enviar_pcb(pcb_actual, socket_kernel, PROCESO_TERMINADO);
         break;
     default:
@@ -110,5 +112,11 @@ void exec_jnz(char** instr_tokenizada){
 
 void exec_io_gen_sleep(char** instr_tokenizada){
     // IO_GEN_SLEEP interfaz unidades_trabajo
+    solicitud_bloqueo_por_io solicitud;
+    solicitud.instruc_io_tokenizadas = instr_tokenizada;
+    solicitud.pcb = pcb_actual;
+
+    enviar_bloqueo_por_io(solicitud, socket_kernel);
+    // enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO);
     //TODO
 }
