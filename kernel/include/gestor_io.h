@@ -18,7 +18,7 @@ extern t_list *lista_conexiones_io;
 
 void *escuchar_io(void *socket);
 
-bool validar_y_enviar_instruccion_a_io();
+bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas);
 bool existe_io_conectada(char* nombre_io);
 conexion_io* obtener_conexion_io_por_nombre(char* nombre_io);
 bool io_acepta_operacion(conexion_io conexion_io,char* operacion_io);

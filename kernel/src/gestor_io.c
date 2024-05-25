@@ -58,6 +58,7 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
     }
 
     if(!io_disponible(*conexion_io)){
+        // Pediente logica de esperar si IO no está disponible
         log_error(logger, "La IO no está disponible");
         return false;
     }
@@ -75,7 +76,19 @@ conexion_io* obtener_conexion_io_por_nombre(char* nombre_io){
 // Validaciones
 
 bool existe_io_conectada(char* nombre_io){
-    // lista_conexiones_io
+    log_info(logger, "validando si existe io...");
+    log_info(logger, "Nombre_io: [%s]", nombre_io);
+
+    //t_list_iterator* iterator = list_iterator_create(lista_conexiones_io);
+
+    //for(; list_iterator_has_next(iterator); iterator->next){
+      //  conexion_io* conex = iterator->actual;
+        
+        //log_info(logger, "conex->nombre_interfaz: [%s]", conex->nombre_interfaz);
+        //if(strcmp(nombre_io, conex->nombre_interfaz) == 0)
+          //  return true;
+    //}
+
     return true;
 }
 
