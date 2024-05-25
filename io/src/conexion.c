@@ -21,8 +21,10 @@ void crear_conexion_memoria(){
 }
 
  static int conexion_fue_exitosa(int socket){
-    char* respuesta = recibir_respuesta(socket);
-    if(string_equals_ignore_case(respuesta, "ya existe esa interfaz")){
+    op_code status = recibir_operacion(socket);
+    log_info(logger, "Status de la conexión: [%d]", status);
+
+    if(status != SUCCESS){
         log_error(logger, "Ya existe una interfaz con ese nombre. Intente con otro nombre ;)");
         return 0;
     }

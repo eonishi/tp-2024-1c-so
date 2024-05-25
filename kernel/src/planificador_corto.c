@@ -62,8 +62,11 @@ void gestionar_respuesta_cpu(){
 
 			push_cola_blocked(solicitud.pcb);
 
+            log_info(logger, "Voy a enviar [%s]", solicitud.instruc_io_tokenizadas[0]);
+            log_info(logger, "Voy a enviar [%s]", solicitud.instruc_io_tokenizadas[1]);
+            log_info(logger, "Voy a enviar [%s]", solicitud.instruc_io_tokenizadas[2]);
+            
 			enviar_instruccion_io(solicitud.instruc_io_tokenizadas,socket_io);
-
 			sem_post(&sem_cpu_libre);		
 			break;
         case INTERRUPCION:
