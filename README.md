@@ -1,6 +1,25 @@
 # TP C-Comenta
 
 ## Check point 2
+
+### Objetivos cumplidos:
+**Módulo Kernel:**
+* Es capaz de crear un PCB y planificarlo por FIFO ~~y RR~~. **OK (SOLO FIFO)**
+* Es capaz de enviar un proceso a la CPU para que sea procesado. **OK**
+
+**Módulo CPU:**
+* Se conecta a Kernel y recibe un PCB. **OK**
+* Es capaz de conectarse a la memoria y solicitar las instrucciones. **OK**
+* Es capaz de ejecutar un ciclo básico de instrucción. **OK**
+* Es capaz de resolver las operaciones: SET, SUM, SUB, JNZ e IO_GEN_SLEEP. **OK**
+  
+**Módulo Memoria:**
+* Se encuentra creado y acepta las conexiones. **OK**
+* Es capaz de abrir los archivos de pseudocódigo y envía las instrucciones al CPU. **OK**
+  
+**Módulo Interfaz I/O:**
+* Se encuentra desarrollada la Interfaz Genérica. **OK**
+
 ### Orden de ejecucion de los modulos
 1. Memoria
 2. CPU
