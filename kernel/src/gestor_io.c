@@ -4,14 +4,11 @@
 void *escuchar_io(void *socket){
 	int cliente_fd = *((int*) socket);
 
-	log_info(logger, "Socket io: [%d]", cliente_fd);
-
 	t_list* lista;
 	bool on = 1;
 	while (on) {
-        log_info(logger, "Estoy por recibir operacion");
+        log_info(logger, "Esperando operación desde Kernel...");
 		int cod_op = recibir_operacion(cliente_fd);
-        log_info(logger, "Codigo recibido:");
 
 		switch (cod_op) {
 		case FIN_EJECUCION_IO:
@@ -19,14 +16,11 @@ void *escuchar_io(void *socket){
 			recibir_mensaje(cliente_fd);
 
 			pcb* pcb_blocked = pop_cola_blocked();
-            log_info(logger, "Se obtuvo proceso bloqueado");
 			pcb_blocked->estado = READY;
             
 			push_cola_ready(pcb_blocked);
-            log_info(logger, "Se puso proceso en ready y se agregó a cola ready");
-            
+
 			sem_post(&sem_proceso_en_ready);
-            log_info(logger, "post sem_proceso_en_ready");
 			break;
 		case DISPATCH_PROCESO:
             log_info(logger, "Recibi DISPATCH_PROCESO. CODIGO: %d", cod_op);
