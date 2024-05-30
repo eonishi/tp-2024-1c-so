@@ -91,16 +91,11 @@ bool existe_io_conectada(char* nombre_io){
     log_info(logger, "Nombre_io: [%s]", nombre_io);
 
     interfaz_buscada = nombre_io;
-    bool result  = list_any_satisfy(lista_conexiones_io, (void*) interfaz_es_la_buscada);
-    return result;
+    return list_any_satisfy(lista_conexiones_io, (void*) interfaz_es_la_buscada);
 }
 
 bool io_acepta_operacion(conexion_io conexion_io, char* operacion_io){
-    if(conexion_io.tipo == GENERICA){
-        return string_equals_ignore_case(operacion_io, "IO_GEN_SLEEP");
-    } 
-    // Conexion_io deberia tener las operaciones que acepta y deberiamos iterar sobre esa lista
-    return false;
+    return io_tiene_operacion(conexion_io.operaciones, operacion_io, conexion_io.tipo);
 }
 
 bool io_disponible(conexion_io conexion_io){

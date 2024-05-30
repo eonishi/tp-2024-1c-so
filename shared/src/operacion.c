@@ -36,3 +36,17 @@ operacion get_operacion(char** inst_tokenizada) {
 int get_valor(char* token_valor){
     return atoi(token_valor);
 }
+
+bool io_tiene_operacion(int* operaciones_io, char* operacion_token, io_tipo tipo_io){
+    operacion op_a_revisar = get_operacion(&operacion_token);
+    if(!tipo_io == DIALFS){
+        return  operaciones_io[0] == op_a_revisar 
+        ||      operaciones_io[1] == op_a_revisar
+        ||      operaciones_io[2] == op_a_revisar
+        ||      operaciones_io[3] == op_a_revisar
+        ||      operaciones_io[4] == op_a_revisar;
+    }
+    else{
+        return operaciones_io[0] == op_a_revisar;
+    }
+}

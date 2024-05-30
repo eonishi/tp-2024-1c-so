@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <commons/string.h>
 #include <commons/log.h>
+#include "io_tipos.h"
 
 extern t_log* logger;
 
@@ -36,5 +37,6 @@ typedef struct {
 
 operacion get_operacion(char** instr_tokenizada);
 int get_valor(char* token_valor);
+bool io_tiene_operacion(int *operaciones_io, char *operacion_token, io_tipo tipo_io);
 
 #endif
