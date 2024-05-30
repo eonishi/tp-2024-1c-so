@@ -2,39 +2,67 @@
 
 t_log *logger;
 
+// Estas funciones iniciadoras se pueden refactorizar en una sola, 
+// pero nose si vaya a necesitar ajusten especificos para cada tipo de interfaz
 static void iniciar_io_generica(char* nombre_interfaz){
     int operaciones[1] = {IO_GEN_SLEEP};
     int* ptr_op = operaciones;
     
     int conexion_valida = conectar_al_kernel(nombre_interfaz, GENERICA, ptr_op);
-    if (conexion_valida){
-        io_generica();
-    }
-    else{
-        exit(EXIT_FAILURE);
-    }
+    if(conexion_valida) io_generica();
+    else exit(EXIT_FAILURE);
+}
+
+static void iniciar_io_stdin(char* nombre_interfaz){
+    int operaciones[1] = {IO_STDIN_READ};
+    int* ptr_op = operaciones;
+
+    int conexion_valida = conectar_al_kernel(nombre_interfaz, STDIN, ptr_op);
+    if(conexion_valida) io_stdin();
+    else exit(EXIT_FAILURE);
+}
+
+static void iniciar_io_stdout(char* nombre_interfaz){
+    int operaciones[1] = {IO_STDOUT_WRITE};
+    int* ptr_op = operaciones;
+
+    int conexion_valida = conectar_al_kernel(nombre_interfaz, STDOUT, ptr_op);
+    if(conexion_valida) io_stdin();
+    else exit(EXIT_FAILURE);
+}
+
+static void iniciar_io_dialfs(char* nombre_interfaz){
+    int operaciones[5] = {IO_FS_CREATE, IO_FS_DELETE, IO_FS_TRUNCATE, IO_FS_WRITE, IO_FS_READ};
+    int* ptr_op = operaciones;
+
+    int conexion_valida = conectar_al_kernel(nombre_interfaz, DIALFS, ptr_op);
+    if(conexion_valida) io_stdin();
+    else exit(EXIT_FAILURE);
 }
 
 void inicializar_io(char* nombre_interfaz, char* path_config){
     // Inicializacion comun entre todas los tipos de interfaces
-    logger = iniciar_logger("io.log", "IO");
+    char* logger_name = string_from_format("IO_%s", nombre_interfaz);
+    logger = iniciar_logger("io.log", logger_name);
     inicializar_configuracion(path_config);
     crear_conexion_kernel();
     
     // Inicializacion especifica dependiendo la interfaz
     if(string_equals_ignore_case(config.interfaz_tipo, "GENERICA")){
-        // INICIALIZACION DE LA INTERFAZ GENERICA
         iniciar_io_generica(nombre_interfaz);
         log_info(logger, "Interfaz generica inicializada");
     }
     else if(string_equals_ignore_case(config.interfaz_tipo, "STDIN")){
-        // INICIALIZACION DE LA INTERFAZ STDIN
+        iniciar_io_stdin(nombre_interfaz);
+        log_info(logger, "Interfaz STDIN inicializada");
     }
     else if(string_equals_ignore_case(config.interfaz_tipo, "STDOUT")){
-        // INICIALIZACION DE LA INTERFAZ STDOUT
+        iniciar_io_stdout(nombre_interfaz);
+        log_info(logger, "Interfaz STDOUT inicializada");
     }
     else if(string_equals_ignore_case(config.interfaz_tipo, "DIALFS")){
-        // INICIALIZACION DE LA INTERFAZ DIALFS
+        iniciar_io_dialfs(nombre_interfaz);
+        log_info(logger, "Interfaz DialFS inicializada");
     }
     else{
         log_error(logger, "Interfaz no reconocida");

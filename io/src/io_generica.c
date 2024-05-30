@@ -1,7 +1,7 @@
 #include "../include/io_generica.h"
 
 void io_generica() {
-    log_info(logger, "Soy IO generica :)");
+    log_info(logger, "Hola, soy IO generica :)");
 
     while (kernel_socket != -1){
         int cod_op = recibir_operacion(kernel_socket);
