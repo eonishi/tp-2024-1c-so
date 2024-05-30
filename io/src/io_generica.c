@@ -1,7 +1,7 @@
 #include "../include/io_generica.h"
 
 void io_generica() {
-    log_info(logger, "Soy IO generica :)");
+    log_info(logger, "Hola, soy IO generica :)");
 
     while (kernel_socket != -1){
         int cod_op = recibir_operacion(kernel_socket);
@@ -21,8 +21,7 @@ void io_generica() {
                 usleep(tiempo_retardo);
                 
                 // devolver status
-                enviar_mensaje(FIN_EJECUCION_IO, "", kernel_socket);
-                // enviar_status(SUCCESS, kernel_socket);
+                enviar_status(FIN_EJECUCION_IO, kernel_socket);
                 log_info(logger, "Instruccion IO ejecutada");
                 break;
                 case -1:

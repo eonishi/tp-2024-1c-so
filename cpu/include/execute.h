@@ -3,7 +3,8 @@
 
 #include <commons/log.h>
 #include <commons/string.h>
-#include "operacion.h"
+#include "registro.h"
+#include "../../shared/include/operacion.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 
@@ -17,6 +18,6 @@ void exec_set(char**);
 void exec_sum(char**);
 void exec_sub(char**);
 void exec_jnz(char**);
-void exec_io_gen_sleep(char** instr_tokenizada);
+void exec_operacion_io(char** instr_tokenizada);
 
 #endif

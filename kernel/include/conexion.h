@@ -18,6 +18,7 @@ typedef struct{
     int socket;
     char *nombre_interfaz;
     io_tipo tipo;
+    int* operaciones;
 } conexion_io;
 
 extern t_list* lista_conexiones_io;

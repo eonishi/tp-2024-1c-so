@@ -24,10 +24,16 @@ void execute(char **instr_tokenizada)
         exec_jnz(instr_tokenizada);
         break;
     case IO_GEN_SLEEP:
+    case IO_STDIN_READ:
+    case IO_STDOUT_WRITE:
+    case IO_FS_CREATE:
+    case IO_FS_DELETE:
+    case IO_FS_TRUNCATE:
+    case IO_FS_WRITE:
+    case IO_FS_READ:
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
-
-        exec_io_gen_sleep(instr_tokenizada);                
+        exec_operacion_io(instr_tokenizada);                
         break;
     case EXIT_OP:
         tengo_pcb = 0;
@@ -36,6 +42,9 @@ void execute(char **instr_tokenizada)
         break;
     default:
         log_error(logger, "MAN esta operación no existe (¬_¬\")");
+        tengo_pcb = 0;
+        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO);
+        log_error(logger, "Devolví el PCB al kernel.");
         break;
     }
 
@@ -110,13 +119,10 @@ void exec_jnz(char** instr_tokenizada){
     }
 }
 
-void exec_io_gen_sleep(char** instr_tokenizada){
-    // IO_GEN_SLEEP interfaz unidades_trabajo
+void exec_operacion_io(char** instr_tokenizada){
     solicitud_bloqueo_por_io solicitud;
     solicitud.instruc_io_tokenizadas = instr_tokenizada;
     solicitud.pcb = pcb_actual;
 
     enviar_bloqueo_por_io(solicitud, socket_kernel);
-    // enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO);
-    //TODO
 }
