@@ -56,8 +56,6 @@ int8_t deserializar_int8(void* int_bytes){
 
 int deserializar_int(void* int_bytes){
     int* result =malloc(sizeof(int));
-    int offset = 0;
-
     memcpy(result, int_bytes, sizeof(int));
 
     return *result;
@@ -128,6 +126,22 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
     return respuesta;
 }
 
+size_t size_io_op(io_tipo tipo){
+    return (tipo == DIALFS ? sizeof(int)*5 : sizeof(int));
+}
+
+void* serializar_io_operaciones(int* instrucciones, size_t size){
+    void* stream = malloc(size);
+    memcpy(stream, instrucciones, size);
+    return stream;
+}
+int* deserializar_io_operaciones(void* instr_bytes, io_tipo tipo){
+    size_t size = size_io_op(tipo);
+    int* instrucciones = malloc(size);
+    memcpy(instrucciones, instr_bytes, size);
+    return instrucciones;
+}
+
 void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel solicitud, int kernel_skt){
     size_t size_nombre = strlen(solicitud.nombre_interfaz) + 1;
     t_paquete* paquete = crear_paquete(HANDSHAKE);
@@ -138,11 +152,16 @@ void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel solicitud, int k
     void* stream_tipo = serializar_int(solicitud.tipo);
     agregar_a_paquete(paquete, stream_tipo, sizeof(int));
 
+    size_t size_op = size_io_op(solicitud.tipo);
+    void* stream_op = serializar_io_operaciones(solicitud.operaciones, size_op);
+    agregar_a_paquete(paquete, stream_op, size_op);
+
     enviar_paquete(paquete, kernel_skt);
     log_info(logger, "Solicitud de [%s] conexion enviada", solicitud.nombre_interfaz);
 
     free(stream_nombre_interfaz);
     free(stream_tipo);
+    free(stream_op);
     eliminar_paquete(paquete);
 }
 
@@ -151,12 +170,16 @@ solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_de_una_io
 
     char* nombre_interfaz = list_get(lista_bytes, 0);
     void* tipo = list_get(lista_bytes, 1);
+    void* instrucciones = list_get(lista_bytes, 2);
 
     io_tipo tipo_enum = deserializar_int(tipo);
+    int* op_disponibles = deserializar_io_operaciones(instrucciones, tipo_enum);
 
     free(lista_bytes);
+    free(tipo);
+    free(instrucciones);
 
-    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo_enum};
+    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo_enum, op_disponibles};
     return solicitud;
 }
 

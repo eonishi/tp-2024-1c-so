@@ -7,6 +7,7 @@
 #include "pcb.h"
 #include "paquete.h"
 #include "codigos_operacion.h"
+#include "operacion.h"
 #include "io_tipos.h"
 #include<commons/log.h>
 #include<commons/string.h>
@@ -34,6 +35,7 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente);
 typedef struct{
     char *nombre_interfaz;
     io_tipo tipo;
+    int* operaciones;
 } solicitud_conexion_kernel;
 
 void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel, int socket_cliente);

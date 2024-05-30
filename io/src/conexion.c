@@ -31,8 +31,8 @@ void crear_conexion_memoria(){
     return 1;
  }
 
-int conectar_al_kernel(char* nombre_interfaz, io_tipo tipo){
-    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo};
+int conectar_al_kernel(char* nombre_interfaz, io_tipo tipo, int* instrucciones){
+    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo, instrucciones};
     enviar_solicitud_conexion_kernel(solicitud, kernel_socket);
     return conexion_fue_exitosa(kernel_socket);
 

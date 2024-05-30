@@ -3,7 +3,10 @@
 t_log *logger;
 
 static void iniciar_io_generica(char* nombre_interfaz){
-    int conexion_valida = conectar_al_kernel(nombre_interfaz, GENERICA);
+    int operaciones[1] = {IO_GEN_SLEEP};
+    int* ptr_op = operaciones;
+    
+    int conexion_valida = conectar_al_kernel(nombre_interfaz, GENERICA, ptr_op);
     if (conexion_valida){
         io_generica();
     }

@@ -29,10 +29,14 @@ conexion_io recibir_conexion_io(int server) {
 
 	log_info(logger,"Esperando handshake del modulo IO ... ");
     int cod = recibir_operacion(socket);
+    if(cod != HANDSHAKE){
+        log_error(logger, "Respuesta erronea de handshake");
+        close(socket);
+        exit(EXIT_FAILURE); // Nose si mata al proceso o solo al hilo
+    }
     solicitud_conexion_kernel solicitud = recibir_solicitud_conexion_kernel(socket);
     log_info(logger,"Recibido handshake del modulo IO. Interfaz: [%s] Tipo: [%d]", solicitud.nombre_interfaz, solicitud.tipo);
-
-    log_info(logger,"Respondiendo handshake del modulo IO... ");
+    log_info(logger, "Respondiendo handshake del modulo IO... ");
     enviar_status(SUCCESS, socket);
     
     conexion_io conexion_io;
@@ -40,7 +44,8 @@ conexion_io recibir_conexion_io(int server) {
     conexion_io.socket = socket;
     conexion_io.nombre_interfaz = solicitud.nombre_interfaz;
     conexion_io.tipo = solicitud.tipo;
-
+    conexion_io.operaciones = solicitud.operaciones;
+    
     return conexion_io;
 }
 
