@@ -3,7 +3,8 @@
 
 #include <commons/log.h>
 #include <commons/string.h>
-#include "operacion.h"
+#include "registro.h"
+#include "../../shared/include/operacion.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 

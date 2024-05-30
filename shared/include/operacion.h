@@ -1,12 +1,11 @@
 #ifndef OPERACION_H_
 #define OPERACION_H_
 
+#include <stdlib.h>
 #include <commons/string.h>
 #include <commons/log.h>
-#include "../../shared/include/pcb.h"
 
 extern t_log* logger;
-extern pcb* pcb_actual;
 
 typedef enum {
     SET,
@@ -36,8 +35,6 @@ typedef struct {
 } table_element; // pseudo diccionario estático
 
 operacion get_operacion(char** instr_tokenizada);
-void* get_registro(char* token_registro);
 int get_valor(char* token_valor);
-bool es8int(char* token_registro);
 
 #endif
