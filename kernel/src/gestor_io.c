@@ -13,7 +13,6 @@ void *escuchar_io(void *socket){
 		switch (cod_op) {
 		case FIN_EJECUCION_IO:
 			log_info(logger, "Recibi FIN_EJECUCION_IO. CODIGO: %d", cod_op);
-			recibir_mensaje(cliente_fd);
 
 			pcb* pcb_blocked = pop_cola_blocked();
 			pcb_blocked->estado = READY;
