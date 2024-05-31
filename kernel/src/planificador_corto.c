@@ -141,7 +141,6 @@ void enviar_interrupcion(int socket_cliente, unsigned pid_enviado){
     void* buffer = serializar_interrupcion(pid_enviado, &size);
     int bytes_enviados = send(socket_cliente, buffer,size ,0);
     free(buffer);
-    //return bytes_enviados;
 }
 
 void* serializar_interrupcion(unsigned int valor, size_t* size) {

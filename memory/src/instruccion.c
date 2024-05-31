@@ -25,11 +25,18 @@ static t_list *leer_archivo_instrucciones(char *file_name)
     while ((read = getline(&linea, &len, archivo)) != -1)
     {
         char *mi_linea = string_new();
-        string_n_append(&mi_linea, linea, string_length(linea) - 1);
+        string_n_append(&mi_linea, linea, string_length(linea));
+
+        // Remueve todos los caracteres vacios de la derecha y la izquierda
+        string_trim(&mi_linea);
+        if(string_length(mi_linea) < 4) continue;
+
         list_add(instrucciones, mi_linea);
     }
+
     fclose(archivo);
     free(path);
+    free(linea);
 
     return instrucciones; 
     // Lista de instrucciones individuales de todo el archivo: ["SET AX 3","SUM AX BX", "RESIZE 89"]

@@ -107,6 +107,7 @@ void* gestionar_solicitudes_cpu(){
             log_info(logger, "FETCH_INSTRUCCION recibido. ");
 
 			recibir_solicitud_de_cpu();
+			esperar_retardo();
 			enviar_instruccion_a_cpu();		
 
 			break;
