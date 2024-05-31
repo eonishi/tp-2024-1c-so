@@ -32,6 +32,6 @@ void send_interrupt();
 void gestionar_respuesta_cpu();
 void *monitoreo_quantum();
 void* serializar_interrupcion(unsigned int , size_t*);
-
+void enviar_interrupcion(int socket_cliente, unsigned pid_enviado);
 
 #endif
