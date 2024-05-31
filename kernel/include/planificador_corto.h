@@ -31,6 +31,7 @@ void dispatch_proceso_planificador(pcb* newPcb);
 void send_interrupt();
 void gestionar_respuesta_cpu();
 void *monitoreo_quantum();
+void* serializar_interrupcion(unsigned int , size_t*);
 
 
 #endif

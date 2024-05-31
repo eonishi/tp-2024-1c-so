@@ -24,5 +24,7 @@ void recibir_mensaje(int);
 int recibir_operacion(int); // Sirve como recibir status
 void* recibir_buffer(int*, int);
 char *recibir_respuesta(int socket);
+unsigned recibir_interrupcion(int);
+unsigned deserializar_interrupcion(void*);
 
 #endif

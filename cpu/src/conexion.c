@@ -107,7 +107,6 @@ void server_interrupt()
 			terminar_programa();
 			exit(EXIT_FAILURE);
 		default:
-			
 			unsigned PID = recibir_interrupcion(cliente_fd);
 			if(PID == pcb_actual->pid){
 				log_info(logger, "INTERRUPCION recibida. PID: %d", PID);

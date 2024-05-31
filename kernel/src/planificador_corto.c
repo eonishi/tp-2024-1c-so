@@ -128,6 +128,7 @@ void *monitoreo_quantum(){
 void send_interrupt(){
     log_info(logger, "hago send interrupt");
     pcb* pcb_en_cpu = queue_peek(cola_ready);
+    log_info(logger, "TENGO EL PCB DE READY");
     enviar_interrupcion(socket_cpu_interrupt, pcb_en_cpu->pid); 
 	log_info(logger, "Solicitud INTERRUPCION enviada a CPU");
     gestionar_respuesta_cpu();
