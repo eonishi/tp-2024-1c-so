@@ -46,6 +46,32 @@ void enviar_status(int codigo_op, int socket_cliente)
 	free(buffer);
 }
 
+void enviar_cantidad(unsigned cantidad ,int codigo_op, int socket_cliente)
+{
+	int size_buffer = sizeof(int) + sizeof(unsigned);
+	void * buffer = malloc(size_buffer);
+	int desplazamiento = 0;
+
+	memcpy(buffer, &codigo_op, sizeof(int));
+	desplazamiento += sizeof(int);
+
+	memcpy(buffer + desplazamiento, &cantidad, sizeof(unsigned));
+
+	send(socket_cliente, buffer, size_buffer, 0);
+	free(buffer);
+}
+
+unsigned recibir_cantidad(int socket_cliente){
+	unsigned cantidad;
+	if(recv(socket_cliente, &cantidad, sizeof(unsigned), MSG_WAITALL) != -1){
+		return cantidad;
+	}
+	else{
+		close(socket_cliente);
+		return -1;
+	};
+}
+
 int esperar_respuesta(int socket, op_code codigo_esperado){
 	int codigo_recibido = recibir_operacion(socket);
 	log_info(logger, "Esperar_respuesta: Codigo: [%d]", codigo_recibido);
