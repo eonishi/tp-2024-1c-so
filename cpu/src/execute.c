@@ -23,9 +23,11 @@ void execute(char **instr_tokenizada)
     case JNZ:
         exec_jnz(instr_tokenizada);
         break;
+    case RESIZE:
+        exec_resize(instr_tokenizada);
+        siguiente_pc(pcb_actual);
+        break;
     case IO_GEN_SLEEP:
-    case IO_STDIN_READ:
-    case IO_STDOUT_WRITE:
     case IO_FS_CREATE:
     case IO_FS_DELETE:
     case IO_FS_TRUNCATE:
@@ -35,9 +37,15 @@ void execute(char **instr_tokenizada)
         siguiente_pc(pcb_actual);
         exec_operacion_io(instr_tokenizada);                
         break;
+    case IO_STDIN_READ:
+    case IO_STDOUT_WRITE:
+        tengo_pcb = 0;
+        siguiente_pc(pcb_actual);
+        
+        exec_operacion_io(instr_tokenizada);
+        break;
     case EXIT_OP:
         tengo_pcb = 0;
-
         enviar_pcb(pcb_actual, socket_kernel, PROCESO_TERMINADO);
         break;
     default:
@@ -125,4 +133,21 @@ void exec_operacion_io(char** instr_tokenizada){
     solicitud.pcb = pcb_actual;
 
     enviar_bloqueo_por_io(solicitud, socket_kernel);
+}
+
+void exec_resize(char** instr_tokenizada){
+    // RESIZE cantidad_paginas
+    int cantidad_paginas = get_valor(instr_tokenizada[1]);
+    enviar_cantidad(cantidad_paginas, REDIMENSIONAR_MEMORIA_PROCESO, socket_memoria);
+
+    // Esperar confirmación de la memoria
+    op_code status = recibir_operacion(socket_memoria);
+    if(status == SUCCESS){
+        log_info(logger, "Se redimensionó la memoria correctamente");
+    }
+    else{
+        log_error(logger, "Hubo un problema al redimensionar la memoria");
+        tengo_pcb = 0;
+        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO); // o OUT_OF_MEMORY?
+    }
 }

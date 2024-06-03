@@ -50,3 +50,23 @@ bool io_tiene_operacion(int* operaciones_io, char* operacion_token, io_tipo tipo
         return operaciones_io[0] == op_a_revisar;
     }
 }
+
+const operacion tabla_op_mem[] = {
+ MOV_IN,
+ MOV_OUT,
+ COPY_STRING,
+ IO_STDIN_READ,
+ IO_STDOUT_WRITE,
+};
+
+bool operacion_usa_memoria(char* token_operacion){
+    operacion op_consultada = get_operacion(&token_operacion);
+    for(int i = 0; i < sizeof(tabla_op_mem) / sizeof(operacion); i++){
+        if(tabla_op_mem[i] == op_consultada){
+            return 1;
+        }
+        else{
+            return 0;
+        }
+    }
+}
