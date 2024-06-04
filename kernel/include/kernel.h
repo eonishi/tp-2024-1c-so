@@ -40,6 +40,7 @@ t_queue *cola_new;
 t_queue *cola_exit;
 t_queue *cola_ready;
 t_queue *cola_blocked;
+t_queue *cola_execute;
 // -- Semaforos
 sem_t sem_nuevo_proceso;
 sem_t sem_grado_multiprog;

@@ -27,7 +27,8 @@ void *iniciar_planificacion_corto(){
 
 
 void dispatch_proceso_planificador(pcb* newPcb){
-    enviar_pcb(newPcb, socket_cpu_dispatch, DISPATCH_PROCESO); 
+    enviar_pcb(newPcb, socket_cpu_dispatch, DISPATCH_PROCESO);
+    push_cola_execute(newPcb); 
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");    
 }
 
@@ -44,7 +45,7 @@ void gestionar_respuesta_cpu(){
 			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
 			pcb = recibir_pcb(socket_cpu_dispatch);
 			loggear_pcb(pcb);
-
+            pop_cola_execute();
 			push_cola_exit(pcb);
 
 			sem_post(&sem_cpu_libre);
@@ -129,7 +130,7 @@ void *monitoreo_quantum(){
 
 void send_interrupt(){
     log_info(logger, "hago send interrupt");
-    pcb* pcb_en_cpu = unPCBPRUEBA;//queue_peek(cola_ready);
+    pcb* pcb_en_cpu = queue_peek(cola_execute);
     log_info(logger, "TENGO EL PCB DE READY");
     enviar_interrupcion(socket_cpu_interrupt, pcb_en_cpu->pid); 
 	log_info(logger, "Solicitud INTERRUPCION enviada a CPU");

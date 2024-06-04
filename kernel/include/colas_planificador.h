@@ -13,6 +13,7 @@ extern t_queue *cola_new;
 extern t_queue *cola_ready;
 extern t_queue *cola_blocked;
 extern t_queue *cola_exit;
+extern t_queue *cola_execute;
 
 void inicializar_colas_planificador();
 
@@ -29,5 +30,8 @@ void push_cola_exit(pcb* pcb);
 
 void imprimir_colas();
 void imprimir_cola(char* nombre, t_queue* cola);
+
+void push_cola_execute(pcb* pcb);
+pcb* pop_cola_execute();
 
 #endif
