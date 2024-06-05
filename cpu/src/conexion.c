@@ -18,7 +18,12 @@ int crear_conexion_memoria()
 	socket_memoria = conexion;
 
 	enviar_handshake(socket_memoria);
+	if(recibir_operacion(socket_memoria) != HANDSHAKE){
+		log_error(logger, "Error en el handshake con Memoria");
+		abort();
+	}
 	TAM_PAGINA = recibir_cantidad(socket_memoria); // Asignacion a variable que usa la MMU
+	log_info(logger, "TAM_PAGINA: %d", TAM_PAGINA);
 
   return conexion;
 }
