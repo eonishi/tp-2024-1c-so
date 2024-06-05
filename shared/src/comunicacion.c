@@ -67,6 +67,7 @@ unsigned recibir_cantidad(int socket_cliente){
 		return cantidad;
 	}
 	else{
+		log_info(logger, "Error al recibir cantidad. Me Desconecto :(");
 		close(socket_cliente);
 		return -1;
 	};

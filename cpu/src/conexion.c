@@ -18,7 +18,7 @@ int crear_conexion_memoria()
 	socket_memoria = conexion;
 
 	enviar_handshake(socket_memoria);
-	esperar_handshake(socket_memoria);
+	TAM_PAGINA = recibir_cantidad(socket_memoria); // Asignacion a variable que usa la MMU
 
   return conexion;
 }

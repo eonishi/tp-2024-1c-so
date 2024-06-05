@@ -9,11 +9,12 @@ void esperar_handshake_cpu(int server) {
     int resultado = esperar_handshake(socket_cpu);
     if(resultado == -1) {
         log_error(logger,"No se pudo conectar con el modulo CPU");
-        exit(EXIT_FAILURE);
+        abort();
     }
 
+    // Seria el handshake de la memoria
     log_info(logger,"Respondiendo handshake del modulo CPU ... ");
-    enviar_handshake(socket_cpu);
+    enviar_cantidad(config.tam_pagina, HANDSHAKE, socket_cpu);
 }
 
 void esperar_handshake_kernel(int server) {
