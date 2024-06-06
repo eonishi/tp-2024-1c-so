@@ -41,21 +41,20 @@ void* get_frame(int frame_number, int desplazamiento){
     return MEMORIA + (frame_number * config.tam_pagina) + desplazamiento; // tam_pagina = tam_frame en paginación simple
 }
 
-void set_frame(int frame_number, int offset, void* data){
+void set_frame(int frame_number, int offset, void* data, size_t size_data){
     void* frame = get_frame(frame_number, offset);
-    memcpy(frame + offset, data, sizeof(data));
+    memcpy(frame + offset, data, size_data);
     //free(data);
 
+    // seteo el bit que representa el frame como ocupado
     bitarray_set_bit(FRAME_BITMAP, frame_number);
 }
 
-void imprimir_data(int frame_number, int offset){
+void imprimir_data(int frame_number, int offset, size_t value_size){
     void* frame = get_frame(frame_number, offset);
-    size_t value_size = sizeof(20);//hola mundo\0
     char* value = malloc(value_size);
     memcpy(value, frame, value_size);
     log_info(logger, "Data en frame [%d]: [%s]", frame_number, value);
-    free(value);
 }
 
 void  imprimir_frames(){

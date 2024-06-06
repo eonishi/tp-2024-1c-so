@@ -12,9 +12,9 @@ extern memory_config config;
 
 void inicializar_memoria();
 void* get_frame(int frame_number, int offset);
-void set_frame(int frame_number, int offset, void *data);
+void set_frame(int frame_number, int offset, void *data, size_t size_data);
 bool tengo_espacio_para_agregar(int cantidad_frames);
 void imprimir_frames();
-void imprimir_data(int frame_number, int offset);
+void imprimir_data(int frame_number, int offset, size_t value_size);
 
 #endif

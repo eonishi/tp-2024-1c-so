@@ -30,16 +30,16 @@ int main(){
 		//imprimir_data(4, 2);
 		//imprimir_data(12, 2);
 
-		set_frame(0, 0, data);
-		imprimir_data(0,0);
+		set_frame(0, 0, data, strlen(data) + 1);
+		imprimir_data(0,0, strlen(data) + 1);
 
-		set_frame(100, 0, &un_numero);
-		imprimir_data(100,0);
+		set_frame(100, 0, &un_numero, sizeof(un_numero));
+		imprimir_data(100,0, sizeof(int));
 
 		void *test = malloc(5);
 		strcpy(test, "test");
-		set_frame(101, 0, test);
-		imprimir_data(101, 0);
+		set_frame(101, 0, test, strlen(test) + 1);
+		imprimir_data(101, 0, strlen(test) + 1);
 
 		//log_info(logger, "imprimo todos los frames:");
 		//imprimir_frames();
