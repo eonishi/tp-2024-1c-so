@@ -33,21 +33,21 @@ void inicializar_bitmap(){
 }
 
 void inicializar_memoria(){
-    MEMORIA = malloc(config.tam_memoria);
+    MEMORIA = calloc(config.tam_memoria, sizeof(char));
     inicializar_bitmap();
 }
 
 void* get_frame(int frame_number, int desplazamiento){
+    // devuelve un puntero a la base del frame + desplazamiento.
+    // Tener en cuenta que se trabaja sobre el espacio de memoria y no sobre una copia de los datos.
     return MEMORIA + (frame_number * config.tam_pagina) + desplazamiento; // tam_pagina = tam_frame en paginación simple
 }
 
 void set_frame(int frame_number, int offset, void* data, size_t size_data){
     void* frame = get_frame(frame_number, offset);
-    memcpy(frame + offset, data, size_data);
-    //free(data);
-
-    // seteo el bit que representa el frame como ocupado
+    memcpy(frame, data, size_data);
     bitarray_set_bit(FRAME_BITMAP, frame_number);
+    log_info(logger, "Data [%s] guardada en frame [%d]", data, frame_number);
 }
 
 void imprimir_data(int frame_number, int offset, size_t value_size){
@@ -59,7 +59,11 @@ void imprimir_data(int frame_number, int offset, size_t value_size){
 
 void  imprimir_frames(){
     for (size_t i = 0; i < size_bitmap; i++){
-        log_info(logger, "Frame [%d]: [%s] esta [%s]", i, get_frame(i, 0), bitarray_test_bit(FRAME_BITMAP, i) ? "Ocupado" : "Libre");
+        void* frame = get_frame(i, 0);
+        char* frame_value = malloc(config.tam_pagina);
+        memcpy(frame_value, frame, config.tam_pagina);
+        log_info(logger, "Frame [%d]: [%s] esta [%s]", i, frame_value, bitarray_test_bit(FRAME_BITMAP, i) ? "Ocupado" : "Libre");
+        free(frame_value);
     }
 }
 
