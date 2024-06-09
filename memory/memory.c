@@ -1,7 +1,5 @@
 #include "include/memory.h"
 
-t_list *procesos_en_memoria;
-
 int main(){
     logger = iniciar_logger("memory.log", "MEMORY");
     log_info(logger, "Logger de MEMORY iniciado");
@@ -11,43 +9,8 @@ int main(){
     int server_fd = iniciar_servidor("MEMORY", config.ip_memoria, config.puerto_memoria);
 
 	// Inicializo la lista de procesos en memoria
-	procesos_en_memoria = list_create();
-
+	inicializar_procesos_en_memoria();
 	inicializar_memoria();
-	int cantidad = 64;
-	int un_numero = 120;
-	if (tengo_espacio_para_agregar(cantidad))
-	{
-		void* data = malloc(11);
-		strcpy(data, "Hola mundo");
-		//for(size_t i = 0; i < cantidad; i++){
-		//	set_frame(i, 2, data);
-		//}
-		//imprimir_data(0, 2);
-		//imprimir_data(1, 0);
-		//imprimir_data(1, 1);
-		//imprimir_data(1, 2);
-		//imprimir_data(4, 2);
-		//imprimir_data(12, 2);
-
-		set_frame(0, 0, data, strlen(data) + 1);
-		imprimir_data(0,0, strlen(data) + 1);
-
-		set_frame(100, 0, &un_numero, sizeof(un_numero));
-		imprimir_data(100,0, sizeof(int));
-
-		void *test = malloc(5);
-		strcpy(test, "test");
-		set_frame(101, 0, test, strlen(test) + 1);
-		imprimir_data(101, 0, strlen(test) + 1);
-
-		//log_info(logger, "imprimo todos los frames:");
-		//imprimir_frames();
-	}
-	else
-	{
-		log_info(logger, "No tengo espacio para agregar [%d] frames", cantidad);
-	}
 
 	esperar_handshake_cpu(server_fd);
     esperar_handshake_kernel(server_fd);

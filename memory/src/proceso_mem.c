@@ -1,8 +1,14 @@
 #include "../include/proceso_mem.h"
 
+t_list *procesos_en_memoria;
+
 unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set 
 unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
 
+
+void inicializar_procesos_en_memoria(){
+    procesos_en_memoria = list_create();
+}
 
 static t_list *leer_archivo_instrucciones(char *file_name)
 {

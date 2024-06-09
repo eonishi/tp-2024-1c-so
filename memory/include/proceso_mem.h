@@ -8,7 +8,6 @@
 #include "tabla_paginas.h"
 #include "configuracion.h"
 
-extern t_list* procesos_en_memoria;
 extern t_log* logger;
 extern memory_config config;
 
@@ -18,6 +17,7 @@ typedef struct {
     t_dictionary* tabla_paginas;
 } t_proceso_en_memoria;
 
+void inicializar_procesos_en_memoria();
 void cargar_proceso_en_memoria(char *path, unsigned PID);
 void liberar_proceso_en_memoria(unsigned PID);
 bool memoria_tiene_pid(void* set_instrucciones, unsigned PID);
