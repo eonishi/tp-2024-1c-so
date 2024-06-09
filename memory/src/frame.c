@@ -46,9 +46,27 @@ void* get_frame(int frame_number, int desplazamiento){
 void set_frame(int frame_number, int offset, void* data, size_t size_data){
     void* frame = get_frame(frame_number, offset);
     memcpy(frame, data, size_data);
-    bitarray_set_bit(FRAME_BITMAP, frame_number);
     log_info(logger, "Data [%s] guardada en frame [%d]", data, frame_number);
 }
+
+void marcar_frame_como(unsigned frame_number, int estado){
+    if(estado){
+        bitarray_set_bit(FRAME_BITMAP, frame_number);
+    } else {
+        bitarray_clean_bit(FRAME_BITMAP, frame_number);
+    }
+}
+
+unsigned get_available_frame(){
+    for (size_t i = 0; i < size_bitmap; i++){
+        if (!bitarray_test_bit(FRAME_BITMAP, i)){
+            log_info(logger, "Frame disponible [%d]", i);
+            return i;
+        }
+    }
+    log_error(logger, "No hay frames disponibles");
+    return -1;
+};
 
 void imprimir_data(int frame_number, int offset, size_t value_size){
     void* frame = get_frame(frame_number, offset);
