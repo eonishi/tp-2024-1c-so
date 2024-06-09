@@ -12,5 +12,6 @@ typedef t_dictionary t_tabla_paginas;
 extern t_list* procesos_en_memoria;
 
 t_dictionary *crear_tabla_paginas();
+unsigned calcular_cantidad_de_paginas_por_bytes(unsigned bytes);
 
 #endif

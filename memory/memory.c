@@ -111,9 +111,15 @@ void* gestionar_solicitudes_cpu(){
 		case REDIMENSIONAR_MEMORIA_PROCESO:
 			log_info(logger, "REDIMENSIONAR_MEMORIA_PROCESO recibido.");
 
-			unsigned cantidad_resize = recibir_cantidad(socket_cpu);
-			log_info(logger, "Cantidad de paginas a redimensionar: %d", cantidad_resize);
-			// TODO: cambio la cantidad entradas de la tabla de paginas del proceso
+			unsigned tamanio_en_bytes = recibir_cantidad(socket_cpu);
+		
+			log_info(logger, "Resize de [%d] bytes recibido", tamanio_en_bytes);
+
+			unsigned cantidad_de_paginas = calcular_cantidad_de_paginas_por_bytes(tamanio_en_bytes);
+
+			log_info(logger, "La nueva cantidad de paginas es: [%d]", cantidad_de_paginas);
+
+			// TODO: Se asigna esa cantidad de páginas a la tabla de paginas	
 			// TODO: Checkear si el resize fue exitoso o no y enviar respuesta
 			enviar_status(SUCCESS, socket_cpu);
 			log_info(logger, "Se redimensionó la memoria correctamente, envio: [%d]", SUCCESS);
