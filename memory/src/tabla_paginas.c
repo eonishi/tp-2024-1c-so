@@ -29,3 +29,7 @@ unsigned get_frame_number_by_pagina(unsigned nro_pagina){
     unsigned frame_number = (unsigned) dictionary_get(tabla, nro_pagina_str);
     return frame_number;
 }
+
+unsigned calcular_cantidad_de_paginas_por_bytes(unsigned bytes){
+    return (bytes + config.tam_pagina - 1) / config.tam_pagina; // división entera con redondeo hacia arriba
+}
