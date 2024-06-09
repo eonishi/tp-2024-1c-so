@@ -7,6 +7,7 @@
 #include "configuracion.h"
 #include "conexion.h"
 #include "instruccion.h"
+#include "frame.h"
 #include "../../shared/include/logger.h"
 #include "../../shared/include/pcb.h"
 

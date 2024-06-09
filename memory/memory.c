@@ -13,6 +13,42 @@ int main(){
 	// Inicializo la lista de procesos en memoria
 	procesos_en_memoria = list_create();
 
+	inicializar_memoria();
+	int cantidad = 64;
+	int un_numero = 120;
+	if (tengo_espacio_para_agregar(cantidad))
+	{
+		void* data = malloc(11);
+		strcpy(data, "Hola mundo");
+		//for(size_t i = 0; i < cantidad; i++){
+		//	set_frame(i, 2, data);
+		//}
+		//imprimir_data(0, 2);
+		//imprimir_data(1, 0);
+		//imprimir_data(1, 1);
+		//imprimir_data(1, 2);
+		//imprimir_data(4, 2);
+		//imprimir_data(12, 2);
+
+		set_frame(0, 0, data, strlen(data) + 1);
+		imprimir_data(0,0, strlen(data) + 1);
+
+		set_frame(100, 0, &un_numero, sizeof(un_numero));
+		imprimir_data(100,0, sizeof(int));
+
+		void *test = malloc(5);
+		strcpy(test, "test");
+		set_frame(101, 0, test, strlen(test) + 1);
+		imprimir_data(101, 0, strlen(test) + 1);
+
+		//log_info(logger, "imprimo todos los frames:");
+		//imprimir_frames();
+	}
+	else
+	{
+		log_info(logger, "No tengo espacio para agregar [%d] frames", cantidad);
+	}
+
 	esperar_handshake_cpu(server_fd);
     esperar_handshake_kernel(server_fd);
 
@@ -47,11 +83,11 @@ void* gestionar_solicitudes_kernel(){
 		case CREAR_PROCESO_EN_MEMORIA:
             log_info(logger, "CREAR_PROCESO_EN_MEMORIA recibido.");
 
+			// (SUS) podria recibir solo el path y PID
             solicitud_crear_proceso solicitud_crear_proceso = recibir_solicitud_crear_proceso(socket_kernel);
 			pcb* pcb = solicitud_crear_proceso.pcb;
 
-			crear_instr_set(solicitud_crear_proceso.filePath, pcb->pid);
-            pcb->registros->ax = 1;
+			cargar_proceso_en_memoria(solicitud_crear_proceso.filePath, pcb->pid);
 			
             // Operaciones crear proceso en memoria
             enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
@@ -95,7 +131,6 @@ void crear_hilo_solicitudes_cpu(){
 }
 
 void* gestionar_solicitudes_cpu(){
-    t_list* lista;
 
     log_info(logger, "Esperando recibir operacion del CPU...");
 	while (1) {    
@@ -106,7 +141,7 @@ void* gestionar_solicitudes_cpu(){
 		case FETCH_INSTRUCCION:
             log_info(logger, "FETCH_INSTRUCCION recibido. ");
 
-			recibir_solicitud_de_cpu();
+			recibir_fetch_de_cpu();
 			esperar_retardo();
 			enviar_instruccion_a_cpu();		
 			break;
