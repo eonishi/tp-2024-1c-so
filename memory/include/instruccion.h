@@ -9,6 +9,7 @@
 
 extern t_log* logger;
 extern int socket_cpu;
+extern unsigned PID_solicitado;
 
 void enviar_instruccion_a_cpu();
 void recibir_fetch_de_cpu();

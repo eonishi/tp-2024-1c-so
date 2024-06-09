@@ -1,12 +1,6 @@
 #include "../include/instruccion.h"
 
-static unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
-static unsigned PC_solicitado; // Estas dos variables SOLO deben ser modificadas por recibir_solicitud_de_cpu
-
-// ----Condiciones de búsqueda----
-static bool memoria_tiene_pid_solicitado(void* set_instrucciones){
-    return memoria_tiene_pid(set_instrucciones, PID_solicitado);
-}//--------
+static unsigned PC_solicitado;
 
 static char* get_instr_by_pc(){
     if(!list_any_satisfy(procesos_en_memoria, memoria_tiene_pid_solicitado)){

@@ -5,7 +5,7 @@
 #include <commons/log.h>
 #include <commons/string.h>
 #include <commons/collections/list.h>
-#include <commons/collections/dictionary.h>
+#include "tabla_paginas.h"
 #include "configuracion.h"
 
 extern t_list* procesos_en_memoria;
@@ -21,5 +21,6 @@ typedef struct {
 void cargar_proceso_en_memoria(char *path, unsigned PID);
 void liberar_proceso_en_memoria(unsigned PID);
 bool memoria_tiene_pid(void* set_instrucciones, unsigned PID);
+bool memoria_tiene_pid_solicitado(void* set_instrucciones);
 
 #endif

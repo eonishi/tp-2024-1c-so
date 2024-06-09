@@ -1,6 +1,8 @@
 #include "../include/proceso_mem.h"
 
-static unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set 
+unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set 
+unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
+
 
 static t_list *leer_archivo_instrucciones(char *file_name)
 {
@@ -50,22 +52,25 @@ void cargar_proceso_en_memoria(char* path, unsigned PID){
     log_info(logger, "Instrucciones del proceso PID:%u cargadas en memoria", PID);
 } 
 
+// ----Condiciones de búsqueda----
 bool memoria_tiene_pid(void* set_instrucciones, unsigned PID){
     return ((t_proceso_en_memoria*)set_instrucciones)->PID == PID;
 }
-
+bool memoria_tiene_pid_solicitado(void* set_instrucciones){
+    return memoria_tiene_pid(set_instrucciones, PID_solicitado);
+}
 static bool memoria_tiene_pid_a_liberar(void* set_instrucciones){
     return memoria_tiene_pid(set_instrucciones, PID_a_liberar);
-}
+}//--------
 
 // ----Liberador de memoria----
 static void proceso_mem_destroyer(void* set_instrucciones){
     t_proceso_en_memoria* proceso_a_destruir = (t_proceso_en_memoria*)set_instrucciones;
     list_destroy_and_destroy_elements(proceso_a_destruir->instrucciones, free);
     free(proceso_a_destruir);
-}//--------
+}
 
 void liberar_instr_set(unsigned PID){
     PID_a_liberar=PID;
     list_remove_and_destroy_by_condition(procesos_en_memoria, memoria_tiene_pid_a_liberar, proceso_mem_destroyer);
-}
+}//--------
