@@ -51,7 +51,7 @@ void cargar_proceso_en_memoria(char* path, unsigned PID){
     t_proceso_en_memoria* nuevo_set_instruc = malloc(sizeof(t_proceso_en_memoria));
     nuevo_set_instruc->PID = PID;
     nuevo_set_instruc->instrucciones = leer_archivo_instrucciones(path);
-    nuevo_set_instruc->tabla_paginas = dictionary_create();
+    nuevo_set_instruc->tabla_paginas = list_create();
 
     //Guardo en una lista los procesos en memoria (Temporal hasta definir como se guardan)
     list_add(procesos_en_memoria, nuevo_set_instruc);

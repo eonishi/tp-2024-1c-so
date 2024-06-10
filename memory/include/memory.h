@@ -8,6 +8,7 @@
 #include "conexion.h"
 #include "instruccion.h"
 #include "frame.h"
+#include "tabla_paginas.h"
 #include "../../shared/include/logger.h"
 #include "../../shared/include/pcb.h"
 
