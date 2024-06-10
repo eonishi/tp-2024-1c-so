@@ -18,5 +18,7 @@ void imprimir_frames();
 void imprimir_data(int frame_number, int offset, size_t value_size);
 void marcar_frame_como(unsigned frame_number, int estado);
 unsigned get_available_frame();
+unsigned frames_libres();
+
 
 #endif
