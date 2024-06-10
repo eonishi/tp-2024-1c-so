@@ -80,3 +80,7 @@ bool puedo_agregar_o_disminuir(int cantidad_paginas){
         return cantidad_actual_de_paginas - cantidad_paginas >= 0;
     }
 }
+
+unsigned calcular_cantidad_de_paginas_por_bytes(unsigned bytes){
+    return (bytes + config.tam_pagina - 1) / config.tam_pagina; // división entera con redondeo hacia arriba
+}

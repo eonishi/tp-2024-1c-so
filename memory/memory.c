@@ -112,9 +112,10 @@ void* gestionar_solicitudes_cpu(){
 		case REDIMENSIONAR_MEMORIA_PROCESO:
 			log_info(logger, "REDIMENSIONAR_MEMORIA_PROCESO recibido.");
 
-			unsigned cantidad_resize = recibir_cantidad(socket_cpu);
-			if(puedo_agregar_o_disminuir(cantidad_resize)){
-				redimensionar_memoria_proceso(cantidad_resize);
+			unsigned tamanio_en_bytes = recibir_cantidad(socket_cpu);
+			unsigned cantidad_de_paginas = calcular_cantidad_de_paginas_por_bytes(tamanio_en_bytes);
+			if(puedo_agregar_o_disminuir(cantidad_de_paginas)){
+				redimensionar_memoria_proceso(cantidad_de_paginas);
 				mostrar_tabla_paginas();
 
 				enviar_status(SUCCESS, socket_cpu);
@@ -126,7 +127,6 @@ void* gestionar_solicitudes_cpu(){
 				log_info(logger, "No se pudo redimensionar la memoria, envio: [%d]", OUT_OF_MEMORY);
 				break;
 			}
-
 
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");

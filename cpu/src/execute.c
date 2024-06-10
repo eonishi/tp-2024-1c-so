@@ -137,9 +137,9 @@ void exec_operacion_io(char** instr_tokenizada){
 
 void exec_resize(char** instr_tokenizada){
     // RESIZE cantidad_paginas
-    int cantidad_bytes = get_valor(instr_tokenizada[1]);
-    int cantidad_paginas = cantidad_bytes / TAM_PAGINA;
-    enviar_cantidad(cantidad_paginas, REDIMENSIONAR_MEMORIA_PROCESO, socket_memoria);
+
+    int tamanio_en_bytes = get_valor(instr_tokenizada[1]);
+    enviar_cantidad(tamanio_en_bytes, REDIMENSIONAR_MEMORIA_PROCESO, socket_memoria);
 
     // Esperar confirmación de la memoria
     op_code status = recibir_operacion(socket_memoria);
