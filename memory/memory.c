@@ -127,7 +127,16 @@ void* gestionar_solicitudes_cpu(){
 				log_info(logger, "No se pudo redimensionar la memoria, envio: [%d]", OUT_OF_MEMORY);
 				break;
 			}
+		case ESCRIBIR_DATO_EN_MEMORIA:
+			log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 
+			solicitud_escribir_dato_en_memoria solicitud = recibir_escribir_dato_en_memoria(socket_cpu);
+
+			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d]", solicitud.direccion, solicitud.dato);
+
+			enviar_status(SUCCESS, socket_cpu);
+			log_info(logger, "Se escribió dato en memoria correctamente, envio: [%d]", SUCCESS);
+			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
 		
