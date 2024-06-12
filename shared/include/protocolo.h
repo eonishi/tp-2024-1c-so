@@ -47,7 +47,18 @@ solicitud_bloqueo_por_io recibir_solicitud_bloqueo_por_io(int socket_cliente);
 int enviar_instruccion_io(char** instruccion_tokenizada, int socket_cliente);
 char** recibir_instruccion_io(int socket_cliente);
 
+typedef struct{
+    uint32_t *direccion;
+    uint32_t *dato;
+} solicitud_escribir_dato_en_memoria;
 
+
+int enviar_escribir_dato_en_memoria(uint32_t direccion, uint32_t dato, int socket_cliente);
+solicitud_escribir_dato_en_memoria recibir_escribir_dato_en_memoria(int socket_cliente);
+
+
+void* serializar_uint32(uint32_t value);
+uint32_t deserializar_uint32(void* int_bytes);
 // Temporales
 void* serializar_char(char* string);
 void* serializar_int(int number);

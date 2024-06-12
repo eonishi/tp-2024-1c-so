@@ -235,3 +235,43 @@ char** recibir_instruccion_io(int socket_cliente){
 }
 
 
+void* serializar_uint32(uint32_t value){
+    void* stream = malloc(sizeof(uint32_t)); 
+
+    memcpy(stream, &value, sizeof(uint32_t));
+    
+    return stream;
+}
+
+uint32_t deserializar_uint32(void* int_bytes){
+    uint32_t* result =malloc(sizeof(uint32_t));
+    memcpy(result, int_bytes, sizeof(uint32_t));
+
+    return *result;
+}
+
+
+int enviar_escribir_dato_en_memoria(uint32_t direccion, uint32_t dato, int socket_cliente){
+    log_info(logger, "Enviando escritura a memoria. Dirección: [%d], Dato:[%d]", direccion, dato);
+
+    t_paquete* paquete = crear_paquete(ESCRIBIR_DATO_EN_MEMORIA);
+
+    void* direccion_serializada = serializar_uint32(direccion);
+    agregar_a_paquete(paquete, direccion_serializada, sizeof(uint32_t));
+
+    void* dato_serializado = serializar_uint32(dato);
+    agregar_a_paquete(paquete, dato_serializado, sizeof(uint32_t));
+
+    enviar_paquete(paquete, socket_cliente);
+}
+
+solicitud_escribir_dato_en_memoria recibir_escribir_dato_en_memoria(int socket_cliente){
+    t_list* lista_bytes = recibir_paquete(socket_cliente);
+
+    solicitud_escribir_dato_en_memoria respuesta;
+
+    respuesta.direccion = deserializar_uint32(list_get(lista_bytes, 0));
+    respuesta.dato = deserializar_uint32(list_get(lista_bytes, 1));
+
+    return respuesta;
+}
