@@ -59,6 +59,9 @@ solicitud_escribir_dato_en_memoria recibir_escribir_dato_en_memoria(int socket_c
 int enviar_solicitud_leer_dato_de_memoria(uint32_t direccion, int socket_cliente);
 uint32_t recibir_solicitud_leer_dato_de_memoria(int socket_cliente);
 
+void enviar_dato_leido_de_memoria(uint32_t dato, int socket);
+uint32_t recibir_dato_leido_de_memoria(int socket);
+
 
 // Temporales
 void* serializar_char(char* string);

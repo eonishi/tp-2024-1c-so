@@ -255,12 +255,16 @@ void exec_mov_in(char** instr_tokenizada){
         direccion_fisica = calcular_direccion_fisica(direccion_logica);
     }
         
-    enviar_solicitud_leer_dato_de_memoria(direccion_fisica,socket_memoria);
+    enviar_solicitud_leer_dato_de_memoria(direccion_fisica, socket_memoria);
 
     // Esperar confirmación de la memoria
+    log_info(logger, "Esperando dato leido de memoria");
     op_code status = recibir_operacion(socket_memoria);
-    if(status == SUCCESS){
-        log_info(logger, "Se obtuvo del dato de memoria y se escribió el dato en el registro");
+    if(status == DATO_LEIDO_DE_MEMORIA){
+        log_info(logger, "Recibi DATO_LEIDO_DE_MEMORIA");
+        uint32_t dato_leido = recibir_dato_leido_de_memoria(socket_memoria);
+
+        log_info(logger, "Se recibió el dato en memoria: [%d]", dato_leido);
     }
     else{
         log_error(logger, "Hubo un problema al intentar escribir el dato en memoria");

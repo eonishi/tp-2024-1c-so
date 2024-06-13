@@ -293,3 +293,21 @@ uint32_t recibir_solicitud_leer_dato_de_memoria(int socket_cliente){
 
      return deserializar_uint32(list_get(lista_bytes, 0));
 }
+
+
+void enviar_dato_leido_de_memoria(uint32_t dato, int socket_cliente){
+    log_info(logger, "Enviando dato leido de memoria. Dato: [%d]", dato);
+
+    t_paquete* paquete = crear_paquete(DATO_LEIDO_DE_MEMORIA);
+
+    void* direccion_serializada = serializar_uint32(dato);
+    agregar_a_paquete(paquete, direccion_serializada, sizeof(uint32_t));
+
+    enviar_paquete(paquete, socket_cliente);
+}
+
+uint32_t recibir_dato_leido_de_memoria(int socket){
+     t_list* lista_bytes = recibir_paquete(socket);
+
+     return deserializar_uint32(list_get(lista_bytes, 0));
+}
