@@ -137,6 +137,16 @@ void* gestionar_solicitudes_cpu(){
 			enviar_status(SUCCESS, socket_cpu);
 			log_info(logger, "Se escribió dato en memoria correctamente, envio: [%d]", SUCCESS);
 			break;
+		case LEER_DATO_DE_MEMORIA:
+			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
+
+			uint32_t direccion = recibir_solicitud_leer_dato_de_memoria(socket_cpu);
+
+			log_info(logger, "Recibido. Dirección_fisica: [%d]", direccion);
+
+			enviar_status(SUCCESS, socket_cpu);
+			log_info(logger, "Se leyó el dato de la memoria correctamente, envio: [%d]", SUCCESS);
+			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
 		
