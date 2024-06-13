@@ -56,15 +56,22 @@ typedef struct{
 int enviar_escribir_dato_en_memoria(uint32_t direccion, uint32_t dato, int socket_cliente);
 solicitud_escribir_dato_en_memoria recibir_escribir_dato_en_memoria(int socket_cliente);
 
+int enviar_solicitud_leer_dato_de_memoria(uint32_t direccion, int socket_cliente);
+uint32_t recibir_solicitud_leer_dato_de_memoria(int socket_cliente);
 
-void* serializar_uint32(uint32_t value);
-uint32_t deserializar_uint32(void* int_bytes);
+void enviar_dato_leido_de_memoria(uint32_t dato, int socket);
+uint32_t recibir_dato_leido_de_memoria(int socket);
+
+
 // Temporales
 void* serializar_char(char* string);
 void* serializar_int(int number);
-char* deserializar_char(void* char_bytes, int8_t size);
+void* serializar_uint32(uint32_t value);
 void* serializar_lista_strings(char** strings);
+
 char** deserializar_lista_strings(t_list* bytes, int index_cantidad_tokens);
 int deserializar_int(void *int_bytes);
+char* deserializar_char(void* char_bytes, int8_t size);
+uint32_t deserializar_uint32(void* int_bytes);
 
 #endif

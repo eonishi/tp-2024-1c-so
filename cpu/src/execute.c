@@ -31,6 +31,10 @@ void execute(char **instr_tokenizada)
         exec_mov_out(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
+    case MOV_IN:
+        exec_mov_in(instr_tokenizada);
+        siguiente_pc(pcb_actual);
+        break;
     case IO_GEN_SLEEP:
     case IO_FS_CREATE:
     case IO_FS_DELETE:
@@ -222,4 +226,49 @@ uint32_t calcular_direccion_fisica(uint32_t* direccion_logica){
     
 
     return *direccion_fisica;
+}
+
+
+// MOV_IN (Registro Datos, Registro Dirección)
+/* 
+ Lee el valor de memoria correspondiente a la Dirección Lógica que se encuentra en el Registro Dirección 
+ y lo almacena en el Registro Datos.
+
+*/
+void exec_mov_in(char** instr_tokenizada){
+    log_info(logger, "Inicia exec_mov_in");
+
+    char* registro_datos = instr_tokenizada[1];
+    char* registro_direccion = instr_tokenizada[2];
+    
+    log_info(logger, "Registro datos: [%s], Registro dirección: [%s]", registro_datos, registro_direccion);
+
+    uint32_t* direccion_logica = get_registro(registro_direccion);
+    uint32_t* dato_en_registro = get_registro(registro_datos);
+
+    log_info(logger, "Dirección logica: [%d], Valor actual en registro de datos: [%d]", *direccion_logica, *dato_en_registro);
+
+    uint32_t direccion_fisica = obtener_direccion_fisica_de_tlb(direccion_logica);
+
+    if (!existe_en_tlb(direccion_fisica)){
+        log_info(logger, "No existe en tlb");
+        direccion_fisica = calcular_direccion_fisica(direccion_logica);
+    }
+        
+    enviar_solicitud_leer_dato_de_memoria(direccion_fisica, socket_memoria);
+
+    // Esperar confirmación de la memoria
+    log_info(logger, "Esperando dato leido de memoria");
+    op_code status = recibir_operacion(socket_memoria);
+    if(status == DATO_LEIDO_DE_MEMORIA){
+        log_info(logger, "Recibi DATO_LEIDO_DE_MEMORIA");
+        uint32_t dato_leido = recibir_dato_leido_de_memoria(socket_memoria);
+
+        log_info(logger, "Se recibió el dato en memoria: [%d]", dato_leido);
+    }
+    else{
+        log_error(logger, "Hubo un problema al intentar escribir el dato en memoria");
+        tengo_pcb = 0;
+        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO); // o OUT_OF_MEMORY?
+    }
 }
