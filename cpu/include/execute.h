@@ -21,6 +21,7 @@ void exec_sub(char**);
 void exec_jnz(char**);
 void exec_operacion_io(char** instr_tokenizada);
 void exec_resize(char** instr_tokenizada);
+void exec_io_stdin_read(char** instr_tokenizada);
 
 // MOV_OUT
 int existe_en_tlb(uint32_t direccion_fisica);
