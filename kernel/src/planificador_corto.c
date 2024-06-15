@@ -1,9 +1,9 @@
 #include "../include/planificador_corto.h"
 #include "../../cpu/include/checkInterrupt.h"
 
-int inicio_quantum = 0;
+//int inicio_quantum = 0;
 pthread_mutex_t mutex_quantum = PTHREAD_MUTEX_INITIALIZER;
-pcb* unPCBPRUEBA; 
+pthread_t hilo_quantum;
 
 void *iniciar_planificacion_corto(){
     while(1){
@@ -42,6 +42,9 @@ void gestionar_respuesta_cpu(){
 
 	switch (cod_op) {
 		case PROCESO_TERMINADO:
+            if(strcmp(config->algoritmo_planificacion, "FIFO") != 0){
+                pthread_cancel(hilo_quantum); //si el proceso terminó naturalmente cancelo el hilo quantum
+            }
 			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
 			pcb = recibir_pcb(socket_cpu_dispatch);
 			loggear_pcb(pcb);
@@ -49,9 +52,11 @@ void gestionar_respuesta_cpu(){
 			push_cola_exit(pcb);
 
 			sem_post(&sem_cpu_libre);
-			sem_post(&sem_grado_multiprog);		
+			sem_post(&sem_grado_multiprog);
+            		
 			break;		
 		case PROCESO_BLOQUEADO:
+            //si proceso entra a bloqueado tambien cancela el quantum???
 			log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
 
 			solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
@@ -70,16 +75,15 @@ void gestionar_respuesta_cpu(){
             sem_post(&sem_cpu_libre);
 			break;
         case INTERRUPCION:
-            log_info(logger, "Recibi INTERRUPCION. CODIGO: %d", cod_op);
-
             pcb = recibir_pcb(socket_cpu_dispatch);
+            log_info(logger, "Recibi proceso PID [%d] desalojado por INTERRUPCION CODIGO: [%d]", pcb->pid, cod_op);
+            pcb->quantum = pcb->quantum - config->quantum;//resto el quantum solo para monitoreo acá
             pcb->estado = READY;
-
             loggear_pcb(pcb);
-
+            pop_cola_execute();
             push_cola_ready(pcb);
-
-            sem_post(&sem_cpu_libre);		
+            sem_post(&sem_cpu_libre);
+            sem_post(&sem_proceso_en_ready);		
             break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
@@ -96,52 +100,45 @@ void *iniciar_planificacion_corto_RR(){
 			log_info(logger, "CortoRR: Esperando otro proceso en ready");					
             sem_wait(&sem_proceso_en_ready);  			
 			log_info(logger, "CortoRR: Llegó proceso en ready");		
-			log_info(logger, "CortoRR: Esperando que el cpu este libre o se cumpla quantum...");	
-            log_info(logger, "inicio_quantum %d", inicio_quantum);
-            inicio_quantum = 1; //con esto activo el contador de quantum
-            log_info(logger, "inicio_quantum %d", inicio_quantum);
-            pthread_mutex_unlock(&mutex_quantum);
+			log_info(logger, "CortoRR: Esperando que el cpu este libre");	
             sem_wait(&sem_cpu_libre);
-            //en este punto corren en paralelo la espera de quantum y el bloqueo de este semaforo
-            //Si cumple el quantum se hace interrupt, nos devuelven el pcb en ejecucion y se libera el semaforo
-			//pthread_cancel(monitoreo_quantum);
-
             log_info(logger, "CortoRR: Cpu libre! pasando proximo proceso a execute..");	
             pcb* pcb = pop_cola_ready();
             pcb->estado = EXECUTE;
-            unPCBPRUEBA = pcb;
-
             dispatch_proceso_planificador(pcb);
-
+            crear_hilo_quantum();
             gestionar_respuesta_cpu();
         }
     }
 }
 
-void *monitoreo_quantum(){
-    log_info(logger,"Inicio conteo quantum");
-    pthread_mutex_lock(&mutex_quantum);
-    while(1){
-        pthread_mutex_lock(&mutex_quantum);
-        sleep(5);
-        send_interrupt();
+void crear_hilo_quantum(){
+    int error = pthread_create(&hilo_quantum, NULL, monitoreo_quantum, NULL);
+    if(error != 0){
+        log_error(logger, "Hubo un error al crear el hilo de quatum");
     }
+    pthread_detach(hilo_quantum);
+}
+
+void *monitoreo_quantum(){
+    log_info(logger, "Inicio quantum de %d", config->quantum);
+    usleep((config->quantum)*1000); //usleep multiplicar 1000 el valor de quentum
+    send_interrupt();
+    
 }
 
 void send_interrupt(){
-    log_info(logger, "hago send interrupt");
     pcb* pcb_en_cpu = queue_peek(cola_execute);
-    log_info(logger, "TENGO EL PCB DE READY");
     enviar_interrupcion(socket_cpu_interrupt, pcb_en_cpu->pid); 
-	log_info(logger, "Solicitud INTERRUPCION enviada a CPU");
-    gestionar_respuesta_cpu();
+	log_info(logger, "Solicitud INTERRUPCION a PID %d enviada a CPU", pcb_en_cpu->pid);
+    //gestionar_respuesta_cpu(); no seria necesario porque el hilo original ya pasa a esperar respuesta desde CPU
 }
 
 void enviar_interrupcion(int socket_cliente, unsigned pid_enviado){
     size_t size;
-    void* buffer = serializar_interrupcion(pid_enviado, &size);
-    int bytes_enviados = send(socket_cliente, buffer,size ,0);
-    free(buffer);
+    void* buffer_int = serializar_interrupcion(pid_enviado, &size);
+    int bytes_enviados = send(socket_cliente, buffer_int,size ,0);
+    free(buffer_int);
 }
 
 void* serializar_interrupcion(unsigned int valor, size_t* size) {

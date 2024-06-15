@@ -13,6 +13,7 @@
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 
+extern pthread_t hilo_quantum;
 
 extern t_log *logger;
 extern kernel_config* config;
@@ -33,6 +34,8 @@ void gestionar_respuesta_cpu();
 void *monitoreo_quantum();
 void* serializar_interrupcion(unsigned int , size_t*);
 void enviar_interrupcion(int , unsigned);
+void crear_hilo_quantum();
+
 
 
 #endif

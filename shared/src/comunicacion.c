@@ -153,10 +153,21 @@ t_list* recibir_paquete(int socket_cliente)
 unsigned recibir_interrupcion(int socket_cliente)
 {
 	unsigned pid;
-	void* buffer = malloc(sizeof(unsigned int));
-	recv(socket_cliente, buffer, sizeof(unsigned int),0);
-	pid = deserializar_interrupcion(buffer);
-	free(buffer);
+	void* buffer_i = malloc(sizeof(unsigned int));
+	if (buffer_i == NULL) {
+		log_error(logger, "Error al asignar memoria para buffer");
+		return -1;
+	}
+	int recibido = recv(socket_cliente, buffer_i, sizeof(unsigned int),0);
+	if(recibido <=0){
+		log_error(logger, "Error recibiendo interrupción o conexión cerrada");
+		free(buffer_i);
+		close(socket_cliente);
+		return -1;
+	}
+	pid = deserializar_interrupcion(buffer_i);
+	free(buffer_i);
+	
 	if(pid > 0)
 		return pid;
 	else
@@ -168,6 +179,6 @@ unsigned recibir_interrupcion(int socket_cliente)
 
 unsigned deserializar_interrupcion(void* buffer) {
     unsigned valor;
-    memcpy(&valor, buffer, sizeof(unsigned int));
+    memcpy(&valor, buffer, sizeof(unsigned));
     return valor;
 }

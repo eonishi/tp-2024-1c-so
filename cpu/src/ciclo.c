@@ -18,5 +18,6 @@ void cicloDeCPU(){
         execute(instruccion_tokenizada);
         log_info(logger, "Instrucción ejecutada correctamente");
         checkInterrupt();
+            
     }
 }

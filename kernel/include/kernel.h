@@ -52,7 +52,7 @@ pthread_t hilo_conexiones_io;
 pthread_t hilo_conexiones_io2;
 pthread_t hilo_planificador_corto;
 pthread_t hilo_planificador_corto_RR;
-pthread_t hilo_quantum;
+
 // Fin variables planificador
 
 typedef enum

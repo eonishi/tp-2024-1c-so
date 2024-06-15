@@ -29,7 +29,7 @@ int main(){
 		log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
 		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
 		log_info(logger, "Creando hilo para el contador de quantum...");
-		iniciar_hilo(monitoreo_quantum, hilo_quantum);
+		//iniciar_hilo(monitoreo_quantum, hilo_quantum); eliminar si las pruebas dan bien
 	}else if(strcmp(config->algoritmo_planificacion, "VRR") == 0){ //SE DEBE MODIFICAR AL IMPLEMENTAR VRR
 		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
 		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
