@@ -1,7 +1,7 @@
 #include "../include/planificador_corto.h"
 #include "../../cpu/include/checkInterrupt.h"
 
-//int inicio_quantum = 0;
+int q_usado, q_restante = 0;
 pthread_mutex_t mutex_quantum = PTHREAD_MUTEX_INITIALIZER;
 pthread_t hilo_quantum;
 
@@ -44,6 +44,7 @@ void gestionar_respuesta_cpu(){
 		case PROCESO_TERMINADO:
             if(strcmp(config->algoritmo_planificacion, "FIFO") != 0){
                 pthread_cancel(hilo_quantum); //si el proceso terminó naturalmente cancelo el hilo quantum
+                log_info(logger, "hilo quantum cancelado por finalizacion.");
             }
 			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
 			pcb = recibir_pcb(socket_cpu_dispatch);
@@ -94,7 +95,7 @@ void gestionar_respuesta_cpu(){
 }
 
 void *iniciar_planificacion_corto_RR(){
-    
+    q_usado = 0;
     while(1){
         if(planificacion_activada){   
 			log_info(logger, "CortoRR: Esperando otro proceso en ready");					
@@ -103,6 +104,27 @@ void *iniciar_planificacion_corto_RR(){
 			log_info(logger, "CortoRR: Esperando que el cpu este libre");	
             sem_wait(&sem_cpu_libre);
             log_info(logger, "CortoRR: Cpu libre! pasando proximo proceso a execute..");	
+            pcb* pcb = pop_cola_ready();
+            pcb->estado = EXECUTE;
+            dispatch_proceso_planificador(pcb);
+            crear_hilo_quantum();
+            gestionar_respuesta_cpu();
+        }
+    }
+}
+
+void *iniciar_planificacion_corto_VRR(){
+    q_usado = 0;
+    while(1){
+        if(planificacion_activada){   
+			log_info(logger, "Corto VRR: Esperando otro proceso en ready");					
+            sem_wait(&sem_proceso_en_ready);  			
+			log_info(logger, "Corto VRR: Llegó proceso en ready");		
+			log_info(logger, "Corto VRR: Esperando que el cpu este libre");	
+            sem_wait(&sem_cpu_libre);
+            log_info(logger, "Corto VRR: Cpu libre! pasando proximo proceso a execute..");	
+           //Logica que priorice la cola auxiliar con pcb que viene de IO
+           //Logica que determina el quantum usado -> q_usado = t_inicio - t_desaolojo_IO
             pcb* pcb = pop_cola_ready();
             pcb->estado = EXECUTE;
             dispatch_proceso_planificador(pcb);
@@ -121,17 +143,16 @@ void crear_hilo_quantum(){
 }
 
 void *monitoreo_quantum(){
-    log_info(logger, "Inicio quantum de %d", config->quantum);
-    usleep((config->quantum)*1000); //usleep multiplicar 1000 el valor de quentum
-    send_interrupt();
-    
+    q_restante = config->quantum - q_usado;
+    log_info(logger, "Inicio quantum de %d", q_restante);
+    usleep((q_restante)*1000);
+    send_interrupt();    
 }
 
 void send_interrupt(){
     pcb* pcb_en_cpu = queue_peek(cola_execute);
     enviar_interrupcion(socket_cpu_interrupt, pcb_en_cpu->pid); 
 	log_info(logger, "Solicitud INTERRUPCION a PID %d enviada a CPU", pcb_en_cpu->pid);
-    //gestionar_respuesta_cpu(); no seria necesario porque el hilo original ya pasa a esperar respuesta desde CPU
 }
 
 void enviar_interrupcion(int socket_cliente, unsigned pid_enviado){

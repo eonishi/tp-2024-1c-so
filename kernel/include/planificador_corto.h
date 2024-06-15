@@ -17,7 +17,7 @@ extern pthread_t hilo_quantum;
 
 extern t_log *logger;
 extern kernel_config* config;
-extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io;
+extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, q_usado, q_restante;
 extern t_list *lista_conexiones_io;
 
 extern int planificacion_activada;
@@ -28,6 +28,7 @@ extern sem_t sem_cpu_libre;
 
 void *iniciar_planificacion_corto();
 void *iniciar_planificacion_corto_RR();
+void *iniciar_planificacion_corto_VRR();
 void dispatch_proceso_planificador(pcb* newPcb);
 void send_interrupt();
 void gestionar_respuesta_cpu();

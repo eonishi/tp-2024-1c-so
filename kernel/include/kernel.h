@@ -52,6 +52,7 @@ pthread_t hilo_conexiones_io;
 pthread_t hilo_conexiones_io2;
 pthread_t hilo_planificador_corto;
 pthread_t hilo_planificador_corto_RR;
+pthread_t hilo_planificador_corto_VRR;
 
 // Fin variables planificador
 
@@ -60,6 +61,14 @@ typedef enum
 	CPU,
 	MEMORIA,
 } cod_mensaje;
+
+/*typedef enum
+{
+	FIFO,
+	RR,
+	VRR,
+	DESCONOCIDO,
+} algoritmo_planificador;*/
 
 void terminar_programa();
 void iniciar_semaforos();
@@ -71,5 +80,6 @@ void dispatch_proceso();
 void iniciar_hilo(void *func, pthread_t thread);
 void *esperar_y_escuchar_conexiones_io();
 void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void *args);
+//void cambiar_algoritmo_planificadorCorto(algoritmo_planificador);
 
 #endif
