@@ -1,5 +1,9 @@
 # TP C-Comenta
 
+## Check point 3
+
+Avanzamos en todos los puntos pero todavía no tenemos una versión funcional. Seguimos trabajando.
+
 ## Check point 2
 
 ### Objetivos cumplidos:
