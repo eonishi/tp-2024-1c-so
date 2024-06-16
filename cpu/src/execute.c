@@ -306,6 +306,6 @@ void exec_io_stdin_read(char** instr_tokenizada){
     sprintf(instr_tokenizada[3], "%u", *tamanio_maximo);
 
     log_info(logger, "Enviando a kernel: [%s][%s][%s][%s]",instr_tokenizada[0],instr_tokenizada[1],instr_tokenizada[2],instr_tokenizada[3]);
-    
+
     exec_operacion_io(instr_tokenizada);
 }
