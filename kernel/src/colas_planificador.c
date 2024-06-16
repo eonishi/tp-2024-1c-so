@@ -5,6 +5,7 @@ void inicializar_colas_planificador(){
 	cola_ready = queue_create();
 	cola_blocked = queue_create();
 	cola_exit = queue_create();
+    cola_execute = queue_create();
 }
 
 void imprimir_colas(){
@@ -52,5 +53,12 @@ void push_cola_exit(pcb* pcb){
     queue_push(cola_exit, pcb);
 }
 
+void push_cola_execute(pcb* pcb){
+    queue_push(cola_execute, pcb);
+}
+
+pcb* pop_cola_execute(){
+    queue_pop(cola_execute);
+}
 
 

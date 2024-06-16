@@ -7,6 +7,7 @@
 #include "pcb.h"
 #include "paquete.h"
 #include "codigos_operacion.h"
+#include "operacion.h"
 #include "io_tipos.h"
 #include<commons/log.h>
 #include<commons/string.h>
@@ -34,6 +35,7 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente);
 typedef struct{
     char *nombre_interfaz;
     io_tipo tipo;
+    int* operaciones;
 } solicitud_conexion_kernel;
 
 void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel, int socket_cliente);
@@ -45,13 +47,31 @@ solicitud_bloqueo_por_io recibir_solicitud_bloqueo_por_io(int socket_cliente);
 int enviar_instruccion_io(char** instruccion_tokenizada, int socket_cliente);
 char** recibir_instruccion_io(int socket_cliente);
 
+typedef struct{
+    uint32_t *direccion;
+    uint32_t *dato;
+} solicitud_escribir_dato_en_memoria;
+
+
+int enviar_escribir_dato_en_memoria(uint32_t direccion, uint32_t dato, int socket_cliente);
+solicitud_escribir_dato_en_memoria recibir_escribir_dato_en_memoria(int socket_cliente);
+
+int enviar_solicitud_leer_dato_de_memoria(uint32_t direccion, int socket_cliente);
+uint32_t recibir_solicitud_leer_dato_de_memoria(int socket_cliente);
+
+void enviar_dato_leido_de_memoria(uint32_t dato, int socket);
+uint32_t recibir_dato_leido_de_memoria(int socket);
+
 
 // Temporales
 void* serializar_char(char* string);
 void* serializar_int(int number);
-char* deserializar_char(void* char_bytes, int8_t size);
+void* serializar_uint32(uint32_t value);
 void* serializar_lista_strings(char** strings);
+
 char** deserializar_lista_strings(t_list* bytes, int index_cantidad_tokens);
 int deserializar_int(void *int_bytes);
+char* deserializar_char(void* char_bytes, int8_t size);
+uint32_t deserializar_uint32(void* int_bytes);
 
 #endif

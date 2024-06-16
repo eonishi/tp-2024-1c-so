@@ -11,6 +11,7 @@ kernel_config* inicializar_config(){
     if((config) != NULL){
         (config)->ip_cpu = NULL;
         (config)->puerto_cpu_dispatch = NULL;
+        (config)->puerto_cpu_interrupt = NULL;
         (config)->ip_kernel = NULL;
         (config)->puerto_kernel = NULL;
         (config)->ip_memoria = NULL;

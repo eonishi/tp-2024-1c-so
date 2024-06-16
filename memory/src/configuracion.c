@@ -16,3 +16,8 @@ void inicializar_configuracion(){
 
     log_info(logger, "Configuración iniciadada correctamente.");
 }
+
+// espera_retardo en config.c tengo mis dudas 🤔
+void esperar_retardo (){
+    usleep(config.retardo_memoria * 1000);
+}

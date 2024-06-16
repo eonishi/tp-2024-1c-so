@@ -1,7 +1,7 @@
 #include "../include/conexion.h"
 
 bool generar_conexiones(){
-    log_info(logger, "Creando conexión con CPU...");
+    log_info(logger, "Creando conexión con CPU dispatch...");
 
     socket_cpu_dispatch = generar_conexion(config->ip_cpu, config->puerto_cpu_dispatch);
 
@@ -20,6 +20,13 @@ bool generar_conexiones(){
     //if(socket_io == -1)
      //   return false;
 
+    log_info(logger, "Creando conexión con CPU interrupt...");
+
+    socket_cpu_interrupt = generar_conexion(config->ip_cpu, config->puerto_cpu_interrupt);
+
+    if(socket_cpu_interrupt == -1)
+        return false;
+
     return true;
 }
 
@@ -29,10 +36,14 @@ conexion_io recibir_conexion_io(int server) {
 
 	log_info(logger,"Esperando handshake del modulo IO ... ");
     int cod = recibir_operacion(socket);
+    if(cod != HANDSHAKE){
+        log_error(logger, "Respuesta erronea de handshake");
+        close(socket);
+        exit(EXIT_FAILURE); // Nose si mata al proceso o solo al hilo
+    }
     solicitud_conexion_kernel solicitud = recibir_solicitud_conexion_kernel(socket);
     log_info(logger,"Recibido handshake del modulo IO. Interfaz: [%s] Tipo: [%d]", solicitud.nombre_interfaz, solicitud.tipo);
-
-    log_info(logger,"Respondiendo handshake del modulo IO... ");
+    log_info(logger, "Respondiendo handshake del modulo IO... ");
     enviar_status(SUCCESS, socket);
     
     conexion_io conexion_io;
@@ -40,7 +51,8 @@ conexion_io recibir_conexion_io(int server) {
     conexion_io.socket = socket;
     conexion_io.nombre_interfaz = solicitud.nombre_interfaz;
     conexion_io.tipo = solicitud.tipo;
-
+    conexion_io.operaciones = solicitud.operaciones;
+    
     return conexion_io;
 }
 

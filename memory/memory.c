@@ -1,7 +1,5 @@
 #include "include/memory.h"
 
-t_list *procesos_en_memoria;
-
 int main(){
     logger = iniciar_logger("memory.log", "MEMORY");
     log_info(logger, "Logger de MEMORY iniciado");
@@ -11,7 +9,8 @@ int main(){
     int server_fd = iniciar_servidor("MEMORY", config.ip_memoria, config.puerto_memoria);
 
 	// Inicializo la lista de procesos en memoria
-	procesos_en_memoria = list_create();
+	inicializar_procesos_en_memoria();
+	inicializar_memoria();
 
 	esperar_handshake_cpu(server_fd);
     esperar_handshake_kernel(server_fd);
@@ -47,11 +46,11 @@ void* gestionar_solicitudes_kernel(){
 		case CREAR_PROCESO_EN_MEMORIA:
             log_info(logger, "CREAR_PROCESO_EN_MEMORIA recibido.");
 
+			// (SUS) podria recibir solo el path y PID
             solicitud_crear_proceso solicitud_crear_proceso = recibir_solicitud_crear_proceso(socket_kernel);
 			pcb* pcb = solicitud_crear_proceso.pcb;
 
-			crear_instr_set(solicitud_crear_proceso.filePath, pcb->pid);
-            pcb->registros->ax = 1;
+			cargar_proceso_en_memoria(solicitud_crear_proceso.filePath, pcb->pid);
 			
             // Operaciones crear proceso en memoria
             enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
@@ -95,7 +94,6 @@ void crear_hilo_solicitudes_cpu(){
 }
 
 void* gestionar_solicitudes_cpu(){
-    t_list* lista;
 
     log_info(logger, "Esperando recibir operacion del CPU...");
 	while (1) {    
@@ -106,9 +104,49 @@ void* gestionar_solicitudes_cpu(){
 		case FETCH_INSTRUCCION:
             log_info(logger, "FETCH_INSTRUCCION recibido. ");
 
-			recibir_solicitud_de_cpu();
+			recibir_fetch_de_cpu();
+			esperar_retardo();
 			enviar_instruccion_a_cpu();		
+			break;
 
+		case REDIMENSIONAR_MEMORIA_PROCESO:
+			log_info(logger, "REDIMENSIONAR_MEMORIA_PROCESO recibido.");
+
+			unsigned tamanio_en_bytes = recibir_cantidad(socket_cpu);
+			unsigned cantidad_de_paginas = calcular_cantidad_de_paginas_por_bytes(tamanio_en_bytes);
+			if(puedo_agregar_o_disminuir(cantidad_de_paginas)){
+				redimensionar_memoria_proceso(cantidad_de_paginas);
+				mostrar_tabla_paginas();
+
+				enviar_status(SUCCESS, socket_cpu);
+				log_info(logger, "Se redimensionó la memoria correctamente, envio: [%d]", SUCCESS);
+				break;
+			}
+			else{
+				enviar_status(OUT_OF_MEMORY, socket_cpu);
+				log_info(logger, "No se pudo redimensionar la memoria, envio: [%d]", OUT_OF_MEMORY);
+				break;
+			}
+		case ESCRIBIR_DATO_EN_MEMORIA:
+			log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
+
+			solicitud_escribir_dato_en_memoria solicitud = recibir_escribir_dato_en_memoria(socket_cpu);
+
+			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d]", solicitud.direccion, solicitud.dato);
+
+			enviar_status(SUCCESS, socket_cpu);
+			log_info(logger, "Se escribió dato en memoria correctamente, envio: [%d]", SUCCESS);
+			break;
+		case LEER_DATO_DE_MEMORIA:
+			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
+
+			uint32_t direccion = recibir_solicitud_leer_dato_de_memoria(socket_cpu);
+
+			log_info(logger, "Recibido. Dirección_fisica: [%d]", direccion);
+
+			enviar_dato_leido_de_memoria(1234, socket_cpu);
+
+			log_info(logger, "Se leyó el dato de la memoria y se envió al CPU");
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");

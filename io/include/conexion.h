@@ -14,6 +14,6 @@ extern io_config config;
 
 void crear_conexion_kernel();
 void crear_conexion_memoria();
-int conectar_al_kernel(char *nombre_interfaz, io_tipo tipo);
+int conectar_al_kernel(char *nombre_interfaz, io_tipo tipo, int* instrucciones);
 
 #endif

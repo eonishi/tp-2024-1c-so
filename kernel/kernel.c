@@ -1,5 +1,6 @@
 #include "include/kernel.h"
 
+
 int main(){
     logger = iniciar_logger("kernel.log", "KERNEL");
 	log_info(logger, "Logger de Kernel iniciado");
@@ -15,12 +16,13 @@ int main(){
 	iniciar_semaforos();
 	inicializar_colas_planificador();
 
+	
+
 	log_info(logger, "Creando hilo para recibir conexiones io...");
 	iniciar_hilo(esperar_y_escuchar_conexiones_io, hilo_conexiones_io);
 
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
-
 	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
 	if(strcmp(config->algoritmo_planificacion, "FIFO") == 0){
 		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
@@ -28,12 +30,31 @@ int main(){
 	}else if(strcmp(config->algoritmo_planificacion, "RR") == 0){
 		log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
 		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
-		log_info(logger, "Creando hilo para el contador de quantum...");
-		iniciar_hilo(monitoreo_quantum, hilo_quantum);
-	}else if(strcmp(config->algoritmo_planificacion, "VRR") == 0){ //SE DEBE MODIFICAR AL IMPLEMENTAR VRR
+	}else if(strcmp(config->algoritmo_planificacion, "VRR") == 0){
 		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
-		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+		iniciar_hilo(iniciar_planificacion_corto_VRR, hilo_planificador_corto_VRR);
 	}
+	/*
+		char* algoritmo_planificador_corto = config->algoritmo_planificacion;
+		switch (algoritmo_planificador_corto) {
+        case FIFO:
+            log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
+            iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+            break;
+        case RR:
+            log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
+            iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
+            break;
+        case VRR:
+            log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
+            iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+            break;
+        default:
+            log_info(logger, "Algoritmo de planificación desconocido.");
+            break;
+    }*/
+
+	
 
 	iniciar_consola();
 
@@ -208,3 +229,7 @@ void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void* args){
 		pthread_detach(thread);
 	}
 }
+
+/*void cambiar_algoritmo_planificadorCorto(algoritmo_planificador algoritmoNuevo){
+	//todo
+}*/

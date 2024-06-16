@@ -1,6 +1,7 @@
 #ifndef CONFIGURACION_MEMORIA_H_
 #define CONFIGURACION_MEMORIA_H_
 
+#include <unistd.h>
 #include <commons/log.h>
 #include <commons/config.h>
 
@@ -17,5 +18,6 @@ typedef struct
 } memory_config;
 
 void inicializar_configuracion();
+void esperar_retardo();
 
 #endif

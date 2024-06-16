@@ -7,6 +7,8 @@
 #include "configuracion.h"
 #include "conexion.h"
 #include "instruccion.h"
+#include "frame.h"
+#include "tabla_paginas.h"
 #include "../../shared/include/logger.h"
 #include "../../shared/include/pcb.h"
 
@@ -14,6 +16,7 @@ t_log* logger;
 extern memory_config config;
 
 extern int socket_cpu, socket_kernel;
+extern t_list *procesos_en_memoria;
 
 pthread_t hilo_cpu;
 pthread_t hilo_kernel;
