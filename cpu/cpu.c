@@ -7,6 +7,7 @@ int main()
 
 	inicializar_configuracion();  
   	crear_conexion_memoria();
+	iniciar_tlb();
 	
 	pthread_t server_threads[2];
 	pthread_create(&server_threads[0], NULL, (void*)server_dispatch, NULL);
