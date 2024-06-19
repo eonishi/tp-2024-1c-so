@@ -47,15 +47,6 @@ solicitud_bloqueo_por_io recibir_solicitud_bloqueo_por_io(int socket_cliente);
 int enviar_instruccion_io(char** instruccion_tokenizada, int socket_cliente);
 char** recibir_instruccion_io(int socket_cliente);
 
-typedef struct{
-    uint32_t *direccion;
-    uint32_t *dato;
-} solicitud_escribir_dato_en_memoria;
-
-
-int enviar_escribir_dato_en_memoria(uint32_t direccion, uint32_t dato, int socket_cliente);
-solicitud_escribir_dato_en_memoria recibir_escribir_dato_en_memoria(int socket_cliente);
-
 int enviar_solicitud_leer_dato_de_memoria(uint32_t direccion, int socket_cliente);
 uint32_t recibir_solicitud_leer_dato_de_memoria(int socket_cliente);
 
