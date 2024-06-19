@@ -118,11 +118,13 @@ void* gestionar_solicitudes_cpu(){
 				redimensionar_memoria_proceso(cantidad_de_paginas);
 				mostrar_tabla_paginas();
 
+				esperar_retardo();
 				enviar_status(SUCCESS, socket_cpu);
 				log_info(logger, "Se redimensionó la memoria correctamente, envio: [%d]", SUCCESS);
 				break;
 			}
 			else{
+				esperar_retardo();
 				enviar_status(OUT_OF_MEMORY, socket_cpu);
 				log_info(logger, "No se pudo redimensionar la memoria, envio: [%d]", OUT_OF_MEMORY);
 				break;
@@ -130,13 +132,18 @@ void* gestionar_solicitudes_cpu(){
 		case ESCRIBIR_DATO_EN_MEMORIA:
 			log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 
-			solicitud_escribir_dato_en_memoria solicitud = recibir_escribir_dato_en_memoria(socket_cpu);
+			t_peticion_memoria* solicitud = peticion_recibir(socket_cpu);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d], Tamaño:[%d]", solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 
-			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d]", solicitud.direccion, solicitud.dato);
+			set_memoria(solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
+
+			imprimir_memoria_hex();
+			esperar_retardo();
 
 			enviar_status(SUCCESS, socket_cpu);
 			log_info(logger, "Se escribió dato en memoria correctamente, envio: [%d]", SUCCESS);
 			break;
+
 		case LEER_DATO_DE_MEMORIA:
 			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
 
@@ -147,6 +154,19 @@ void* gestionar_solicitudes_cpu(){
 			enviar_dato_leido_de_memoria(1234, socket_cpu);
 
 			log_info(logger, "Se leyó el dato de la memoria y se envió al CPU");
+			break;
+
+		case CONSULTAR_TABLA_DE_PAGINAS:
+			log_info(logger, "CONSULTAR_TABLA_DE_PAGINAS recibido.");
+
+			unsigned numero_pagina = recibir_cantidad(socket_cpu);
+			log_info(logger, "Recibido. Número de página: [%d]", numero_pagina);
+
+			unsigned numero_frame_consultado = get_frame_number_by_pagina(numero_pagina);
+			esperar_retardo();
+			enviar_cantidad(numero_frame_consultado, CONSULTAR_TABLA_DE_PAGINAS, socket_cpu);
+
+			log_info(logger, "Se consultó la tabla de páginas y se envió al CPU");
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
