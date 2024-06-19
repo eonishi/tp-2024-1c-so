@@ -143,22 +143,25 @@ void exec_operacion_io(char** instr_tokenizada){
     enviar_bloqueo_por_io(solicitud, socket_kernel);
 }
 
+void controlar_peticion_a_memoria(){
+    op_code status = recibir_operacion(socket_memoria);
+    if(status == SUCCESS){
+        log_info(logger, "La operacion en memoria fue exitosa");
+    }
+    else{
+        log_error(logger, "Hubo un problema con la operacion en memoria");
+        tengo_pcb = 0;
+        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO); // o OUT_OF_MEMORY?
+    }
+}
+
 void exec_resize(char** instr_tokenizada){
     // RESIZE cantidad_paginas
 
     int tamanio_en_bytes = get_valor(instr_tokenizada[1]);
     enviar_cantidad(tamanio_en_bytes, REDIMENSIONAR_MEMORIA_PROCESO, socket_memoria);
 
-    // Esperar confirmación de la memoria
-    op_code status = recibir_operacion(socket_memoria);
-    if(status == SUCCESS){
-        log_info(logger, "Se redimensionó la memoria correctamente");
-    }
-    else{
-        log_error(logger, "Hubo un problema al redimensionar la memoria");
-        tengo_pcb = 0;
-        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO); // o OUT_OF_MEMORY?
-    }
+    controlar_peticion_a_memoria();
 }
 
 /**
@@ -166,38 +169,27 @@ void exec_resize(char** instr_tokenizada){
  * Lee el valor del Registro Datos y lo escribe en la dirección física de memoria 
  * obtenida a partir de la Dirección Lógica almacenada en el Registro Dirección.
  * **/
+void enviar_peticiones_de_escribir(void* peticion){
+    t_peticion_memoria* peticion_a_enviar = (t_peticion_memoria*) peticion;
+    log_info(logger, "Enviando solicitud de escritura a memoria. Dirección: [%d], Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->dato);
+    peticion_enviar(peticion_a_enviar, ESCRIBIR_DATO_EN_MEMORIA, socket_memoria);
+
+    controlar_peticion_a_memoria();
+}
+
 void exec_mov_out(char** instr_tokenizada){
     log_info(logger, "Inicia exec_mov_out");
 
     char* registro_direccion = instr_tokenizada[1];
     char* registro_datos = instr_tokenizada[2];
-
     log_info(logger, "Registro dirección: [%s], Registro datos: [%s]", registro_direccion, registro_datos);
 
     uint32_t* direccion_logica = get_registro(registro_direccion);
-    uint32_t* dato_a_escribir = get_registro(registro_datos);
+    void* dato_a_escribir = get_registro(registro_datos);
+    log_info(logger, "Dirección logica: [%d], Dato a escribir: [%d]", *direccion_logica, dato_a_escribir);
 
-    log_info(logger, "Dirección logica: [%d], Dato a escribir: [%d]", *direccion_logica, *dato_a_escribir);
-
-    uint32_t direccion_fisica = obtener_direccion_fisica_de_tlb(direccion_logica);
-
-    if (!existe_en_tlb(direccion_fisica)){
-        log_info(logger, "No existe en tlb");
-        direccion_fisica = calcular_direccion_fisica(direccion_logica);
-    }
-        
-    enviar_escribir_dato_en_memoria(direccion_fisica, *dato_a_escribir, socket_memoria);
-
-    // Esperar confirmación de la memoria
-    op_code status = recibir_operacion(socket_memoria);
-    if(status == SUCCESS){
-        log_info(logger, "Se escribió el dato en memoria");
-    }
-    else{
-        log_error(logger, "Hubo un problema al intentar escribir el dato en memoria");
-        tengo_pcb = 0;
-        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO); // o OUT_OF_MEMORY?
-    }
+    t_list* direcciones_fisicas = mmu(*direccion_logica, tam_registro(registro_datos), dato_a_escribir);
+    list_iterate(direcciones_fisicas, enviar_peticiones_de_escribir);
 }
 
 // Se considera 0 como no existente
