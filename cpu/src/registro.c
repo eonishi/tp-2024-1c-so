@@ -21,3 +21,7 @@ bool es8int(char* token_registro){
     || string_equals_ignore_case(token_registro, "CX") 
     || string_equals_ignore_case(token_registro, "DX");
 }
+
+unsigned tam_registro(char* token_registro){
+    return es8int(token_registro) ? sizeof(uint8_t) : sizeof(uint32_t);
+}
