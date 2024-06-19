@@ -6,6 +6,10 @@ void iniciar_tlb(){
     tlb = list_create();
 }
 
+void imprimir_entrada(tlb_entry* entrada){
+    log_info(logger, "Entrada-TLB PID:[%d], Pagina:[%d], Frame:[%d], Uso tiempo:[%d]", entrada->PID, entrada->pagina, entrada->frame, entrada->uso_tiempo);
+}
+
 bool tlb_tiene_espacio(){
     return list_size(tlb) < config.cantidad_entradas_tlb;
 }
@@ -15,17 +19,16 @@ static unsigned PID_solicitada;
 
 bool es_entrada_buscada(void *entrada){
     tlb_entry *entrada_buscada = (tlb_entry*)entrada;
-    bool resultado = (
-        entrada_buscada->PID == PID_solicitada &&
-        entrada_buscada->pagina == pagina_solicitada
-    );
+    bool resultado = (entrada_buscada->PID == PID_solicitada) && 
+                     (entrada_buscada->pagina == pagina_solicitada);
     return resultado;
 }
 
 bool tlb_tiene_entrada(unsigned pid, unsigned pagina){
     pagina_solicitada = pagina;
     PID_solicitada = pid;
-    return list_any_satisfy(tlb, es_entrada_buscada);
+    bool resultado = list_any_satisfy(tlb, es_entrada_buscada);
+    return resultado;
 }
 
 unsigned obtener_frame_tlb(unsigned pid, unsigned pagina){
@@ -76,24 +79,29 @@ void incrementar_uso_tiempo_tlb(){
     list_iterate(tlb, iterate_incrementar_uso_tiempo);
 }
 
+tlb_entry* tlb_entry_crear(unsigned pid, unsigned pagina, unsigned frame){
+    tlb_entry *nueva_entrada = malloc(sizeof(tlb_entry));
+    nueva_entrada->PID = pid;
+    nueva_entrada->pagina = pagina;
+    nueva_entrada->frame = frame;
+    nueva_entrada->uso_tiempo = 0;
+    return nueva_entrada;
+}
+
 void agregar_entrada_tlb(unsigned pid, unsigned pagina, unsigned frame){
-    tlb_entry nueva_entrada = {
-        .PID = pid,
-        .pagina = pagina,
-        .frame = frame,
-        .uso_tiempo = 0
-    };
+    tlb_entry* nueva_entrada = tlb_entry_crear(pid, pagina, frame);
     if(tlb_tiene_espacio()){
-        list_add(tlb, &nueva_entrada);
+        list_add(tlb, nueva_entrada);
     }
     else{
         if(string_equals_ignore_case(config.algoritmo_tlb, "FIFO")){
-            tlb_reemplazar_por_fifo(&nueva_entrada);
+            tlb_reemplazar_por_fifo(nueva_entrada);
         }
         else{
-            tlb_reemplazar_por_lru(&nueva_entrada);
+            tlb_reemplazar_por_lru(nueva_entrada);
         }
     }
+    log_info(logger, "Nueva entrada TLB agregada: PID:[%d], Pagina:[%d], Frame:[%d]", pid, pagina, frame);
 
     incrementar_uso_tiempo_tlb();
 }

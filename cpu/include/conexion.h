@@ -14,6 +14,7 @@ extern cpu_config config;
 extern pcb* pcb_actual;
 extern int tengo_pcb;
 extern unsigned TAM_PAGINA;
+extern t_list tlb;
 
 int crear_conexion_memoria();
 void esperar_handshake_kernel(int server);
