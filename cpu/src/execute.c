@@ -192,41 +192,12 @@ void exec_mov_out(char** instr_tokenizada){
     list_iterate(direcciones_fisicas, enviar_peticiones_de_escribir);
 }
 
-// Se considera 0 como no existente
-int existe_en_tlb(uint32_t direccion_fisica)
-{
-    return direccion_fisica != 0;
-}
-
-uint32_t obtener_direccion_fisica_de_tlb(uint32_t* direccion_logica){
-    // TODO IMPLEMENTAR ACCESO A TLB
-    uint32_t* direccion_fisica;
-    *direccion_fisica = 1;
-
-    log_info(logger, "Falta imple de obtención de dirección fisica de tlb. Return Hardcode: [%d]", *direccion_fisica);
-
-    return *direccion_fisica;
-}
-
-uint32_t calcular_direccion_fisica(uint32_t* direccion_logica){
-    log_info(logger, "entra calcular_direccion_fisica");
-    // TODO IMPLEMENTAR CALCULO DE DIRECCION FISICA CON MMU
-    uint32_t* direccion_fisica;
-    *direccion_fisica = 1;
-
-    log_info(logger, "Falta imple de calcular dirección fisica. Return Hardcode: [%d]", *direccion_fisica);
-    
-
-    return *direccion_fisica;
-}
-
-
 // MOV_IN (Registro Datos, Registro Dirección)
 /* 
  Lee el valor de memoria correspondiente a la Dirección Lógica que se encuentra en el Registro Dirección 
  y lo almacena en el Registro Datos.
-
 */
+static void* registro_que_guarda_dato;
 void exec_mov_in(char** instr_tokenizada){
     log_info(logger, "Inicia exec_mov_in");
 
@@ -236,31 +207,24 @@ void exec_mov_in(char** instr_tokenizada){
     log_info(logger, "Registro datos: [%s], Registro dirección: [%s]", registro_datos, registro_direccion);
 
     uint32_t* direccion_logica = get_registro(registro_direccion);
-    uint32_t* dato_en_registro = get_registro(registro_datos);
+    registro_que_guarda_dato = get_registro(registro_datos);
 
-    log_info(logger, "Dirección logica: [%d], Valor actual en registro de datos: [%d]", *direccion_logica, *dato_en_registro);
+    log_info(logger, "Dirección logica: [%d], Valor actual en registro de datos: [%d]", *direccion_logica, registro_que_guarda_dato);
 
-    uint32_t direccion_fisica = obtener_direccion_fisica_de_tlb(direccion_logica);
+    t_list *direcciones_fisicas = mmu(*direccion_logica, tam_registro(registro_datos), NULL);
+    for(int i=0; i<list_size(direcciones_fisicas); i++){
+        t_peticion_memoria* peticion_a_enviar = list_get(direcciones_fisicas, i);
+        log_info(logger, "Enviando solicitud de leer a memoria. Dirección: [%d], Tam_Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->tam_dato);
+        peticion_enviar(peticion_a_enviar, LEER_DATO_DE_MEMORIA, socket_memoria);
 
-    if (!existe_en_tlb(direccion_fisica)){
-        log_info(logger, "No existe en tlb");
-        direccion_fisica = calcular_direccion_fisica(direccion_logica);
+        int size;
+        void *parte_del_dato = recibir_buffer(&size, socket_memoria);
+        memcpy(registro_que_guarda_dato, parte_del_dato, size);
+        registro_que_guarda_dato += size;
+        free(parte_del_dato);
+
+        controlar_peticion_a_memoria();
     }
-        
-    enviar_solicitud_leer_dato_de_memoria(direccion_fisica, socket_memoria);
 
-    // Esperar confirmación de la memoria
-    log_info(logger, "Esperando dato leido de memoria");
-    op_code status = recibir_operacion(socket_memoria);
-    if(status == DATO_LEIDO_DE_MEMORIA){
-        log_info(logger, "Recibi DATO_LEIDO_DE_MEMORIA");
-        uint32_t dato_leido = recibir_dato_leido_de_memoria(socket_memoria);
-
-        log_info(logger, "Se recibió el dato en memoria: [%d]", dato_leido);
-    }
-    else{
-        log_error(logger, "Hubo un problema al intentar escribir el dato en memoria");
-        tengo_pcb = 0;
-        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO); // o OUT_OF_MEMORY?
-    }
+    log_info(logger, "Dato guardado en el registro: [%d]", registro_que_guarda_dato);
 }

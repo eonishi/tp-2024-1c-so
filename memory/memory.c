@@ -132,7 +132,7 @@ void* gestionar_solicitudes_cpu(){
 		case ESCRIBIR_DATO_EN_MEMORIA:
 			log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 
-			t_peticion_memoria* solicitud = peticion_recibir(socket_cpu);
+			t_peticion_memoria* solicitud = peticion_recibir(socket_cpu, ESCRIBIR_DATO_EN_MEMORIA);
 			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d], Tamaño:[%d]", solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 
 			set_memoria(solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
@@ -147,12 +147,14 @@ void* gestionar_solicitudes_cpu(){
 		case LEER_DATO_DE_MEMORIA:
 			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
 
-			uint32_t direccion = recibir_solicitud_leer_dato_de_memoria(socket_cpu);
+			t_peticion_memoria* solicitud_lectura = peticion_recibir(socket_cpu, LEER_DATO_DE_MEMORIA);
+			log_info(logger, "Recibido. Dirección_fisica: [%d]", solicitud_lectura->direccion_fisica);
 
-			log_info(logger, "Recibido. Dirección_fisica: [%d]", direccion);
+			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
+			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, socket_cpu);
 
-			enviar_dato_leido_de_memoria(1234, socket_cpu);
-
+			esperar_retardo();
+			enviar_status(SUCCESS, socket_cpu);
 			log_info(logger, "Se leyó el dato de la memoria y se envió al CPU");
 			break;
 
