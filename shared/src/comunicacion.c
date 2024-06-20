@@ -102,6 +102,15 @@ int recibir_operacion(int socket_cliente)
 	}
 }
 
+void enviar_buffer( void* buffer, int size, int socket_cliente){
+	int total_size = size + sizeof(int);
+	void* stream_buffer = malloc(total_size);
+	memcpy(stream_buffer, &size, sizeof(int));
+	memcpy(stream_buffer + sizeof(int), buffer, size);
+	send(socket_cliente, stream_buffer, total_size, 0);
+	free(stream_buffer);
+}
+
 void* recibir_buffer(int* size, int socket_cliente)
 {
 	void * buffer;
