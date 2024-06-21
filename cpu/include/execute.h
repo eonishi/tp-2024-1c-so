@@ -24,10 +24,6 @@ void exec_operacion_io(char** instr_tokenizada);
 void exec_resize(char** instr_tokenizada);
 void exec_mov_in(char** instr_tokenizada);
 void exec_mov_out(char** instr_tokenizada);
-
-// MOV_OUT
-int existe_en_tlb(uint32_t direccion_fisica);
-uint32_t obtener_direccion_fisica_de_tlb(uint32_t* direccion_logica);
-uint32_t calcular_direccion_fisica(uint32_t* direccion_logica);
+void exec_cp_string(char **instr_tokenizada);
 
 #endif

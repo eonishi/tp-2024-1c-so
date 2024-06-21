@@ -133,13 +133,11 @@ void* gestionar_solicitudes_cpu(){
 			log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 
 			t_peticion_memoria* solicitud = peticion_recibir(socket_cpu, ESCRIBIR_DATO_EN_MEMORIA);
-			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d], Tamaño:[%d]", solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d], Tam_Dato: [%d]", solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 
 			set_memoria(solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 
-			imprimir_memoria_hex();
 			esperar_retardo();
-
 			enviar_status(SUCCESS, socket_cpu);
 			log_info(logger, "Se escribió dato en memoria correctamente, envio: [%d]", SUCCESS);
 			break;
@@ -148,12 +146,12 @@ void* gestionar_solicitudes_cpu(){
 			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
 
 			t_peticion_memoria* solicitud_lectura = peticion_recibir(socket_cpu, LEER_DATO_DE_MEMORIA);
-			log_info(logger, "Recibido. Dirección_fisica: [%d]", solicitud_lectura->direccion_fisica);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%d]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
 
 			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
-			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, socket_cpu);
 
 			esperar_retardo();
+			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, socket_cpu);
 			enviar_status(SUCCESS, socket_cpu);
 			log_info(logger, "Se leyó el dato de la memoria y se envió al CPU");
 			break;

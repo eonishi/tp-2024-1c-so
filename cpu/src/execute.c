@@ -35,6 +35,10 @@ void execute(char **instr_tokenizada)
         exec_mov_in(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
+    case COPY_STRING:
+        exec_cp_string(instr_tokenizada);
+        siguiente_pc(pcb_actual);
+        break;
     case IO_GEN_SLEEP:
     case IO_FS_CREATE:
     case IO_FS_DELETE:
@@ -171,7 +175,10 @@ void exec_resize(char** instr_tokenizada){
  * **/
 void enviar_peticiones_de_escribir(void* peticion){
     t_peticion_memoria* peticion_a_enviar = (t_peticion_memoria*) peticion;
-    log_info(logger, "Enviando solicitud de escritura a memoria. Dirección: [%d], Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->dato);
+    log_info(logger, "Enviando solicitud de escritura a memoria. Dirección: [%d], Dato: [%*.x]", 
+                        peticion_a_enviar->direccion_fisica, 
+                        peticion_a_enviar->tam_dato,
+                        peticion_a_enviar->dato);
     peticion_enviar(peticion_a_enviar, ESCRIBIR_DATO_EN_MEMORIA, socket_memoria);
 
     controlar_peticion_a_memoria();
@@ -197,7 +204,19 @@ void exec_mov_out(char** instr_tokenizada){
  Lee el valor de memoria correspondiente a la Dirección Lógica que se encuentra en el Registro Dirección 
  y lo almacena en el Registro Datos.
 */
-static void* registro_que_guarda_dato;
+void leer_dato_memoria(t_peticion_memoria* peticion_a_enviar, void** ptr_donde_se_guarda_el_dato){
+        log_info(logger, "Enviando solicitud de leer a memoria. Dirección: [%d], Tam_Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->tam_dato);
+        peticion_enviar(peticion_a_enviar, LEER_DATO_DE_MEMORIA, socket_memoria);
+
+        int size;
+        void *parte_del_dato = recibir_buffer(&size, socket_memoria);
+        memcpy(*ptr_donde_se_guarda_el_dato, parte_del_dato, size);
+        *ptr_donde_se_guarda_el_dato += size;
+        free(parte_del_dato);
+
+        controlar_peticion_a_memoria();
+}
+
 void exec_mov_in(char** instr_tokenizada){
     log_info(logger, "Inicia exec_mov_in");
 
@@ -207,24 +226,38 @@ void exec_mov_in(char** instr_tokenizada){
     log_info(logger, "Registro datos: [%s], Registro dirección: [%s]", registro_datos, registro_direccion);
 
     uint32_t* direccion_logica = get_registro(registro_direccion);
-    registro_que_guarda_dato = get_registro(registro_datos);
+    void* registro_que_guarda_dato = get_registro(registro_datos);
 
     log_info(logger, "Dirección logica: [%d], Valor actual en registro de datos: [%d]", *direccion_logica, registro_que_guarda_dato);
 
     t_list *direcciones_fisicas = mmu(*direccion_logica, tam_registro(registro_datos), NULL);
     for(int i=0; i<list_size(direcciones_fisicas); i++){
         t_peticion_memoria* peticion_a_enviar = list_get(direcciones_fisicas, i);
-        log_info(logger, "Enviando solicitud de leer a memoria. Dirección: [%d], Tam_Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->tam_dato);
-        peticion_enviar(peticion_a_enviar, LEER_DATO_DE_MEMORIA, socket_memoria);
-
-        int size;
-        void *parte_del_dato = recibir_buffer(&size, socket_memoria);
-        memcpy(registro_que_guarda_dato, parte_del_dato, size);
-        registro_que_guarda_dato += size;
-        free(parte_del_dato);
-
-        controlar_peticion_a_memoria();
+        leer_dato_memoria(peticion_a_enviar, &registro_que_guarda_dato);
     }
 
     log_info(logger, "Dato guardado en el registro: [%d]", registro_que_guarda_dato);
+}
+
+void exec_cp_string(char** instr_tokenizada){
+    int tam_string = get_valor(instr_tokenizada[1]);
+    uint32_t dl_src = pcb_actual->registros->si;
+    uint32_t dl_dst = pcb_actual->registros->di;
+    void* string_copiado = malloc(tam_string);
+    void* ptr_string_copiado = string_copiado;
+
+    // Leer el string de la dirección lógica dl_src
+    t_list *peticiones_lectura = mmu(dl_src, tam_string, NULL);
+    for(int i=0; i < list_size(peticiones_lectura); i++){
+        t_peticion_memoria* peticion_a_enviar = list_get(peticiones_lectura, i);
+        leer_dato_memoria(peticion_a_enviar, &ptr_string_copiado);
+    }
+
+    // Escribir el string en la dirección lógica dl_dst
+    t_list *peticiones_escritura = mmu(dl_dst, tam_string, string_copiado);
+    list_iterate(peticiones_escritura, enviar_peticiones_de_escribir);
+
+    log_info(logger, "String copiado: [%s] desde [%d] a [%d]", string_copiado, dl_src, dl_dst);
+    free(string_copiado);
+    // Despues hay que liberar todas las peticiones tambien para mov_in y mov_out
 }
