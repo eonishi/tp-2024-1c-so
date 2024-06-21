@@ -52,6 +52,7 @@ t_list* mmu(unsigned direccion_logica, size_t tam_dato, void* dato){
             }
             else{
                 unsigned frame_number = obtener_frame_tlb(pcb_actual->pid, numero_pagina);
+                bytes_a_leer = min(tam_dato, TAM_PAGINA);
                 t_peticion_memoria* nueva_peticion = peticion_crear(frame_number * TAM_PAGINA, ptr_byte_dato, bytes_a_leer);
                 list_add(direcciones_fisica, nueva_peticion);
             }
