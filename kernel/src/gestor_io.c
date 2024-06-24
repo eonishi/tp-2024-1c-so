@@ -16,10 +16,14 @@ void *escuchar_io(void *socket){
 
 			pcb* pcb_blocked = pop_cola_blocked();
 			pcb_blocked->estado = READY;
-            
-			push_cola_ready(pcb_blocked);
-
-			sem_post(&sem_proceso_en_ready);
+            //aca se envia a ready luego de desbloquearse por I/O
+            if(strcmp(config->algoritmo_planificacion, "VRR") == 0){
+                push_cola_ready_priority(pcb_blocked,5); //reemplazar 5 por el q pendiente al entrar en IO
+			    sem_post(&sem_proceso_en_ready);//chequear si hace falta otro semaforo por VRR, no deberia.
+            }else {
+			    push_cola_ready(pcb_blocked);
+			    sem_post(&sem_proceso_en_ready);
+            }
 			break;
 		case DISPATCH_PROCESO:
             log_info(logger, "Recibi DISPATCH_PROCESO. CODIGO: %d", cod_op);

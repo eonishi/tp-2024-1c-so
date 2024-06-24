@@ -12,6 +12,7 @@
 #include "gestor_io.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
+#include "commons/temporal.h"
 
 extern pthread_t hilo_quantum;
 
@@ -19,6 +20,7 @@ extern t_log *logger;
 extern kernel_config* config;
 extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, q_usado, q_restante;
 extern t_list *lista_conexiones_io;
+extern t_temporal *q_transcurrido;
 
 extern int planificacion_activada;
 // Semaforos
@@ -36,6 +38,7 @@ void *monitoreo_quantum();
 void* serializar_interrupcion(unsigned int , size_t*);
 void enviar_interrupcion(int , unsigned);
 void crear_hilo_quantum();
+void cancelar_hilo_quantum();
 
 
 
