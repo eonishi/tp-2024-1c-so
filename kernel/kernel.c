@@ -23,39 +23,9 @@ int main(){
 
 	log_info(logger, "Creando hilo para el planificador de largo plazo...");
 	iniciar_hilo(iniciar_planificacion_largo, hilo_planificador_largo);
-	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
-	if(strcmp(config->algoritmo_planificacion, "FIFO") == 0){
-		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
-		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
-	}else if(strcmp(config->algoritmo_planificacion, "RR") == 0){
-		log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
-		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
-	}else if(strcmp(config->algoritmo_planificacion, "VRR") == 0){
-		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
-		iniciar_hilo(iniciar_planificacion_corto_VRR, hilo_planificador_corto_VRR);
-	}
-	/*
-		char* algoritmo_planificador_corto = config->algoritmo_planificacion;
-		switch (algoritmo_planificador_corto) {
-        case FIFO:
-            log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
-            iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
-            break;
-        case RR:
-            log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
-            iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
-            break;
-        case VRR:
-            log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
-            iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
-            break;
-        default:
-            log_info(logger, "Algoritmo de planificación desconocido.");
-            break;
-    }*/
-
 	
-
+	crear_hilo_planificador_corto();
+	
 	iniciar_consola();
 
 	terminar_programa();
@@ -132,6 +102,24 @@ void iniciar_consola()
 			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
 			log_info(logger, "==============================================");
 
+		}
+		else if(strcmp(comando, "CAMBIAR_ALGORITMO_FIFO") == 0){
+			cancelar_hilo_planificador();
+			config->algoritmo_planificacion = "FIFO";
+			log_info(logger, "SE HA SETEADO FIFO COMO ALGORITMO DEL PLANIFICADOR CORTO");
+			crear_hilo_planificador_corto;
+
+		}else if(strcmp(comando, "CAMBIAR_ALGORITMO_RR") == 0){
+			cancelar_hilo_planificador();
+			config->algoritmo_planificacion = "RR";
+			log_info(logger, "SE HA SETEADO ROUND ROBIN COMO ALGORITMO DEL PLANIFICADOR CORTO");
+			crear_hilo_planificador_corto;
+
+		}else if(strcmp(comando, "CAMBIAR_ALGORITMO_VRR") == 0){
+			cancelar_hilo_planificador();
+			config->algoritmo_planificacion = "VRR";
+			log_info(logger, "SE HA SETEADO VIRTUAL ROUND ROBIN COMO ALGORITMO DEL PLANIFICADOR CORTO");
+			crear_hilo_planificador_corto;
 		}
 		else{
 			log_info(logger, "Comando desconocido");
@@ -229,7 +217,35 @@ void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void* args){
 		pthread_detach(thread);
 	}
 }
+void crear_hilo_planificador_corto(){
+	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
+	if(strcmp(config->algoritmo_planificacion, "FIFO") == 0){
+		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
+		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+	}else if(strcmp(config->algoritmo_planificacion, "RR") == 0){
+		log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
+		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
+	}else if(strcmp(config->algoritmo_planificacion, "VRR") == 0){
+		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
+		iniciar_hilo(iniciar_planificacion_corto_VRR, hilo_planificador_corto_VRR);
+	}else{
+		log_error(logger, "Algoritmo de planificación desconocido.");
+		terminar_programa();
+	}
+}
 
+void cancelar_hilo_planificador(){
+	if (strcmp(config->algoritmo_planificacion,"FIFO") == 0){
+		pthread_cancel(hilo_planificador_corto);
+		log_info(logger,"HILO PLANIFICADOR FIFO CANCELADO");
+	}else if(strcmp(config->algoritmo_planificacion,"RR") == 0){
+		pthread_cancel(hilo_planificador_corto_RR);
+		log_info(logger,"HILO PLANIFICADOR RR CANCELADO");
+	}else if(strcmp(config->algoritmo_planificacion,"VRR") == 0){
+		pthread_cancel(hilo_planificador_corto_VRR);
+		log_info(logger,"HILO PLANIFICADOR VRR CANCELADO");
+	}
+}
 /*void cambiar_algoritmo_planificadorCorto(algoritmo_planificador algoritmoNuevo){
 	//todo
 }*/

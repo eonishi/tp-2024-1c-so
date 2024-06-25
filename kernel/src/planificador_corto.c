@@ -1,7 +1,9 @@
 #include "../include/planificador_corto.h"
 #include "../../cpu/include/checkInterrupt.h"
 
+
 int q_usado, q_restante = 0;
+t_temporal *q_transcurrido;
 pthread_mutex_t mutex_quantum = PTHREAD_MUTEX_INITIALIZER;
 pthread_t hilo_quantum;
 
@@ -28,13 +30,16 @@ void *iniciar_planificacion_corto(){
 
 void dispatch_proceso_planificador(pcb* newPcb){
     enviar_pcb(newPcb, socket_cpu_dispatch, DISPATCH_PROCESO);
+    if (strcmp(config->algoritmo_planificacion, "FIFO") != 0){
+        q_transcurrido = temporal_create();
+    }//aca creo el contador de quantum usado para VRR
     push_cola_execute(newPcb); 
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");    
 }
 
 void gestionar_respuesta_cpu(){
 	t_list* lista;
-
+    
 	int cod_op = recibir_operacion(socket_cpu_dispatch);
 	log_info(logger, "Codigo recibido desde el cpu: [%d]", cod_op);
 
@@ -42,10 +47,7 @@ void gestionar_respuesta_cpu(){
 
 	switch (cod_op) {
 		case PROCESO_TERMINADO:
-            if(strcmp(config->algoritmo_planificacion, "FIFO") != 0){
-                pthread_cancel(hilo_quantum); //si el proceso terminó naturalmente cancelo el hilo quantum
-                log_info(logger, "hilo quantum cancelado por finalizacion.");
-            }
+            cancelar_hilo_quantum();
 			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
 			pcb = recibir_pcb(socket_cpu_dispatch);
 			loggear_pcb(pcb);
@@ -57,28 +59,41 @@ void gestionar_respuesta_cpu(){
             		
 			break;		
 		case PROCESO_BLOQUEADO:
-            //si proceso entra a bloqueado tambien cancela el quantum???
+            cancelar_hilo_quantum();
+            if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
 			log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
-
 			solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
 			solicitud.pcb->estado = BLOCKED;
 			loggear_pcb(solicitud.pcb);			
-
             push_cola_blocked(solicitud.pcb);
-
             log_info(logger, "Tokens de instr: [%s][%s][%s]", solicitud.instruc_io_tokenizadas[0],solicitud.instruc_io_tokenizadas[1], solicitud.instruc_io_tokenizadas[2]);
-
             bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas);
-
             if(!enviado)
                 log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
-
             sem_post(&sem_cpu_libre);
 			break;
+            }else{//estoy usando RR o VRR
+			temporal_stop(q_transcurrido); //detengo el contador de quantum usado
+            q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
+            log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
+			solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
+			solicitud.pcb->estado = BLOCKED;
+			solicitud.pcb->quantum -= q_usado;//////////no calcule el q_usado en este punto
+            loggear_pcb(solicitud.pcb);			
+            push_cola_blocked(solicitud.pcb);
+            log_info(logger, "Tokens de instr: [%s][%s][%s]", solicitud.instruc_io_tokenizadas[0],solicitud.instruc_io_tokenizadas[1], solicitud.instruc_io_tokenizadas[2]);
+            bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas);
+            if(!enviado)
+                log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
+            sem_post(&sem_cpu_libre);
+			break;
+            }
         case INTERRUPCION:
+            temporal_stop(q_transcurrido); //detengo el contador de quantum usado
+            q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
             pcb = recibir_pcb(socket_cpu_dispatch);
             log_info(logger, "Recibi proceso PID [%d] desalojado por INTERRUPCION CODIGO: [%d]", pcb->pid, cod_op);
-            pcb->quantum = pcb->quantum - config->quantum;//resto el quantum solo para monitoreo acá
+            pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
             pcb->estado = READY;
             loggear_pcb(pcb);
             pop_cola_execute();
@@ -115,6 +130,8 @@ void *iniciar_planificacion_corto_RR(){
 
 void *iniciar_planificacion_corto_VRR(){
     q_usado = 0;
+    pcb* pcb = NULL;
+    
     while(1){
         if(planificacion_activada){   
 			log_info(logger, "Corto VRR: Esperando otro proceso en ready");					
@@ -123,9 +140,17 @@ void *iniciar_planificacion_corto_VRR(){
 			log_info(logger, "Corto VRR: Esperando que el cpu este libre");	
             sem_wait(&sem_cpu_libre);
             log_info(logger, "Corto VRR: Cpu libre! pasando proximo proceso a execute..");	
-           //Logica que priorice la cola auxiliar con pcb que viene de IO
-           //Logica que determina el quantum usado -> q_usado = t_inicio - t_desaolojo_IO
-            pcb* pcb = pop_cola_ready();
+            if(!queue_is_empty(cola_readyVRR)){
+                //dar paso a ready normal
+                log_info(logger, "La cola prioritaria NO esta vacia.");
+                 elemVRR* auxVRR = queue_pop(cola_readyVRR);
+                 pcb = auxVRR->pcbVRR;
+                 q_usado = auxVRR->quantum_usado;
+            }else{
+                //dar paso a la cola ready VRR
+                log_info(logger, "La cola prioritaria está vacia.");
+                pcb = pop_cola_ready();
+            } 
             pcb->estado = EXECUTE;
             dispatch_proceso_planificador(pcb);
             crear_hilo_quantum();
@@ -143,7 +168,7 @@ void crear_hilo_quantum(){
 }
 
 void *monitoreo_quantum(){
-    q_restante = config->quantum - q_usado;
+    q_restante = config->quantum - q_usado; // Si es FIFO no se trabaja con quantum.
     log_info(logger, "Inicio quantum de %d", q_restante);
     usleep((q_restante)*1000);
     send_interrupt();    
@@ -169,3 +194,9 @@ void* serializar_interrupcion(unsigned int valor, size_t* size) {
     return buffer;
 }
 
+void cancelar_hilo_quantum(){
+    if(strcmp(config->algoritmo_planificacion, "FIFO") != 0){
+                pthread_cancel(hilo_quantum);
+                log_info(logger, "hilo quantum cancelado.");
+            }
+}
