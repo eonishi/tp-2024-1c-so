@@ -16,5 +16,6 @@ t_peticion_memoria *peticion_crear(uint32_t direccion_fisica, void *dato, size_t
 void peticion_destruir(t_peticion_memoria *direccion);
 void peticion_enviar(t_peticion_memoria *peticion_a_enviar, op_code CODE, int socket);
 t_peticion_memoria *peticion_recibir(int socket, op_code CODE);
+void peticion_empaquetar(t_peticion_memoria *peticion, t_paquete *paquete, op_code CODE);
 
 #endif
