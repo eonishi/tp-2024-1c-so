@@ -77,3 +77,9 @@ void peticiones_distribuir_dato(t_list* peticiones, void* dato_entero, size_t ta
         offset += peticion->tam_dato;
     }
 }
+
+void peticion_escritura_enviar(void* peticion_escribir, int socket_memoria){
+    t_peticion_memoria* peticion_a_enviar = (t_peticion_memoria*) peticion_escribir;
+    log_info(logger, "Enviando solicitud de escritura a memoria. Dirección: [%d], Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->tam_dato);
+    peticion_enviar(peticion_a_enviar, ESCRIBIR_DATO_EN_MEMORIA, socket_memoria);
+}
