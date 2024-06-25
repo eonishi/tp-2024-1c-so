@@ -19,6 +19,7 @@ t_peticion_memoria *peticion_recibir(int socket, op_code CODE);
 void peticion_empaquetar(t_peticion_memoria *peticion, t_paquete *paquete, op_code CODE);
 size_t peticiones_tam_total(t_list *peticiones);
 void peticiones_distribuir_dato(t_list *peticiones, void *dato_entero, size_t tam_dato);
-void peticion_escritura_enviar(void *peticion_escribir, int socket_memoria);
+void peticion_escritura_enviar(t_peticion_memoria *peticion_escribir, int socket_memoria);
+void peticion_lectura_enviar(t_peticion_memoria *peticion_a_enviar, void **ptr_donde_se_guarda_dato, int socket_memoria);
 
 #endif

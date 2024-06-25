@@ -174,7 +174,8 @@ void exec_resize(char** instr_tokenizada){
  * obtenida a partir de la Dirección Lógica almacenada en el Registro Dirección.
  * **/
 void enviar_peticiones_de_escribir(void* peticion){
-    peticion_escritura_enviar(peticion, socket_memoria);
+    t_peticion_memoria* peticion_a_enviar = (t_peticion_memoria*) peticion;
+    peticion_escritura_enviar(peticion_a_enviar, socket_memoria);
     controlar_peticion_a_memoria();
 }
 
@@ -199,16 +200,8 @@ void exec_mov_out(char** instr_tokenizada){
  y lo almacena en el Registro Datos.
 */
 void leer_dato_memoria(t_peticion_memoria* peticion_a_enviar, void** ptr_donde_se_guarda_el_dato){
-        log_info(logger, "Enviando solicitud de leer a memoria. Dirección: [%d], Tam_Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->tam_dato);
-        peticion_enviar(peticion_a_enviar, LEER_DATO_DE_MEMORIA, socket_memoria);
-
-        int size;
-        void *parte_del_dato = recibir_buffer(&size, socket_memoria);
-        memcpy(*ptr_donde_se_guarda_el_dato, parte_del_dato, size);
-        *ptr_donde_se_guarda_el_dato += size;
-        free(parte_del_dato);
-
-        controlar_peticion_a_memoria();
+    peticion_lectura_enviar(peticion_a_enviar, ptr_donde_se_guarda_el_dato, socket_memoria);
+    controlar_peticion_a_memoria();
 }
 
 void exec_mov_in(char** instr_tokenizada){

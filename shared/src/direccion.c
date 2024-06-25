@@ -78,8 +78,18 @@ void peticiones_distribuir_dato(t_list* peticiones, void* dato_entero, size_t ta
     }
 }
 
-void peticion_escritura_enviar(void* peticion_escribir, int socket_memoria){
-    t_peticion_memoria* peticion_a_enviar = (t_peticion_memoria*) peticion_escribir;
+void peticion_escritura_enviar(t_peticion_memoria* peticion_a_enviar, int socket_memoria){
     log_info(logger, "Enviando solicitud de escritura a memoria. Dirección: [%d], Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->tam_dato);
     peticion_enviar(peticion_a_enviar, ESCRIBIR_DATO_EN_MEMORIA, socket_memoria);
+}
+
+void peticion_lectura_enviar(t_peticion_memoria* peticion_a_enviar, void** ptr_donde_se_guarda_dato, int socket_memoria){
+    log_info(logger, "Enviando solicitud de leer a memoria. Dirección: [%d], Tam_Dato: [%d]", peticion_a_enviar->direccion_fisica, peticion_a_enviar->tam_dato);
+    peticion_enviar(peticion_a_enviar, LEER_DATO_DE_MEMORIA, socket_memoria);
+
+    int size;
+    void *parte_del_dato = recibir_buffer(&size, socket_memoria);
+    memcpy(*ptr_donde_se_guarda_dato, parte_del_dato, size);
+    *ptr_donde_se_guarda_dato += size;
+    free(parte_del_dato);
 }
