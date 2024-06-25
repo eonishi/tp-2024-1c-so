@@ -54,3 +54,26 @@ void peticion_empaquetar(t_peticion_memoria *peticion, t_paquete *paquete, op_co
     free(tam_dato_stream);
     //free(dato_stream); //Este free es condicional, depende de si se envia o no el dato
 }
+
+size_t peticiones_tam_total(t_list* peticiones){
+    size_t acumulador = 0;
+    for(int i = 0; i < list_size(peticiones); i++){
+        t_peticion_memoria* peticion = list_get(peticiones, i);
+        acumulador += peticion->tam_dato;
+    }
+    return acumulador;
+}
+
+void peticiones_distribuir_dato(t_list* peticiones, void* dato_entero, size_t tam_dato){
+    if(peticiones_tam_total(peticiones) != tam_dato) return;
+
+    void* ptr_dato_entero = dato_entero; 
+
+    size_t offset = 0;
+    for(int i = 0; i < list_size(peticiones); i++){
+        t_peticion_memoria* peticion = list_get(peticiones, i);
+        peticion->dato = malloc(peticion->tam_dato);
+        memcpy(peticion->dato, ptr_dato_entero + offset, peticion->tam_dato);
+        offset += peticion->tam_dato;
+    }
+}
