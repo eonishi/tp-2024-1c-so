@@ -174,13 +174,7 @@ void exec_resize(char** instr_tokenizada){
  * obtenida a partir de la Dirección Lógica almacenada en el Registro Dirección.
  * **/
 void enviar_peticiones_de_escribir(void* peticion){
-    t_peticion_memoria* peticion_a_enviar = (t_peticion_memoria*) peticion;
-    log_info(logger, "Enviando solicitud de escritura a memoria. Dirección: [%d], Dato: [%*.x]", 
-                        peticion_a_enviar->direccion_fisica, 
-                        peticion_a_enviar->tam_dato,
-                        peticion_a_enviar->dato);
-    peticion_enviar(peticion_a_enviar, ESCRIBIR_DATO_EN_MEMORIA, socket_memoria);
-
+    peticion_escritura_enviar(peticion, socket_memoria);
     controlar_peticion_a_memoria();
 }
 
