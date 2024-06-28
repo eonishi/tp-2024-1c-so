@@ -27,6 +27,7 @@ void crear_hilo_solicitudes_kernel();
 void* gestionar_solicitudes_kernel();
 void crear_hilo_solicitudes_cpu();
 void* gestionar_solicitudes_cpu();
+void* gestionar_solicitudes_io(void *pthread_arg);
 
 void terminar_programa();
 

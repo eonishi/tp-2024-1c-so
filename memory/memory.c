@@ -17,7 +17,18 @@ int main(){
 
     crear_hilo_solicitudes_cpu();    
     crear_hilo_solicitudes_kernel();
-
+	while (1)
+	{
+		log_info(logger, "Esperando conexiones de IO...");
+		if(servidor_escuchar_cliente(server_fd, gestionar_solicitudes_io)){
+			log_info(logger, "Se conectó un cliente");
+		}
+		else{
+			log_error(logger, "Se intento conectar un cliente pero no se pudo");
+		}
+		
+	}
+	
     terminar_programa();
 
     return EXIT_SUCCESS;
@@ -30,7 +41,7 @@ void crear_hilo_solicitudes_kernel(){
     }
 	else{
     	log_info(logger, "El thread de la escucha del servidor inició su ejecución");
-		pthread_join(hilo_kernel, NULL);
+		pthread_detach(hilo_kernel);
 	}
 }
 
@@ -179,6 +190,45 @@ void* gestionar_solicitudes_cpu(){
 			break;
 		}
         log_info(logger, "==============================================");
+	}
+}
+
+void* gestionar_solicitudes_io(void* pthread_arg){
+	int io_socket = *(int*)pthread_arg;
+	free(pthread_arg);
+	log_info(logger, "Se conectó un cliente IO. SOCKET: [%d]", io_socket);
+	
+	log_info(logger, "Esperando recibir operacion del IO...");
+	while(io_socket != -1){
+
+		op_code cod_op = recibir_operacion(io_socket);
+		log_info(logger, "===================");
+		log_info(logger, "Codigo recibido desde el IO: %d", cod_op);
+
+		switch (cod_op) {
+		case LEER_DATO_DE_MEMORIA:
+			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
+
+			t_peticion_memoria* solicitud_lectura = peticion_recibir(io_socket, LEER_DATO_DE_MEMORIA);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%d]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
+
+			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
+
+			esperar_retardo();
+			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, io_socket);
+			enviar_status(SUCCESS, io_socket);
+			log_info(logger, "Se leyó el dato de la memoria y se envió a IO");
+			break;
+
+		case -1:
+			log_error(logger, "el cliente se desconecto. Terminando servidor");
+			close(io_socket);
+			log_info(logger, "Socket cerrado. SOCKET: [%d]", io_socket);
+			break;
+		default:
+			log_warning(logger,"Operacion desconocida. No quieras meter la pata. CODIGO: [%d]", cod_op);
+			break;
+		}
 	}
 }
 
