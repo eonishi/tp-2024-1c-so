@@ -11,7 +11,7 @@ void io_generica() {
             case EJECUTAR_INSTRUCCION_IO:
                 log_info(logger, "Ejecutar instruccion IO");
                 t_list *peticiones_memoria;
-                char **instruccion_tokenizada = recibir_instruccion_io(kernel_socket, peticiones_memoria);
+                char **instruccion_tokenizada = recibir_instruccion_io(kernel_socket, &peticiones_memoria);
 
                 log_info(logger, "Instruccion: [%s]", instruccion_tokenizada[0]);
                 log_info(logger, "Dispositivo: [%s]", instruccion_tokenizada[1]);
