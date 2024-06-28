@@ -54,7 +54,7 @@ void execute(char **instr_tokenizada)
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
         
-        exec_operacion_io(instr_tokenizada);
+        exec_io_stdout_write(instr_tokenizada);
         break;
     case EXIT_OP:
         tengo_pcb = 0;
@@ -143,6 +143,7 @@ void exec_operacion_io(char** instr_tokenizada){
     solicitud_bloqueo_por_io solicitud;
     solicitud.instruc_io_tokenizadas = instr_tokenizada;
     solicitud.pcb = pcb_actual;
+    solicitud.peticiones_memoria = list_create();
 
     enviar_bloqueo_por_io(solicitud, socket_kernel);
 }
@@ -247,4 +248,24 @@ void exec_cp_string(char** instr_tokenizada){
     log_info(logger, "String copiado: [%s] desde [%d] a [%d]", string_copiado, dl_src, dl_dst);
     free(string_copiado);
     // Despues hay que liberar todas las peticiones tambien para mov_in y mov_out
+}
+
+void exec_io_stdout_write(char** instr_tokenizada){
+    // IO_STDOUT_WRITE, Interfaz, Registro Direccion, Registro Tamaño
+    char* registro_direccion = instr_tokenizada[2];
+    char* registro_tamanio = instr_tokenizada[3];
+    log_info(logger, "Registro dirección: [%s], Registro Tamanio: [%s]", registro_direccion, registro_tamanio);
+
+    uint32_t* direccion_logica = get_registro(registro_direccion);
+    uint32_t* tamanio = get_registro(registro_tamanio);
+    log_info(logger, "Dirección logica: [%d], Tamaño: [%d]", *direccion_logica, *tamanio);
+
+    t_list *peticiones_lectura = mmu(*direccion_logica, *tamanio, NULL);
+
+    solicitud_bloqueo_por_io solicitud;
+    solicitud.instruc_io_tokenizadas = instr_tokenizada;
+    solicitud.pcb = pcb_actual;
+    solicitud.peticiones_memoria = peticiones_lectura;
+
+    enviar_bloqueo_por_io(solicitud, socket_kernel);
 }
