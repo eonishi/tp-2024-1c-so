@@ -48,7 +48,7 @@ void *escuchar_io(void *socket){
 	}
 }
 
-bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
+bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* peticiones_memoria){
     conexion_io* conexion_io;
 
     if(!existe_io_conectada(instruc_io_tokenizadas[1])){
@@ -63,6 +63,7 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
         log_error(logger, "La IO no acepta la operacion: [%s]", instruc_io_tokenizadas[0]);
         return false;
     }
+    log_info(logger, "La IO acepta la operacion: [%s]", instruc_io_tokenizadas[0]);
 
     // TODO: Deberia gestionarse con semaforos
     if(!io_disponible(*conexion_io)){
@@ -71,7 +72,7 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
         return false;
     }
 
-    enviar_instruccion_io(instruc_io_tokenizadas, conexion_io->socket);
+    enviar_instruccion_io(instruc_io_tokenizadas, peticiones_memoria, conexion_io->socket);
 
     return true;
 }

@@ -10,7 +10,8 @@ void io_generica() {
         switch (cod_op){
             case EJECUTAR_INSTRUCCION_IO:
                 log_info(logger, "Ejecutar instruccion IO");
-                char** instruccion_tokenizada = recibir_instruccion_io(kernel_socket);
+                t_list *peticiones_memoria;
+                char **instruccion_tokenizada = recibir_instruccion_io(kernel_socket, peticiones_memoria);
 
                 log_info(logger, "Instruccion: [%s]", instruccion_tokenizada[0]);
                 log_info(logger, "Dispositivo: [%s]", instruccion_tokenizada[1]);

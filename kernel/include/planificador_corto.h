@@ -12,6 +12,7 @@
 #include "gestor_io.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
+#include "../../shared/include/direccion.h"
 #include "commons/temporal.h"
 
 extern pthread_t hilo_quantum;

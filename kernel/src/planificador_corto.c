@@ -64,10 +64,11 @@ void gestionar_respuesta_cpu(){
 			log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
 			solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
 			solicitud.pcb->estado = BLOCKED;
-			loggear_pcb(solicitud.pcb);			
+			loggear_pcb(solicitud.pcb);	
+            log_peticiones(solicitud.peticiones_memoria);		
             push_cola_blocked(solicitud.pcb);
             log_info(logger, "Tokens de instr: [%s][%s][%s]", solicitud.instruc_io_tokenizadas[0],solicitud.instruc_io_tokenizadas[1], solicitud.instruc_io_tokenizadas[2]);
-            bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas);
+            bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas, solicitud.peticiones_memoria);
             if(!enviado)
                 log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
             sem_post(&sem_cpu_libre);
@@ -82,7 +83,7 @@ void gestionar_respuesta_cpu(){
             loggear_pcb(solicitud.pcb);			
             push_cola_blocked(solicitud.pcb);
             log_info(logger, "Tokens de instr: [%s][%s][%s]", solicitud.instruc_io_tokenizadas[0],solicitud.instruc_io_tokenizadas[1], solicitud.instruc_io_tokenizadas[2]);
-            bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas);
+            bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas, solicitud.peticiones_memoria);
             if(!enviado)
                 log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
             sem_post(&sem_cpu_libre);
