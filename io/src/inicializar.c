@@ -27,7 +27,7 @@ static void iniciar_io_stdout(char* nombre_interfaz){
     int* ptr_op = operaciones;
 
     int conexion_valida = conectar_al_kernel(nombre_interfaz, STDOUT, ptr_op);
-    if(conexion_valida) io_stdin();
+    if(conexion_valida) io_stdout();
     else exit(EXIT_FAILURE);
 }
 
@@ -36,7 +36,7 @@ static void iniciar_io_dialfs(char* nombre_interfaz){
     int* ptr_op = operaciones;
 
     int conexion_valida = conectar_al_kernel(nombre_interfaz, DIALFS, ptr_op);
-    if(conexion_valida) io_stdin();
+    if(conexion_valida) io_dialfs();
     else exit(EXIT_FAILURE);
 }
 
@@ -46,21 +46,24 @@ void inicializar_io(char* nombre_interfaz, char* path_config){
     logger = iniciar_logger("io.log", logger_name);
     inicializar_configuracion(path_config);
     crear_conexion_kernel();
-    
+
     // Inicializacion especifica dependiendo la interfaz
     if(string_equals_ignore_case(config.interfaz_tipo, "GENERICA")){
         iniciar_io_generica(nombre_interfaz);
         log_info(logger, "Interfaz generica inicializada");
     }
     else if(string_equals_ignore_case(config.interfaz_tipo, "STDIN")){
+        crear_conexion_memoria();
         iniciar_io_stdin(nombre_interfaz);
         log_info(logger, "Interfaz STDIN inicializada");
     }
     else if(string_equals_ignore_case(config.interfaz_tipo, "STDOUT")){
+        crear_conexion_memoria();
         iniciar_io_stdout(nombre_interfaz);
         log_info(logger, "Interfaz STDOUT inicializada");
     }
     else if(string_equals_ignore_case(config.interfaz_tipo, "DIALFS")){
+        crear_conexion_memoria();
         iniciar_io_dialfs(nombre_interfaz);
         log_info(logger, "Interfaz DialFS inicializada");
     }
