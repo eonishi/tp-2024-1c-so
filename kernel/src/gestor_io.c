@@ -50,20 +50,23 @@ void *escuchar_io(void *socket){
 
 bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* peticiones_memoria){
     conexion_io* conexion_io;
+    char* instruccion = instruc_io_tokenizadas[0];
+    char* nombre_io = instruc_io_tokenizadas[1];
 
-    if(!existe_io_conectada(instruc_io_tokenizadas[1])){
-        log_error(logger, "La IO no existe: [%s]", instruc_io_tokenizadas[1]);
+    if(!existe_io_conectada(nombre_io)){
+        log_error(logger, "La IO no existe: [%s]", nombre_io);
         return false;
     }
 
-    conexion_io = obtener_conexion_io_por_nombre(instruc_io_tokenizadas[1]);
+    conexion_io = obtener_conexion_io_por_nombre(nombre_io);
 
     // SOLO admite operaciones de tipo IO_GEN_SLEEP
-    if(!io_acepta_operacion(*conexion_io, instruc_io_tokenizadas[0])){
-        log_error(logger, "La IO no acepta la operacion: [%s]", instruc_io_tokenizadas[0]);
+    if(!io_acepta_operacion(*conexion_io, instruccion)){
+        log_error(logger, "La IO no acepta la operacion: [%s]", instruccion);
+        log_operaciones(conexion_io->operaciones, conexion_io->tipo);
         return false;
     }
-    log_info(logger, "La IO acepta la operacion: [%s]", instruc_io_tokenizadas[0]);
+    log_info(logger, "La IO acepta la operacion: [%s]", instruccion);
 
     // TODO: Deberia gestionarse con semaforos
     if(!io_disponible(*conexion_io)){
@@ -72,9 +75,29 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* pe
         return false;
     }
 
-    enviar_instruccion_io(instruc_io_tokenizadas, peticiones_memoria, conexion_io->socket);
+    switch (get_operacion(instruc_io_tokenizadas)){
+        case IO_GEN_SLEEP:
+        case IO_STDIN_READ:
+        case IO_STDOUT_WRITE:
+            // [] Enviar peticiones de memoria
+            enviar_instruccion_io(instruc_io_tokenizadas, peticiones_memoria, conexion_io->socket);
+            break;
+        case IO_FS_CREATE:
+        case IO_FS_DELETE:{
+            char* file_name = instruc_io_tokenizadas[2];
+            enviar_mensaje(EJECUTAR_INSTRUCCION_IO, file_name, conexion_io->socket);
+            break;
+        case IO_FS_TRUNCATE:
+        case IO_FS_READ:
+        case IO_FS_WRITE:
+            log_error(logger, "Operacion no implementada");
+        default:
+            log_error(logger, "Operacion no reconocida");
+            break;
+        }
 
-    return true;
+        return true;
+    }
 }
 
 static char *interfaz_buscada;
