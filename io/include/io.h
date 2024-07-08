@@ -2,6 +2,7 @@
 #define IO_H_
 
 #include "inicializar.h"
+#include<readline/readline.h>
 #include <commons/log.h>
 
 extern t_log *logger;
