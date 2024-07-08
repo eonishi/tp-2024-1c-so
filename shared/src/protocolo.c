@@ -58,6 +58,7 @@ int deserializar_int(void* int_bytes){
     int* result =malloc(sizeof(int));
     memcpy(result, int_bytes, sizeof(int));
 
+    //free(int_bytes); Falta un free de los bytes que se reciben por parametro
     return *result;
 }
 
@@ -188,10 +189,11 @@ int enviar_bloqueo_por_io(solicitud_bloqueo_por_io solicitud, int socket_cliente
     t_paquete* paquete = crear_paquete(PROCESO_BLOQUEADO);
 
     void* pcb_serializado = serializar_pcb(solicitud.pcb);    
-
     agregar_a_paquete(paquete, pcb_serializado, pcb_size());
 
     serializar_lista_strings_y_agregar_a_paquete(solicitud.instruc_io_tokenizadas, paquete);
+
+    peticiones_empaquetar(solicitud.peticiones_memoria, paquete);
 
     enviar_paquete(paquete, socket_cliente);
 }
@@ -199,37 +201,49 @@ int enviar_bloqueo_por_io(solicitud_bloqueo_por_io solicitud, int socket_cliente
 solicitud_bloqueo_por_io recibir_solicitud_bloqueo_por_io(int socket_cliente){
     log_info(logger,"Recibido en solicitud bloqueo por io");
 
-    t_list* bytes = recibir_paquete(socket_cliente);
+    t_list* paquete_bytes = recibir_paquete(socket_cliente);
     
-    void* pcb_bytes = list_get(bytes, 0);
+    void* pcb_bytes = list_get(paquete_bytes, 0);
     pcb* pcb = deserializar_pcb_new(pcb_bytes);
 
-    char** tokens = deserializar_lista_strings(bytes, 1);
+    char** tokens = deserializar_lista_strings(paquete_bytes, 1);
+
+    // Son dos porque la primera posicion es el pcb y la segunda es la cantidad de tokens 
+    t_list* peticiones_memoria = peticiones_desempaquetar_segun_index(paquete_bytes, 2 + string_array_size(tokens));
 
     solicitud_bloqueo_por_io solicitud;
-
     solicitud.pcb = pcb;
     solicitud.instruc_io_tokenizadas = tokens;
+    solicitud.peticiones_memoria = peticiones_memoria;
 
+    // free(pcb_bytes);
     return solicitud;
 }
 
 
-int enviar_instruccion_io(char** instruccion_tokenizada, int socket_cliente){
+int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int socket_cliente){
+    // TODO: teniendo en cuenta que la validación de la existencia de io y correspondencia de instruccion
+    // la hace kernel, es redundante enviar toda la instruccion tokenizada. Se podría enviar lo necesario para la ejecucion.
+
     t_paquete* paquete = crear_paquete(EJECUTAR_INSTRUCCION_IO);
 
     serializar_lista_strings_y_agregar_a_paquete(instruccion_tokenizada, paquete);
 
+    log_info(logger, "Estoy por empaquetar peticiones de memoria");
+    peticiones_empaquetar(peticiones_memoria, paquete);
+    log_info(logger, "Estoy por empaquetar peticiones de memoria");
+
     enviar_paquete(paquete, socket_cliente);
+    eliminar_paquete(paquete);
 }
 
-char** recibir_instruccion_io(int socket_cliente){
-    log_info(logger,"Recibido en solicitud instruccion io");
+// Solucion temporal: recibo un puntero a una lista de peticiones de memoria
+char** recibir_instruccion_io(int socket_cliente, t_list** peticiones_memoria){
     t_list* bytes = recibir_paquete(socket_cliente);
 
-    log_info(logger,"Paquete recibido");
-
     char** tokens = deserializar_lista_strings(bytes, 0);
+
+    *peticiones_memoria = peticiones_desempaquetar_segun_index(bytes, 1 + string_array_size(tokens));
 
     return tokens;
 }
@@ -249,33 +263,6 @@ uint32_t deserializar_uint32(void* int_bytes){
 
     return *result;
 }
-
-
-int enviar_escribir_dato_en_memoria(uint32_t direccion, uint32_t dato, int socket_cliente){
-    log_info(logger, "Enviando escritura a memoria. Dirección: [%d], Dato:[%d]", direccion, dato);
-
-    t_paquete* paquete = crear_paquete(ESCRIBIR_DATO_EN_MEMORIA);
-
-    void* direccion_serializada = serializar_uint32(direccion);
-    agregar_a_paquete(paquete, direccion_serializada, sizeof(uint32_t));
-
-    void* dato_serializado = serializar_uint32(dato);
-    agregar_a_paquete(paquete, dato_serializado, sizeof(uint32_t));
-
-    enviar_paquete(paquete, socket_cliente);
-}
-
-solicitud_escribir_dato_en_memoria recibir_escribir_dato_en_memoria(int socket_cliente){
-    t_list* lista_bytes = recibir_paquete(socket_cliente);
-
-    solicitud_escribir_dato_en_memoria respuesta;
-
-    respuesta.direccion = deserializar_uint32(list_get(lista_bytes, 0));
-    respuesta.dato = deserializar_uint32(list_get(lista_bytes, 1));
-
-    return respuesta;
-}
-
 
 int enviar_solicitud_leer_dato_de_memoria(uint32_t direccion, int socket_cliente){
     log_info(logger, "Enviando escritura a memoria. Dirección: [%d]", direccion);

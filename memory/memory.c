@@ -17,7 +17,18 @@ int main(){
 
     crear_hilo_solicitudes_cpu();    
     crear_hilo_solicitudes_kernel();
-
+	while (1)
+	{
+		log_info(logger, "Esperando conexiones de IO...");
+		if(servidor_escuchar_cliente(server_fd, gestionar_solicitudes_io)){
+			log_info(logger, "Se conectó un cliente");
+		}
+		else{
+			log_error(logger, "Se intento conectar un cliente pero no se pudo");
+		}
+		
+	}
+	
     terminar_programa();
 
     return EXIT_SUCCESS;
@@ -30,7 +41,7 @@ void crear_hilo_solicitudes_kernel(){
     }
 	else{
     	log_info(logger, "El thread de la escucha del servidor inició su ejecución");
-		pthread_join(hilo_kernel, NULL);
+		pthread_detach(hilo_kernel);
 	}
 }
 
@@ -118,11 +129,13 @@ void* gestionar_solicitudes_cpu(){
 				redimensionar_memoria_proceso(cantidad_de_paginas);
 				mostrar_tabla_paginas();
 
+				esperar_retardo();
 				enviar_status(SUCCESS, socket_cpu);
 				log_info(logger, "Se redimensionó la memoria correctamente, envio: [%d]", SUCCESS);
 				break;
 			}
 			else{
+				esperar_retardo();
 				enviar_status(OUT_OF_MEMORY, socket_cpu);
 				log_info(logger, "No se pudo redimensionar la memoria, envio: [%d]", OUT_OF_MEMORY);
 				break;
@@ -130,23 +143,41 @@ void* gestionar_solicitudes_cpu(){
 		case ESCRIBIR_DATO_EN_MEMORIA:
 			log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 
-			solicitud_escribir_dato_en_memoria solicitud = recibir_escribir_dato_en_memoria(socket_cpu);
+			t_peticion_memoria* solicitud = peticion_recibir(socket_cpu, ESCRIBIR_DATO_EN_MEMORIA);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d], Tam_Dato: [%d]", solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 
-			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d]", solicitud.direccion, solicitud.dato);
+			set_memoria(solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 
+			esperar_retardo();
 			enviar_status(SUCCESS, socket_cpu);
 			log_info(logger, "Se escribió dato en memoria correctamente, envio: [%d]", SUCCESS);
 			break;
+
 		case LEER_DATO_DE_MEMORIA:
 			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
 
-			uint32_t direccion = recibir_solicitud_leer_dato_de_memoria(socket_cpu);
+			t_peticion_memoria* solicitud_lectura = peticion_recibir(socket_cpu, LEER_DATO_DE_MEMORIA);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%d]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
 
-			log_info(logger, "Recibido. Dirección_fisica: [%d]", direccion);
+			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
 
-			enviar_dato_leido_de_memoria(1234, socket_cpu);
-
+			esperar_retardo();
+			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, socket_cpu);
+			enviar_status(SUCCESS, socket_cpu);
 			log_info(logger, "Se leyó el dato de la memoria y se envió al CPU");
+			break;
+
+		case CONSULTAR_TABLA_DE_PAGINAS:
+			log_info(logger, "CONSULTAR_TABLA_DE_PAGINAS recibido.");
+
+			unsigned numero_pagina = recibir_cantidad(socket_cpu);
+			log_info(logger, "Recibido. Número de página: [%d]", numero_pagina);
+
+			unsigned numero_frame_consultado = get_frame_number_by_pagina(numero_pagina);
+			esperar_retardo();
+			enviar_cantidad(numero_frame_consultado, CONSULTAR_TABLA_DE_PAGINAS, socket_cpu);
+
+			log_info(logger, "Se consultó la tabla de páginas y se envió al CPU");
 			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
@@ -159,6 +190,45 @@ void* gestionar_solicitudes_cpu(){
 			break;
 		}
         log_info(logger, "==============================================");
+	}
+}
+
+void* gestionar_solicitudes_io(void* pthread_arg){
+	int io_socket = *(int*)pthread_arg;
+	free(pthread_arg);
+	log_info(logger, "Se conectó un cliente IO. SOCKET: [%d]", io_socket);
+	
+	log_info(logger, "Esperando recibir operacion del IO...");
+	while(io_socket != -1){
+
+		op_code cod_op = recibir_operacion(io_socket);
+		log_info(logger, "===================");
+		log_info(logger, "Codigo recibido desde el IO: %d", cod_op);
+
+		switch (cod_op) {
+		case LEER_DATO_DE_MEMORIA:
+			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
+
+			t_peticion_memoria* solicitud_lectura = peticion_recibir(io_socket, LEER_DATO_DE_MEMORIA);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%d]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
+
+			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
+
+			esperar_retardo();
+			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, io_socket);
+			enviar_status(SUCCESS, io_socket);
+			log_info(logger, "Se leyó el dato de la memoria y se envió a IO");
+			break;
+
+		case -1:
+			log_error(logger, "el cliente se desconecto. Terminando servidor");
+			close(io_socket);
+			log_info(logger, "Socket cerrado. SOCKET: [%d]", io_socket);
+			break;
+		default:
+			log_warning(logger,"Operacion desconocida. No quieras meter la pata. CODIGO: [%d]", cod_op);
+			break;
+		}
 	}
 }
 

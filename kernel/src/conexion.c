@@ -1,7 +1,7 @@
 #include "../include/conexion.h"
 
 bool generar_conexiones(){
-    log_info(logger, "Creando conexión con CPU...");
+    log_info(logger, "Creando conexión con CPU dispatch...");
 
     socket_cpu_dispatch = generar_conexion(config->ip_cpu, config->puerto_cpu_dispatch);
 
@@ -19,6 +19,13 @@ bool generar_conexiones(){
 
     //if(socket_io == -1)
      //   return false;
+
+    log_info(logger, "Creando conexión con CPU interrupt...");
+
+    socket_cpu_interrupt = generar_conexion(config->ip_cpu, config->puerto_cpu_interrupt);
+
+    if(socket_cpu_interrupt == -1)
+        return false;
 
     return true;
 }

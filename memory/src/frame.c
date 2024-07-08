@@ -43,10 +43,19 @@ void* get_frame(int frame_number, int desplazamiento){
     return MEMORIA + (frame_number * config.tam_pagina) + desplazamiento; // tam_pagina = tam_frame en paginación simple
 }
 
-void set_frame(int frame_number, int offset, void* data, size_t size_data){
-    void* frame = get_frame(frame_number, offset);
+void* get_memoria(uint32_t direccion_fisica){
+    // devuelve un puntero a la dirección física.
+    return MEMORIA + direccion_fisica;
+}
+
+void set_memoria(uint32_t direccion_fisica, void* data, size_t size_data){
+    void* frame = get_memoria(direccion_fisica);
     memcpy(frame, data, size_data);
-    log_info(logger, "Data [%s] guardada en frame [%d]", data, frame_number);
+    log_info(logger, "Data [%d] guardada en la direccion [%d]", data, direccion_fisica);
+
+    for(size_t i = 0; i < size_data; i++){
+        log_info(logger, "Data byte [%d]: [%c]", i, ((char*)data)[i]);
+    }
 }
 
 void marcar_frame_como(unsigned frame_number, int estado){
@@ -106,4 +115,8 @@ unsigned frames_libres(){
 
 bool tengo_espacio_para_agregar(int cantidad_frames){
     return frames_libres() >= cantidad_frames;
+}
+
+void imprimir_memoria_hex(){
+    mem_hexdump(MEMORIA, config.tam_memoria);
 }

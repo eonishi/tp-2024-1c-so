@@ -16,6 +16,7 @@ void enviar_handshake(int socket);
 void enviar_mensaje(int codigo_op, char* mensaje, int socket_cliente);
 void enviar_status(int codigo_op, int socket_cliente);
 void enviar_cantidad(unsigned cantidad, int codigo_op, int socket_cliente);
+void enviar_buffer(void *buffer, int size, int socket_cliente);
 
 // Esperas
 int esperar_handshake(int socket);

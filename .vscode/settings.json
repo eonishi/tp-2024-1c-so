@@ -50,6 +50,7 @@
     "error.h": "c",
     "txt.h": "c",
     "io_stdin.h": "c",
-    "readline.h": "c"
+    "readline.h": "c",
+    "temporal.h": "c"
   }
 }

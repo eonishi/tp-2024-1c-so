@@ -10,5 +10,6 @@ extern pcb* pcb_actual;
 
 void* get_registro(char* token_registro);
 bool es8int(char* token_registro);
+unsigned tam_registro(char* token_registro);
 
 #endif

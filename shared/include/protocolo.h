@@ -9,6 +9,7 @@
 #include "codigos_operacion.h"
 #include "operacion.h"
 #include "io_tipos.h"
+#include "direccion.h"
 #include<commons/log.h>
 #include<commons/string.h>
 #include<string.h>
@@ -27,6 +28,7 @@ typedef struct
 {
     char** instruc_io_tokenizadas;
     pcb* pcb;    
+    t_list* peticiones_memoria;
 } solicitud_bloqueo_por_io;
 
 int enviar_solicitud_crear_proceso(char* filePath, pcb* pcb, int socket_cliente);
@@ -44,17 +46,8 @@ solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_cliente);
 int enviar_bloqueo_por_io(solicitud_bloqueo_por_io solicitud, int socket_cliente);
 solicitud_bloqueo_por_io recibir_solicitud_bloqueo_por_io(int socket_cliente);
 
-int enviar_instruccion_io(char** instruccion_tokenizada, int socket_cliente);
-char** recibir_instruccion_io(int socket_cliente);
-
-typedef struct{
-    uint32_t *direccion;
-    uint32_t *dato;
-} solicitud_escribir_dato_en_memoria;
-
-
-int enviar_escribir_dato_en_memoria(uint32_t direccion, uint32_t dato, int socket_cliente);
-solicitud_escribir_dato_en_memoria recibir_escribir_dato_en_memoria(int socket_cliente);
+int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int socket_cliente);
+char** recibir_instruccion_io(int socket_cliente, t_list** ptr_peticiones_memoria);
 
 int enviar_solicitud_leer_dato_de_memoria(uint32_t direccion, int socket_cliente);
 uint32_t recibir_solicitud_leer_dato_de_memoria(int socket_cliente);

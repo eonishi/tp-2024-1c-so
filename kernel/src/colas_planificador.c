@@ -6,6 +6,7 @@ void inicializar_colas_planificador(){
 	cola_blocked = queue_create();
 	cola_exit = queue_create();
     cola_execute = queue_create();
+    cola_readyVRR = queue_create();
 }
 
 void imprimir_colas(){
@@ -13,6 +14,7 @@ void imprimir_colas(){
     imprimir_cola("Ready", cola_ready);
     imprimir_cola("Blocked", cola_blocked);
     imprimir_cola("Exit", cola_exit);
+    imprimir_cola("ReadyVRR", cola_readyVRR);
 }
 
 void imprimir_cola(char* nombre, t_queue* cola){
@@ -61,4 +63,12 @@ pcb* pop_cola_execute(){
     queue_pop(cola_execute);
 }
 
+void push_cola_ready_priority(pcb* pcb, int quantum_pendiente){
+    elemVRR element = {.pcbVRR = pcb, .quantum_usado = quantum_pendiente};
+    queue_push(cola_readyVRR, &element);
+}
+
+elemVRR* pop_cola_ready_priority(){
+    queue_pop(cola_readyVRR);
+}
 

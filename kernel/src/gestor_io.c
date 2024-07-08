@@ -16,10 +16,14 @@ void *escuchar_io(void *socket){
 
 			pcb* pcb_blocked = pop_cola_blocked();
 			pcb_blocked->estado = READY;
-            
-			push_cola_ready(pcb_blocked);
-
-			sem_post(&sem_proceso_en_ready);
+            //aca se envia a ready luego de desbloquearse por I/O
+            if(strcmp(config->algoritmo_planificacion, "VRR") == 0){
+                push_cola_ready_priority(pcb_blocked,5); //reemplazar 5 por el q pendiente al entrar en IO
+			    sem_post(&sem_proceso_en_ready);//chequear si hace falta otro semaforo por VRR, no deberia.
+            }else {
+			    push_cola_ready(pcb_blocked);
+			    sem_post(&sem_proceso_en_ready);
+            }
 			break;
 		case DISPATCH_PROCESO:
             log_info(logger, "Recibi DISPATCH_PROCESO. CODIGO: %d", cod_op);
@@ -44,7 +48,7 @@ void *escuchar_io(void *socket){
 	}
 }
 
-bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
+bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* peticiones_memoria){
     conexion_io* conexion_io;
 
     if(!existe_io_conectada(instruc_io_tokenizadas[1])){
@@ -59,6 +63,7 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
         log_error(logger, "La IO no acepta la operacion: [%s]", instruc_io_tokenizadas[0]);
         return false;
     }
+    log_info(logger, "La IO acepta la operacion: [%s]", instruc_io_tokenizadas[0]);
 
     // TODO: Deberia gestionarse con semaforos
     if(!io_disponible(*conexion_io)){
@@ -67,7 +72,7 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas){
         return false;
     }
 
-    enviar_instruccion_io(instruc_io_tokenizadas, conexion_io->socket);
+    enviar_instruccion_io(instruc_io_tokenizadas, peticiones_memoria, conexion_io->socket);
 
     return true;
 }
