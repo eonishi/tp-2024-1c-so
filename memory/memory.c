@@ -224,6 +224,8 @@ void* gestionar_solicitudes_io(void* pthread_arg){
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
 			close(io_socket);
 			log_info(logger, "Socket cerrado. SOCKET: [%d]", io_socket);
+
+			return;
 			break;
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata. CODIGO: [%d]", cod_op);

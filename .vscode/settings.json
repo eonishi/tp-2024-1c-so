@@ -49,6 +49,7 @@
     "bitarray.h": "c",
     "error.h": "c",
     "txt.h": "c",
-    "temporal.h": "c"
+    "temporal.h": "c",
+    "io_dialfs.h": "c"
   }
 }
