@@ -80,10 +80,11 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* pe
         case IO_STDIN_READ:
         case IO_STDOUT_WRITE:
             // [] Enviar peticiones de memoria
+            log_info(logger, "Enviando instruccion a IO...");
             enviar_instruccion_io(instruc_io_tokenizadas, peticiones_memoria, conexion_io->socket);
             break;
         case IO_FS_CREATE:
-        case IO_FS_DELETE:{
+        case IO_FS_DELETE:
             char* file_name = instruc_io_tokenizadas[2];
             enviar_mensaje(EJECUTAR_INSTRUCCION_IO, file_name, conexion_io->socket);
             break;
@@ -94,10 +95,8 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* pe
         default:
             log_error(logger, "Operacion no reconocida");
             break;
-        }
-
-        return true;
     }
+    return true;
 }
 
 static char *interfaz_buscada;
