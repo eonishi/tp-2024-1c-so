@@ -11,7 +11,7 @@
 
 extern t_log *logger;
 extern io_config config;
-extern int kernel_socket;
+extern int kernel_socket, memory_socket;
 
 void io_stdin();
 char* iniciar_consola(uint32_t tamanio_maximo);

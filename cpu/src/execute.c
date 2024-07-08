@@ -50,8 +50,10 @@ void execute(char **instr_tokenizada)
         exec_operacion_io(instr_tokenizada);                
         break;
     case IO_STDIN_READ:
-        exec_io_stdin_read(instr_tokenizada);
+        tengo_pcb = 0;
         siguiente_pc(pcb_actual);
+        
+        exec_io_stdin_read(instr_tokenizada);
         break;     
     case IO_STDOUT_WRITE:
         tengo_pcb = 0;
@@ -258,32 +260,23 @@ la interfaz ingresada se lea desde el STDIN (Teclado) un valor cuyo tamaño est�
 Registro Tamaño y el mismo se guarde a partir de la Dirección Lógica almacenada en el Registro Dirección.
 */
 void exec_io_stdin_read(char** instr_tokenizada){
-    log_info(logger, "Inicia io_stdin_read");
-
-    char* interfaz = instr_tokenizada[1];
+   // IO_STDIN_READ, Interfaz, Registro Direccion, Registro Tamaño
     char* registro_direccion = instr_tokenizada[2];
     char* registro_tamanio = instr_tokenizada[3];
-    
-    log_info(logger, "Interfaz: [%s], Registro dirección: [%s], Registro tamanio: [%s]", interfaz, registro_direccion, registro_tamanio);
+    log_info(logger, "Registro dirección: [%s], Registro Tamanio: [%s]", registro_direccion, registro_tamanio);
 
     uint32_t* direccion_logica = get_registro(registro_direccion);
-    uint32_t* tamanio_maximo = get_registro(registro_tamanio);
+    uint32_t* tamanio = get_registro(registro_tamanio);
+    log_info(logger, "Dirección logica: [%d], Tamaño: [%d]", *direccion_logica, *tamanio);
 
-    log_info(logger, "Dirección logica: [%d], Tamanio maximo: [%d]", *direccion_logica, *tamanio_maximo);
+    t_list *peticiones_lectura = mmu(*direccion_logica, *tamanio, NULL);
 
-    uint32_t direccion_fisica = obtener_direccion_fisica_de_tlb(direccion_logica);
+    solicitud_bloqueo_por_io solicitud;
+    solicitud.instruc_io_tokenizadas = instr_tokenizada;
+    solicitud.pcb = pcb_actual;
+    solicitud.peticiones_memoria = peticiones_lectura;
 
-    if (!existe_en_tlb(direccion_fisica)){
-        log_info(logger, "No existe en tlb");
-        direccion_fisica = calcular_direccion_fisica(direccion_logica);
-    }
-        
-    sprintf(instr_tokenizada[2], "%u", direccion_fisica);
-    sprintf(instr_tokenizada[3], "%u", *tamanio_maximo);
-
-    log_info(logger, "Enviando a kernel: [%s][%s][%s][%s]",instr_tokenizada[0],instr_tokenizada[1],instr_tokenizada[2],instr_tokenizada[3]);
-
-    exec_operacion_io(instr_tokenizada);
+    enviar_bloqueo_por_io(solicitud, socket_kernel);
 }
 
 

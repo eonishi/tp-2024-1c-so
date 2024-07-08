@@ -19,6 +19,16 @@ char* iniciar_consola(uint32_t tamanio_maximo){
      }
 }
 
+static void controlar_peticion(){
+     op_code status = recibir_operacion(memory_socket);
+     if(status == SUCCESS){
+        log_info(logger, "La operacion en memoria fue exitosa");
+     }
+     else{
+        log_error(logger, "Hubo un problema con la operacion en memoria");
+     }
+}
+
 // IO_STDIN_READ (Interfaz, Registro Dirección, Registro Tamaño):
 void io_stdin() {
      log_info(logger, "Iniciando escucha STDIN");
@@ -29,26 +39,38 @@ void io_stdin() {
 
         switch (cod_op){
             case EJECUTAR_INSTRUCCION_IO:
-                log_info(logger, "Ejecutar instruccion IO");
-                char** instruccion_tokenizada = recibir_instruccion_io(kernel_socket);
+                t_list *peticiones_memoria;
+                char** tokens_instr = recibir_instruccion_io(kernel_socket, &peticiones_memoria);
+                log_info(logger, "Instruccion recibida de Kernel [%s]", tokens_instr[0]);
+                log_peticiones(peticiones_memoria);
 
-                char* tamanio = instruccion_tokenizada[3];
-                char* endptr;
+                size_t tamanio_string = peticiones_tam_total(peticiones_memoria);
 
-                log_info(logger, "Instrucción: [%s %s %s %s]", instruccion_tokenizada[0],instruccion_tokenizada[1], instruccion_tokenizada[2], instruccion_tokenizada[3]);
-                
-               
-                uint32_t tamanio_int = (uint32_t) strtoul(tamanio, &endptr, 10);
-
-                char* valor_ingresado = iniciar_consola(tamanio_int);
-
+                // Leer por consola
+                char* valor_ingresado = iniciar_consola(tamanio_string);
                 log_info(logger, "Valor ingresado: [%s]", valor_ingresado);
+
+                // Distribuir dato entre todas las peticiones
+                peticiones_distribuir_dato(peticiones_memoria, (void*)valor_ingresado, tamanio_string);
+                // free(valor_ingresado)??
+
+                //Enviar peticiones a memoria
+                for (int i = 0; i < list_size(peticiones_memoria); i++){
+                    t_peticion_memoria* peticion = list_get(peticiones_memoria, i);
+                    peticion_escritura_enviar(peticion, memory_socket);
+                    controlar_peticion();
+                }
+
                 // devolver status
                 enviar_status(FIN_EJECUCION_IO, kernel_socket);
                 log_info(logger, "Instruccion IO ejecutada");
                 break;
                 case -1:
                 log_error(logger, "Se desconecto el kernel");
+                close(kernel_socket);
+                kernel_socket = -1;
+                close(memory_socket);
+                memory_socket = -1;
                 exit(EXIT_FAILURE);
             default:
                 log_error(logger, "Codigo de operacion no reconocido");
