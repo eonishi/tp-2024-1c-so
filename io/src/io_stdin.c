@@ -2,20 +2,21 @@
 
 
 char* iniciar_consola(uint32_t tamanio_maximo){
-	char* leido;
-	leido = "void";
+	char* leido = NULL;
 
 	while(true){
-		log_info(logger, "Ingrese máximo: [%d]", tamanio_maximo);
+		log_info(logger, "Ingrese máximo [%d] caracteres", tamanio_maximo);
 
 		leido = readline("> ");
 		log_info(logger, "Linea ingresada: %s", leido);
 
-		if (strlen(leido) <= tamanio_maximo)
-			return leido;
-          else{
-               log_info(logger, "Se ha superado el tamanio máximo de: [%d] bytes", tamanio_maximo);
-          }
+		if (string_length(leido) == tamanio_maximo) 
+            return leido;
+
+        else if (string_length(leido) > tamanio_maximo)
+            log_warning(logger, "Se ha superado el tamanio máximo de: [%d] bytes", tamanio_maximo);
+        else
+            log_warning(logger, "Se ha ingresado menos de [%d] bytes", tamanio_maximo);
      }
 }
 
@@ -52,7 +53,6 @@ void io_stdin() {
 
                 // Distribuir dato entre todas las peticiones
                 peticiones_distribuir_dato(peticiones_memoria, (void*)valor_ingresado, tamanio_string);
-                // free(valor_ingresado)??
 
                 //Enviar peticiones a memoria
                 for (int i = 0; i < list_size(peticiones_memoria); i++){
@@ -60,12 +60,14 @@ void io_stdin() {
                     peticion_escritura_enviar(peticion, memory_socket);
                     controlar_peticion();
                 }
+                free(valor_ingresado);
 
                 // devolver status
                 enviar_status(FIN_EJECUCION_IO, kernel_socket);
                 log_info(logger, "Instruccion IO ejecutada");
                 break;
-                case -1:
+
+            case -1:
                 log_error(logger, "Se desconecto el kernel");
                 close(kernel_socket);
                 kernel_socket = -1;
