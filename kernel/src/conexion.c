@@ -30,7 +30,7 @@ bool generar_conexiones(){
     return true;
 }
 
-conexion_io recibir_conexion_io(int server) {
+conexion_io* recibir_conexion_io(int server) {
     log_info(logger,"Esperando conexión del modulo IO ... ");
     int socket = esperar_cliente(server);
 
@@ -46,12 +46,7 @@ conexion_io recibir_conexion_io(int server) {
     log_info(logger, "Respondiendo handshake del modulo IO... ");
     enviar_status(SUCCESS, socket);
     
-    conexion_io conexion_io;
-
-    conexion_io.socket = socket;
-    conexion_io.nombre_interfaz = solicitud.nombre_interfaz;
-    conexion_io.tipo = solicitud.tipo;
-    conexion_io.operaciones = solicitud.operaciones;
+    conexion_io* conexion_io = crear_conexion_io(socket, solicitud.nombre_interfaz, solicitud.tipo, solicitud.operaciones);
     
     return conexion_io;
 }
@@ -73,4 +68,20 @@ int generar_conexion(char* ip, char* puerto){
     log_info(logger, "Handshake realizado enviado y recibido correctamente");
 
     return conexion;
+}
+
+conexion_io* crear_conexion_io(int socket, char* nombre_interfaz, io_tipo tipo, int* operaciones){
+    conexion_io* conexion_io = malloc(sizeof(conexion_io));
+    conexion_io->socket = socket;
+    conexion_io->nombre_interfaz = nombre_interfaz;
+    conexion_io->tipo = tipo;
+    conexion_io->operaciones = operaciones;
+
+    return conexion_io;
+}
+
+void liberar_conexion_io(conexion_io* conexion_io){
+    free(conexion_io->nombre_interfaz);
+    free(conexion_io->operaciones);
+    free(conexion_io);
 }

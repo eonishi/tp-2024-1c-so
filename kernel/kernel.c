@@ -39,13 +39,10 @@ void* esperar_y_escuchar_conexiones_io(){
 	int io_thread_index = 0;
 
     while(1){
-        conexion_io conexion_io = recibir_conexion_io(socket_server_kernel);
+        conexion_io* conexion_io = recibir_conexion_io(socket_server_kernel);
 
-		list_add(lista_conexiones_io, &conexion_io);
-
-		int socket = conexion_io.socket;
-
-		iniciar_hilo_con_args(escuchar_io, io_threads[io_thread_index++], &socket);
+		list_add(lista_conexiones_io, conexion_io);
+		iniciar_hilo_con_args(escuchar_io, io_threads[io_thread_index++], &conexion_io->socket);
     }
 }
 
