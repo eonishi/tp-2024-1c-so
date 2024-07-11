@@ -16,6 +16,7 @@
 #include "planificador_largo.h"
 #include "planificador_corto.h"
 #include "gestor_io.h"
+#include "consola.h"
 
 #include "../../shared/include/logger.h"
 #include "../../shared/include/client.h"
@@ -26,7 +27,6 @@
 
 t_log *logger;
 kernel_config* config;
-int pcb_counter = 1;
 int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, socket_server_kernel;
 t_list *lista_conexiones_io;
 
@@ -34,7 +34,7 @@ pthread_t hilo_servidor_kernel;
 pthread_t hilo_escucha_cpu;
 
 // Variables Planificador
-int planificacion_activada = 0;
+int planificacion_activada = 1;
 
 // -- Colas
 t_queue *cola_new;
@@ -67,10 +67,8 @@ typedef enum
 
 void terminar_programa();
 void iniciar_semaforos();
-void iniciar_consola();
 void *iniciar_escucha_servidor();
 void iniciar_servidor_en_hilo();
-pcb* iniciar_proceso_en_memoria(char* filePath);
 void dispatch_proceso();
 void iniciar_hilo(void *func, pthread_t thread);
 void *esperar_y_escuchar_conexiones_io();

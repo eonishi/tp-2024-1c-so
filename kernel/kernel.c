@@ -54,92 +54,6 @@ void iniciar_semaforos() {
 	sem_init(&sem_grado_multiprog, 0, config->grado_multiprogramacion);
 }
 
-void iniciar_consola()
-{
-	char* leido;
-	leido = "void";
-	bool ingresoActivado = 1;
-
-	while(ingresoActivado){
-		log_info(logger, "Ingrese INICIAR_PROCESO:");
-
-		leido = readline("> ");
-		log_info(logger, "Linea ingresada: %s", leido);
-
-		char** leido_split = string_n_split(leido, 2, " ");
-		char* comando = leido_split[0];
-
-		if (strcmp(comando, "") == 0)
-			ingresoActivado = 0;
-		
-		if(strcmp(comando, "PROCESO_ESTADO") == 0){
-			imprimir_colas();
-		}
-		else if(strcmp(comando, "INICIAR_PLANIFICACION") == 0){
-			planificacion_activada = 1;
-		}
-		else if(strcmp(comando, "DETENER_PLANIFICACION") == 0){
-			planificacion_activada = 0;
-		}
-		else if(strcmp(comando, "INICIAR_PROCESO") == 0){
-			log_info(logger, "==============================================");
-			log_info(logger, "Inicio de ejecución de INICIAR_PROCESO");
-
-			char* filePath = leido_split[1];
-
-			log_info(logger, "Con argumento: [%s]", filePath);
-					
-			pcb* pcb = iniciar_proceso_en_memoria(filePath);
-
-			log_info(logger, "PCB creado. Id: [%d]", pcb->pid);
-
-			push_cola_new(pcb);
-			sem_post(&sem_nuevo_proceso);
-      
-			log_info(logger, "Fin de ejecución de INICIAR_PROCESO");
-			log_info(logger, "==============================================");
-
-		}
-		else if(strcmp(comando, "CAMBIAR_ALGORITMO_FIFO") == 0){
-			cancelar_hilo_planificador();
-			config->algoritmo_planificacion = "FIFO";
-			log_info(logger, "SE HA SETEADO FIFO COMO ALGORITMO DEL PLANIFICADOR CORTO");
-			crear_hilo_planificador_corto;
-
-		}else if(strcmp(comando, "CAMBIAR_ALGORITMO_RR") == 0){
-			cancelar_hilo_planificador();
-			config->algoritmo_planificacion = "RR";
-			log_info(logger, "SE HA SETEADO ROUND ROBIN COMO ALGORITMO DEL PLANIFICADOR CORTO");
-			crear_hilo_planificador_corto;
-
-		}else if(strcmp(comando, "CAMBIAR_ALGORITMO_VRR") == 0){
-			cancelar_hilo_planificador();
-			config->algoritmo_planificacion = "VRR";
-			log_info(logger, "SE HA SETEADO VIRTUAL ROUND ROBIN COMO ALGORITMO DEL PLANIFICADOR CORTO");
-			crear_hilo_planificador_corto;
-		}
-		else{
-			log_info(logger, "Comando desconocido");
-		}
-
-		free(leido);
-	}
-}
-
-pcb* iniciar_proceso_en_memoria(char* filePath){
-	pcb* pcb = crear_pcb(pcb_counter++, 4000);
-
-	enviar_solicitud_crear_proceso(filePath, pcb, socket_memoria);
-	log_info(logger, "Solicitud CREAR_PROCESO_EN_MEMORIA enviada a memoria");
-	
-	pcb = esperar_pcb(socket_memoria, CREAR_PROCESO_EN_MEMORIA);
-
-	log_info(logger, "Respuesta CREAR_PROCESO_EN_MEMORIA recibida");
-	log_info(logger, "Ax es: [%d]", pcb->registros->ax);	
-	
-	return pcb;
-}
-
 void terminar_programa()
 {
     liberar_conexion(socket_cpu_dispatch);
@@ -154,7 +68,6 @@ void *iniciar_escucha_servidor(void *socket){
 
 	log_info(logger, "Socket io: [%d]", cliente_fd);
 
-	t_list* lista;
 	bool on = 1;
 	while (on) {
         log_info(logger, "Estoy por recibir operacion");
@@ -216,13 +129,13 @@ void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void* args){
 }
 void crear_hilo_planificador_corto(){
 	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
-	if(strcmp(config->algoritmo_planificacion, "FIFO") == 0){
+	if(string_equals_ignore_case(config->algoritmo_planificacion, "FIFO")){
 		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
 		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
-	}else if(strcmp(config->algoritmo_planificacion, "RR") == 0){
+	}else if(string_equals_ignore_case(config->algoritmo_planificacion, "RR")){
 		log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
 		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
-	}else if(strcmp(config->algoritmo_planificacion, "VRR") == 0){
+	}else if(string_equals_ignore_case(config->algoritmo_planificacion, "VRR")){
 		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
 		iniciar_hilo(iniciar_planificacion_corto_VRR, hilo_planificador_corto_VRR);
 	}else{
@@ -232,13 +145,13 @@ void crear_hilo_planificador_corto(){
 }
 
 void cancelar_hilo_planificador(){
-	if (strcmp(config->algoritmo_planificacion,"FIFO") == 0){
+	if (string_equals_ignore_case(config->algoritmo_planificacion,"FIFO")){
 		pthread_cancel(hilo_planificador_corto);
 		log_info(logger,"HILO PLANIFICADOR FIFO CANCELADO");
-	}else if(strcmp(config->algoritmo_planificacion,"RR") == 0){
+	}else if(string_equals_ignore_case(config->algoritmo_planificacion,"RR")){
 		pthread_cancel(hilo_planificador_corto_RR);
 		log_info(logger,"HILO PLANIFICADOR RR CANCELADO");
-	}else if(strcmp(config->algoritmo_planificacion,"VRR") == 0){
+	}else if(string_equals_ignore_case(config->algoritmo_planificacion,"VRR")){
 		pthread_cancel(hilo_planificador_corto_VRR);
 		log_info(logger,"HILO PLANIFICADOR VRR CANCELADO");
 	}
