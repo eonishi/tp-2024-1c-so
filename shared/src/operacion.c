@@ -23,14 +23,8 @@ const table_element tabla_op[] = {
 };
 
 operacion get_operacion(char** inst_tokenizada) {
-    int i;
-    for (i = 0; i < sizeof(tabla_op) / sizeof(table_element); i++) {
-        if (string_equals_ignore_case(tabla_op[i].key, inst_tokenizada[0])) {
-            return tabla_op[i].value;
-        }
-    }
-    // manejar el caso en que la operación no se reconoce. No va a haber peeeero 🤷🏻‍♂️
-    return -1;
+    unsigned table_size = sizeof(tabla_op) / sizeof(table_element);
+    get_table_value(inst_tokenizada[0], tabla_op, table_size);
 }
 
 int get_valor(char* token_valor){

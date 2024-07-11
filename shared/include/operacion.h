@@ -5,6 +5,7 @@
 #include <commons/string.h>
 #include <commons/log.h>
 #include "io_tipos.h"
+#include "table_element.h"
 
 extern t_log* logger;
 
@@ -29,11 +30,6 @@ typedef enum {
     IO_FS_READ,
     EXIT_OP
 }operacion;
-
-typedef struct {
-    char* key;
-    operacion value;
-} table_element; // pseudo diccionario estático
 
 operacion get_operacion(char** instr_tokenizada);
 int get_valor(char* token_valor);
