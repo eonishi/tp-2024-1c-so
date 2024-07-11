@@ -53,6 +53,9 @@ pcb* pop_cola_blocked(){
 
 void push_cola_exit(pcb* pcb){
     queue_push(cola_exit, pcb);
+    enviar_cantidad(pcb->pid, LIBERAR_PROCESO_EN_MEMORIA, socket_memoria);
+    op_code status = recibir_operacion(socket_memoria);
+    log_info(logger, "Proceso [%d] liberado con estado [%d]", pcb->pid, status);
 }
 
 void push_cola_execute(pcb* pcb){

@@ -8,6 +8,7 @@
 #include "../../shared/include/pcb.h"
 
 extern t_log *logger;
+extern int socket_memoria;
 
 typedef struct {
     pcb* pcbVRR;
