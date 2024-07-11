@@ -2,10 +2,6 @@
 
 t_list *procesos_en_memoria;
 
-unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set 
-unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
-
-
 void inicializar_procesos_en_memoria(){
     procesos_en_memoria = list_create();
 }
@@ -59,6 +55,9 @@ void cargar_proceso_en_memoria(char* path, unsigned PID){
 } 
 
 // ----Condiciones de búsqueda----
+unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set 
+unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
+
 bool memoria_tiene_pid(void* set_instrucciones, unsigned PID){
     return ((t_proceso_en_memoria*)set_instrucciones)->PID == PID;
 }
@@ -69,14 +68,28 @@ static bool memoria_tiene_pid_a_liberar(void* set_instrucciones){
     return memoria_tiene_pid(set_instrucciones, PID_a_liberar);
 }//--------
 
+t_proceso_en_memoria* get_proceso_by_PID(unsigned PID, unsigned* PID_ptr, bool memoria_tiene_pid(void*)){
+    *PID_ptr = PID;
+    return list_find(procesos_en_memoria, memoria_tiene_pid);
+}
+
 // ----Liberador de memoria----
 static void proceso_mem_destroyer(void* set_instrucciones){
     t_proceso_en_memoria* proceso_a_destruir = (t_proceso_en_memoria*)set_instrucciones;
+    log_info(logger, "Liberando proceso PID:%u", proceso_a_destruir->PID);
+
+    log_info(logger, "Por eliminar %d instrucciones", list_size(proceso_a_destruir->instrucciones));
     list_destroy_and_destroy_elements(proceso_a_destruir->instrucciones, free);
+
+    size_t cantidad_paginas = list_size(proceso_a_destruir->tabla_paginas);
+    log_info(logger, "Por eliminar %d paginas", cantidad_paginas);
+    quitar_paginas(cantidad_paginas, proceso_a_destruir);
+
+    log_info(logger, "Proceso PID:%u liberado", proceso_a_destruir->PID);
     free(proceso_a_destruir);
 }
 
-void liberar_instr_set(unsigned PID){
+void liberar_proceso_en_memoria(unsigned PID){
     PID_a_liberar=PID;
     list_remove_and_destroy_by_condition(procesos_en_memoria, memoria_tiene_pid_a_liberar, proceso_mem_destroyer);
 }//--------

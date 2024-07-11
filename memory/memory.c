@@ -46,9 +46,8 @@ void crear_hilo_solicitudes_kernel(){
 }
 
 void* gestionar_solicitudes_kernel(){
-    t_list* lista;
     log_info(logger, "Esperando recibir operacion del kernel...");
-	while (1) {
+	while (socket_kernel != -1) {
 		int cod_op = recibir_operacion(socket_kernel);
         log_info(logger, "==============================================");
         log_info(logger, "Codigo recibido desde el kernel: %d", cod_op);
@@ -67,9 +66,23 @@ void* gestionar_solicitudes_kernel(){
             enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
 			free(pcb);
 			break;
+			
+		case LIBERAR_PROCESO_EN_MEMORIA:
+			// Recibir PID
+			unsigned pid = recibir_cantidad(socket_kernel);
+			log_info(logger, "Proceso PID:[%d] a liberar", pid);
+
+			// Elimino el proceso de la lista de procesos en memoria
+			liberar_proceso_en_memoria(pid);
+
+			// Envio respuesta al kernel	
+			enviar_status(SUCCESS, socket_kernel);
+			break;
+
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
-		
+			close(socket_kernel);
+			socket_kernel = -1;
 			terminar_programa();
             break;
 		default:
