@@ -56,15 +56,10 @@ void* gestionar_solicitudes_kernel(){
 		case CREAR_PROCESO_EN_MEMORIA:
             log_info(logger, "CREAR_PROCESO_EN_MEMORIA recibido.");
 
-			// (SUS) podria recibir solo el path y PID
-            solicitud_crear_proceso solicitud_crear_proceso = recibir_solicitud_crear_proceso(socket_kernel);
-			pcb* pcb = solicitud_crear_proceso.pcb;
+            solicitud_crear_proceso solicitud = recibir_solicitud_crear_proceso(socket_kernel);
 
-			cargar_proceso_en_memoria(solicitud_crear_proceso.filePath, pcb->pid);
-			
-            // Operaciones crear proceso en memoria
-            enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
-			free(pcb);
+			cargar_proceso_en_memoria(solicitud.filePath, solicitud.PID);
+			enviar_status(SUCCESS, socket_kernel);
 			break;
 			
 		case LIBERAR_PROCESO_EN_MEMORIA:

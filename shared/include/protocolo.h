@@ -19,10 +19,12 @@ extern t_log* logger;
 // Kernel - Memory
 typedef struct 
 {
-    pcb* pcb;
+    unsigned PID;
     char* filePath;
 } solicitud_crear_proceso;
 
+int enviar_solicitud_crear_proceso(char* filePath, unsigned PID, int socket_cliente);
+solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente);
 
 typedef struct 
 {
@@ -30,9 +32,6 @@ typedef struct
     pcb* pcb;    
     t_list* peticiones_memoria;
 } solicitud_bloqueo_por_io;
-
-int enviar_solicitud_crear_proceso(char* filePath, pcb* pcb, int socket_cliente);
-solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente);
 
 typedef struct{
     char *nombre_interfaz;
