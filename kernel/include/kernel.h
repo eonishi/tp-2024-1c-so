@@ -67,7 +67,6 @@ typedef enum
 
 void terminar_programa();
 void iniciar_semaforos();
-void *iniciar_escucha_servidor();
 void iniciar_servidor_en_hilo();
 void dispatch_proceso();
 void iniciar_hilo(void *func, pthread_t thread);

@@ -10,6 +10,7 @@
 #include "colas_planificador.h"
 #include "conexion.h"
 #include "gestor_io.h"
+#include "interrupcion.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 #include "../../shared/include/direccion.h"
@@ -33,11 +34,8 @@ void *iniciar_planificacion_corto();
 void *iniciar_planificacion_corto_RR();
 void *iniciar_planificacion_corto_VRR();
 void dispatch_proceso_planificador(pcb* newPcb);
-void send_interrupt();
 void gestionar_respuesta_cpu();
 void *monitoreo_quantum();
-void* serializar_interrupcion(unsigned int , size_t*);
-void enviar_interrupcion(int , unsigned);
 void crear_hilo_quantum();
 void cancelar_hilo_quantum();
 

@@ -63,47 +63,6 @@ void terminar_programa()
     log_destroy(logger);
 }
 
-void *iniciar_escucha_servidor(void *socket){
-	int cliente_fd = *((int*) socket);
-
-	log_info(logger, "Socket io: [%d]", cliente_fd);
-
-	bool on = 1;
-	while (on) {
-        log_info(logger, "Estoy por recibir operacion");
-		int cod_op = recibir_operacion(cliente_fd);
-        log_info(logger, "Codigo recibido:");
-
-		switch (cod_op) {
-		case FIN_EJECUCION_IO:
-			log_info(logger, "Recibi FIN_EJECUCION_IO. CODIGO: %d", cod_op);
-			recibir_mensaje(cliente_fd);
-
-			pcb* pcb_blocked = pop_cola_blocked();
-			pcb_blocked->estado = READY;
-			push_cola_ready(pcb_blocked);
-			sem_post(&sem_proceso_en_ready);
-			break;
-		case DISPATCH_PROCESO:
-            log_info(logger, "Recibi DISPATCH_PROCESO. CODIGO: %d", cod_op);
-			pcb* pcb = recibir_pcb(cliente_fd);
-			loggear_pcb(pcb);
-			log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
-			break;		
-		case MENSAJE:
-            log_info(logger, "Recibi MENSAJE. CODIGO: %d", cod_op);
-			recibir_mensaje(cliente_fd);
-			break;
-		case -1:
-			log_error(logger, "el cliente se desconecto. Terminando servidor");
-			on = 0;
-		default:
-			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
-			break;
-		}
-	}
-}
-
 void iniciar_hilo(void* func, pthread_t thread){
 	int err = pthread_create(&thread, NULL, func, NULL);
 

@@ -115,7 +115,7 @@ void server_interrupt()
 
 	while (cliente_fd != -1)
 	{
-		int PID_interrumpido = recibir_interrupcion(cliente_fd);
+		unsigned PID_interrumpido = recibir_cantidad(cliente_fd);
 		log_info(logger, "Recibi interrupcion a PID: %d", PID_interrumpido);
 
 		if(PID_interrumpido == pcb_actual->pid){

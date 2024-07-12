@@ -4,7 +4,6 @@
 void *escuchar_io(void *socket){
 	int cliente_fd = *((int*) socket);
 
-	t_list* lista;
 	bool on = 1;
 	while (on) {
         log_info(logger, "Esperando operación desde Kernel...");
