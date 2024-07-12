@@ -89,14 +89,14 @@ void gestionar_respuesta_cpu(){
                 break;
             }
         case INTERRUPCION:
-            temporal_stop(q_transcurrido); //detengo el contador de quantum usado
-            q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
+            //temporal_stop(q_transcurrido); //detengo el contador de quantum usado
+            //q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
             pcb = recibir_pcb(socket_cpu_dispatch);
-            log_info(logger, "Recibi proceso PID [%d] desalojado por INTERRUPCION CODIGO: [%d]", pcb->pid, cod_op);
-            pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
-            pcb->estado = READY;
+            //log_info(logger, "Recibi proceso PID [%d] desalojado por INTERRUPCION CODIGO: [%d]", pcb->pid, cod_op);
+            //pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
+            //pcb->estado = READY;
             loggear_pcb(pcb);
-            pop_cola_execute();
+            pop_and_destroy(cola_execute, (void*) destruir_pcb);
             push_cola_ready(pcb);
             sem_post(&sem_cpu_libre);
             sem_post(&sem_proceso_en_ready);		

@@ -7,6 +7,7 @@
 #include <commons/string.h>
 #include "configuracion.h"
 #include "colas_planificador.h"
+#include "interrupcion.h"
 #include "../../shared/include/table_element.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"

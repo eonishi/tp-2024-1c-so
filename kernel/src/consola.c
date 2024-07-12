@@ -32,6 +32,7 @@ static void gestionar_comando_leido(char** linea_leida){
 
         case DETENER_PLANIFICACION:
             planificacion_activada = 0;
+			interrumpir_proceso_ejecutando();
             break;
 
         case INICIAR_PROCESO:
@@ -93,6 +94,8 @@ static void gestionar_comando_leido(char** linea_leida){
             log_warning(logger, "Comando desconocido");
             break;
         }
+
+	free(linea_leida);	
 }
 
 void iniciar_consola()
