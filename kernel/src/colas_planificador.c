@@ -1,4 +1,13 @@
 #include "../include/colas_planificador.h"
+#define CANTIDAD_COLAS 6
+
+t_queue *cola_new;
+t_queue *cola_exit;
+t_queue *cola_ready;
+t_queue *cola_blocked;
+t_queue *cola_execute;
+t_queue *cola_readyVRR;
+t_queue **colas_estado;
 
 void inicializar_colas_planificador(){
     cola_new = queue_create();
@@ -7,6 +16,14 @@ void inicializar_colas_planificador(){
 	cola_exit = queue_create();
     cola_execute = queue_create();
     cola_readyVRR = queue_create();
+
+    colas_estado = malloc(CANTIDAD_COLAS * sizeof(t_queue*));
+    colas_estado[0] = cola_new;
+    colas_estado[1] = cola_ready;
+    colas_estado[2] = cola_blocked;
+    colas_estado[3] = cola_exit;
+    colas_estado[4] = cola_execute;
+    colas_estado[5] = cola_readyVRR;
 }
 
 void imprimir_colas(){
@@ -86,5 +103,42 @@ elemVRR* pop_cola_ready_priority(){
 
 void pop_and_destroy(t_queue* queue, void (*destroyer)(void*)){
     destroyer(queue_pop(queue));
+}
+
+static unsigned PID_BUSQUEDA;
+static bool es_pid_buscado(void* pcb_buscado){
+    pcb *pcb = pcb_buscado;
+    return pcb->pid == PID_BUSQUEDA;
+}
+
+bool proceso_esta_en_cola(t_queue* queue, unsigned PID){
+    PID_BUSQUEDA = PID;
+    return list_any_satisfy(queue->elements, es_pid_buscado);
+}
+
+pcb* pop_proceso(t_queue* queue, unsigned PID){
+    PID_BUSQUEDA = PID;
+    return list_remove_by_condition(queue->elements, es_pid_buscado);
+}
+
+void finalizar_proceso(unsigned PID){
+    PID_BUSQUEDA = PID;
+    for (size_t i = 0; i < CANTIDAD_COLAS; i++){
+        if(proceso_esta_en_cola(colas_estado[i], PID)){
+            pcb* pcb_encontrado = pop_proceso(colas_estado[i], PID);
+            push_cola_exit(pcb_encontrado);
+            break;
+        }
+        /* DISCLAIMER:
+        *  Si se quisiera finalizar el proceso en ejecucion, hay condicion de carrera
+        *  entre el checkeo de la condicion entre todas las colas y la "devolucion" del
+        *  proceso en ejecucion. 
+        *  TODO: Implementar semaforo para evitar la condicion de carrera
+        * 
+        *  DISCLAIMER 2:
+        *  Solo busca en las colas de estado, no en las colas de bloqueo. 😵‍💫😵‍💫
+        *  TODO: Implementar busqueda en las colas de bloqueo
+        */
+    }
 }
 

@@ -88,14 +88,40 @@ static void gestionar_comando_leido(char** linea_leida){
 			free(linea);
 			break;
 		case FINALIZAR_PROCESO:
+			log_info(logger, "==============================================");
+			char *string_pid = linea_leida[1];
+			unsigned pid_a_finalizar = atol(string_pid);
+			log_info(logger, "Inicio de ejecución de FINALIZAR_PROCESO con PID: [%d]", pid_a_finalizar);
+
+			// Detener la planificación si está activada
+			bool reanudar_planificacion = 0;
+			if(planificacion_activada){
+				log_info(logger, "Deteniendo la planificación para buscar el proceso a finalizar");
+
+				char *string_detener_planificacion = "DETENER_PLANIFICACION";
+				gestionar_comando_leido(&string_detener_planificacion);
+
+				reanudar_planificacion = 1;
+			}
+
+			log_info(logger, "Buscando el proceso a finalizar");
+			finalizar_proceso(pid_a_finalizar);
+
+			// Reanudar la planificación si se finalizó un proceso con la planificación activada
+			if(reanudar_planificacion){
+				log_info(logger, "Reanudando la planificación");
+				char *string_iniciar_planificacion = "INICIAR_PLANIFICACION";
+				gestionar_comando_leido(&string_iniciar_planificacion);
+			}
+
+			break;
+
 		case MULTIPROGRAMACION:
 
-        default:
+		default:
             log_warning(logger, "Comando desconocido");
             break;
         }
-
-	free(linea_leida);	
 }
 
 void iniciar_consola()
@@ -117,6 +143,7 @@ void iniciar_consola()
 			ingresoActivado = 0;
 
 		gestionar_comando_leido(leido_split);
+		free(leido_split);
 		free(leido);
 	}
 }

@@ -34,15 +34,10 @@ pthread_t hilo_servidor_kernel;
 pthread_t hilo_escucha_cpu;
 
 // Variables Planificador
-int planificacion_activada = 1;
+int planificacion_activada = 0;
 
 // -- Colas
-t_queue *cola_new;
-t_queue *cola_exit;
-t_queue *cola_ready;
-t_queue *cola_blocked;
-t_queue *cola_execute;
-t_queue *cola_readyVRR;
+extern t_queue *cola_new, *cola_exit, *cola_ready, *cola_blocked, *cola_execute, *cola_readyVRR;
 // -- Semaforos
 sem_t sem_nuevo_proceso;
 sem_t sem_grado_multiprog;

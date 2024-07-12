@@ -6,6 +6,11 @@ void send_interrupt(unsigned PID, int socket_interrupt){
 }
 
 void interrumpir_proceso_ejecutando(){
+    if(queue_is_empty(cola_execute)){
+        log_info(logger, "No hay procesos en ejecución");
+        return;
+    }
+    
     pcb* pcb = queue_peek(cola_execute);
     send_interrupt(pcb->pid, socket_cpu_interrupt);
 }

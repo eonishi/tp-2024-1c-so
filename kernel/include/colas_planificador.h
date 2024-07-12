@@ -47,5 +47,6 @@ void push_cola_ready_priority(pcb* pcbVRR, int q_pendiente);
 elemVRR* pop_cola_ready_priority();
 
 void pop_and_destroy(t_queue *queue, void (*destroyer)(void *));
+void finalizar_proceso(unsigned PID);
 
 #endif
