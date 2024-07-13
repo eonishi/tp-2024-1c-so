@@ -4,6 +4,7 @@ static void *BLOQUES;
 static t_bitarray* BLOQ_BITMAP;
 int tam_filesystem = 0;
 
+// ---- Init FS --------------------------//
 bool inicializar_filesystem(){
     tam_filesystem = config.block_count * config.block_size;
 
@@ -97,6 +98,7 @@ bool archivo_esta_vacio(int fd) {
 
     return false;
 }
+
 bool inicializar_bloques_en_archivo(FILE* fd){
         // Inicialización de bloques
         void *init_bloques = calloc(config.block_size, config.block_count);
@@ -146,7 +148,6 @@ bool inicializar_bitmap_en_archivo(int fd) {
     return true;
 }
 
-
 void *enlazar_archivo(FILE *fd, int tam_archivo) {    
     void *map = mmap(NULL, tam_archivo, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
@@ -158,7 +159,29 @@ void *enlazar_archivo(FILE *fd, int tam_archivo) {
 
     return map;
 }
+// -----------------------------------------------//
 
+// ---- Utiles --------------------------//
+void imprimir_bitmap() {
+    log_info(logger, "Bitmap de bloques: ");
+
+    char* bitmap = BLOQ_BITMAP->bitarray;
+
+    printf("[");
+    bool primero = true;
+    for (int i = 0; i < config.block_count; i++) {
+        if (!primero) {
+                printf(",");
+            }
+            primero = false;
+            bool valor_del_bit = bitarray_test_bit(BLOQ_BITMAP, i);
+            printf("%d", valor_del_bit);
+    }
+    printf("]\n");
+}
+// -----------------------------------------------//
+
+// ---- CREATE --------------------------//
 bool crear_archivo(char* nombre){
     int fd = open(nombre, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
@@ -193,8 +216,6 @@ bool crear_archivo(char* nombre){
     return true;
 }
 
-
-
 int asignar_bloque(int fd){
     int bloque = buscar_bloque_libre();
 
@@ -207,7 +228,6 @@ int asignar_bloque(int fd){
     return bloque;
 }
 
-
 int buscar_bloque_libre(){
     for (size_t i = 0; i < config.block_count; i++){
         if (!bitarray_test_bit(BLOQ_BITMAP, i)){
@@ -218,26 +238,10 @@ int buscar_bloque_libre(){
     log_error(logger, "No hay bloques disponibles");
     return -1;
 }
-
-void imprimir_bitmap() {
-    log_info(logger, "Bitmap de bloques: ");
-
-    char* bitmap = BLOQ_BITMAP->bitarray;
-
-    printf("[");
-    bool primero = true;
-    for (int i = 0; i < config.block_count; i++) {
-        if (!primero) {
-                printf(",");
-            }
-            primero = false;
-            bool valor_del_bit = bitarray_test_bit(BLOQ_BITMAP, i);
-            printf("%d", valor_del_bit);
-    }
-    printf("]\n");
-}
+// -----------------------------------------------//
 
 
+// ---- Truncate --------------------------//
 bool truncar_archivo(char* nombre, int new_size){
     log_info(logger, "Entro a funcion truncar_archivo... size:[%d]", new_size);
 
@@ -255,7 +259,7 @@ bool truncar_archivo(char* nombre, int new_size){
         exit(EXIT_FAILURE);
     }
 
-    int bloques_a_ocupar = new_size/config.block_size; // TODO GUARDA CON IMPARES
+    int bloques_a_ocupar = (new_size + config.block_size - 1) / config.block_size; // Redondeo hacia arriba
     int bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
     int tam_archivo = config_get_int_value(config_loader, "TAMANIO_ARCHIVO");
     int bloques_actuales_ocupados = (tam_archivo == 0) ? 1 : tam_archivo/8;
@@ -297,11 +301,17 @@ bool truncar_archivo(char* nombre, int new_size){
     config_set_value(config_loader, "BLOQUE_INICIAL", bloque_inicial_char);
     config_save(config_loader);
     // Actualizamos bitmap
-    // Actualizamos 
+    asignar_rango_de_bloques_bitmap(bloque_inicial, bloques_a_ocupar);
 
     close(fd);
 
     return true;
+}
+
+void asignar_rango_de_bloques_bitmap(int desde, int hasta){
+    for(int i = desde; i < hasta; i++ ){
+        bitarray_set_bit(BLOQ_BITMAP, i);
+    }    
 }
 
 bool hay_bloques_contiguos_para_extender(int bloques_necesarios){
@@ -310,16 +320,18 @@ bool hay_bloques_contiguos_para_extender(int bloques_necesarios){
 }
 
 bool hay_bloques_libres_suficientes(int bloques_necesarios){
+    // TODO implementar
     return true;
 }
+// -----------------------------------------------//
 
-    // Sincronizar los cambios al archivo // TODO esto se puede sacar me parece
-    //if (msync(map, tam_archivo, MS_SYNC) == -1) {
-      //  log_info(logger, "Error al sincronizar el archivo");
-        //return NULL;
-    //}
+// Sincronizar los cambios al archivo // TODO esto se puede sacar me parece
+//if (msync(map, tam_archivo, MS_SYNC) == -1) {
+    //  log_info(logger, "Error al sincronizar el archivo");
+    //return NULL;
+//}
 
-    // Desmapear el archivo
-    //if (munmap(BLOQUES, tam_filesystem) == -1) {
-      //  log_info(logger, "Error al desmapear el archivo");
-    //}
+// Desmapear el archivo
+//if (munmap(BLOQUES, tam_filesystem) == -1) {
+    //  log_info(logger, "Error al desmapear el archivo");
+//}

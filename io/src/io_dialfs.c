@@ -9,7 +9,7 @@ void io_dialfs() {
     
     log_info(logger, "Hola, soy IO DIALFS :)");
 
-    int cod_op = 2; 
+    int cod_op = ; 
     switch (cod_op)
     {
 		case 1:
