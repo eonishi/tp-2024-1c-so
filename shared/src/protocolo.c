@@ -82,7 +82,7 @@ char* deserializar_char(void* char_bytes, int8_t size){
 }
 
 // Kernel - Memoria
-int enviar_solicitud_crear_proceso(char* filePath, pcb* pcb, int socket_cliente){
+int enviar_solicitud_crear_proceso(char* filePath, unsigned PID, int socket_cliente){
     t_paquete* paquete = crear_paquete(CREAR_PROCESO_EN_MEMORIA);
 
     void* tamanio_path_serializado = serializar_int8(strlen(filePath) + 1);
@@ -91,12 +91,12 @@ int enviar_solicitud_crear_proceso(char* filePath, pcb* pcb, int socket_cliente)
     void* filepath_serializado = serializar_char(filePath);
     agregar_a_paquete(paquete, filepath_serializado, strlen(filePath) + 1);
 
-    void* pcb_serializado = serializar_pcb(pcb);    
-    agregar_a_paquete(paquete, pcb_serializado, pcb_size());
+    void* pid_stream = serializar_uint32(PID);    
+    agregar_a_paquete(paquete, pid_stream, sizeof(uint32_t));
 
     enviar_paquete(paquete, socket_cliente);
 
-    free(pcb_serializado);
+    free(pid_stream);
     free(filepath_serializado);
     free(tamanio_path_serializado);
     eliminar_paquete(paquete);
@@ -108,7 +108,7 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
 
     void* filepath_tamanio_bytes= list_get(lista_pcb_bytes, 0);
     void* filepath_bytes= list_get(lista_pcb_bytes, 1);
-    void* pcb_bytes = list_get(lista_pcb_bytes, 2);
+    void* pid_bytes = list_get(lista_pcb_bytes, 2);
 
 
     int8_t tamanio_filepath = deserializar_int8(filepath_tamanio_bytes);
@@ -116,13 +116,13 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
     char* file_path = deserializar_char(filepath_bytes,tamanio_filepath);
     log_info(logger,"FilePath recibido en solicitud crear proceso: [%s]", file_path);
 
-    pcb* pcb = deserializar_pcb_new(pcb_bytes);
+    unsigned pid_recibido = deserializar_uint32(pid_bytes);
 
     free(lista_pcb_bytes);
 
     solicitud_crear_proceso respuesta;
     respuesta.filePath = file_path;
-    respuesta.pcb = pcb;
+    respuesta.PID = pid_recibido;
 
     return respuesta;
 }

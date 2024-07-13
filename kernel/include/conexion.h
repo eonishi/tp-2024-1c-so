@@ -24,9 +24,12 @@ typedef struct{
 extern t_list* lista_conexiones_io;
 
 
+conexion_io* crear_conexion_io(int socket, char* nombre_interfaz, io_tipo tipo, int* operaciones);
+void liberar_conexion_io(conexion_io *conexion_io);
+
 bool generar_conexiones();
 int generar_conexion(char* ip, char* puerto);
 
-conexion_io recibir_conexion_io(int server);
+conexion_io* recibir_conexion_io(int server);
 
 #endif

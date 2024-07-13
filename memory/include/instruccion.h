@@ -14,6 +14,5 @@ extern t_list *procesos_en_memoria;
 
 void enviar_instruccion_a_cpu();
 void recibir_fetch_de_cpu();
-void liberar_instr_set(unsigned PID);
 
 #endif

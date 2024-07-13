@@ -1,17 +1,17 @@
 #include "../include/tabla_paginas.h"
 
-static t_tabla_paginas* get_table_by_PID(){
-    if(!list_any_satisfy(procesos_en_memoria, memoria_tiene_pid_solicitado)){
+static t_tabla_paginas* get_table_by_PID(bool tiene_PID (void*)){
+    if(!list_any_satisfy(procesos_en_memoria, tiene_PID)){
         log_error(logger, "No se encontró el PID solicitado");
         abort();
     }
 
-    t_proceso_en_memoria* proceso_buscado = list_find(procesos_en_memoria, memoria_tiene_pid_solicitado);
+    t_proceso_en_memoria* proceso_buscado = list_find(procesos_en_memoria, tiene_PID);
     return proceso_buscado->tabla_paginas;
 }
 
 void agregar_paginas(unsigned cantidad_de_paginas){
-    t_tabla_paginas* tabla = get_table_by_PID();
+    t_tabla_paginas* tabla = get_table_by_PID(memoria_tiene_pid_solicitado);
     for(size_t i = 0; i < cantidad_de_paginas; i++){
         unsigned frame_number = get_available_frame();
         list_add(tabla, (void*)frame_number); 
@@ -19,35 +19,28 @@ void agregar_paginas(unsigned cantidad_de_paginas){
     }
 }
 
-void quitar_paginas(size_t cantidad_de_paginas){
-    t_tabla_paginas* tabla = get_table_by_PID();
-    log_info(logger, "Cantidad de paginas a quitar: [%d]", cantidad_de_paginas);
+void quitar_paginas(size_t cantidad_de_paginas, t_proceso_en_memoria* proceso){
+    t_list* tabla = proceso->tabla_paginas;
 
     for (size_t i = 0; i < cantidad_de_paginas; i++){
         size_t index_tabla = list_size(tabla)-1;
-        log_info(logger, "Index de la tabla: [%d]", index_tabla);
 
         unsigned frame_number = (unsigned)list_remove(tabla, index_tabla);
-        log_info(logger, "Frame a liberar: [%d]", frame_number);
-
-        log_info(logger, "Voy a ejecutar marcar_frame_como ");
         marcar_frame_como(frame_number, 0); // 0 = LIBRE
-        log_info(logger, "Frame [%d] marcado como libre", frame_number);
 
-        // free(frame_number);
         // Hay que liberarel numero de frame pero no puedo con el free 🤷🏻‍♂️
-        log_info(logger, "Iteracion numero [%d]", i);
+        // free(frame_number);
     }
 };
 
 unsigned get_frame_number_by_pagina(unsigned nro_pagina){
-    t_tabla_paginas* tabla = get_table_by_PID();
+    t_tabla_paginas* tabla = get_table_by_PID(memoria_tiene_pid_solicitado);
     unsigned frame_number = (unsigned)list_get(tabla, nro_pagina);
     return frame_number;
 }
 
 size_t cantidad_de_paginas(){
-    t_tabla_paginas* tabla = get_table_by_PID();
+    t_tabla_paginas* tabla = get_table_by_PID(memoria_tiene_pid_solicitado);
     return list_size(tabla);
 }
 
@@ -59,7 +52,8 @@ void redimensionar_memoria_proceso(size_t cantidad_paginas){
     }
     else{
         log_info(logger, "Disminuyendo memoria del proceso a [%d] paginas totales", cantidad_paginas);
-        quitar_paginas(cantidad_actual_de_paginas - cantidad_paginas);
+        t_proceso_en_memoria* proceso_a_redimencionar = get_proceso_by_PID(PID_a_liberar, &PID_solicitado, memoria_tiene_pid_solicitado);
+        quitar_paginas(cantidad_actual_de_paginas - cantidad_paginas, proceso_a_redimencionar);
     }
 }
 

@@ -46,9 +46,8 @@ void crear_hilo_solicitudes_kernel(){
 }
 
 void* gestionar_solicitudes_kernel(){
-    t_list* lista;
     log_info(logger, "Esperando recibir operacion del kernel...");
-	while (1) {
+	while (socket_kernel != -1) {
 		int cod_op = recibir_operacion(socket_kernel);
         log_info(logger, "==============================================");
         log_info(logger, "Codigo recibido desde el kernel: %d", cod_op);
@@ -57,19 +56,28 @@ void* gestionar_solicitudes_kernel(){
 		case CREAR_PROCESO_EN_MEMORIA:
             log_info(logger, "CREAR_PROCESO_EN_MEMORIA recibido.");
 
-			// (SUS) podria recibir solo el path y PID
-            solicitud_crear_proceso solicitud_crear_proceso = recibir_solicitud_crear_proceso(socket_kernel);
-			pcb* pcb = solicitud_crear_proceso.pcb;
+            solicitud_crear_proceso solicitud = recibir_solicitud_crear_proceso(socket_kernel);
 
-			cargar_proceso_en_memoria(solicitud_crear_proceso.filePath, pcb->pid);
-			
-            // Operaciones crear proceso en memoria
-            enviar_pcb(pcb, socket_kernel, CREAR_PROCESO_EN_MEMORIA);
-			free(pcb);
+			cargar_proceso_en_memoria(solicitud.filePath, solicitud.PID);
+			enviar_status(SUCCESS, socket_kernel);
 			break;
+			
+		case LIBERAR_PROCESO_EN_MEMORIA:
+			// Recibir PID
+			unsigned pid = recibir_cantidad(socket_kernel);
+			log_info(logger, "Proceso PID:[%d] a liberar", pid);
+
+			// Elimino el proceso de la lista de procesos en memoria
+			liberar_proceso_en_memoria(pid);
+
+			// Envio respuesta al kernel	
+			enviar_status(SUCCESS, socket_kernel);
+			break;
+
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
-		
+			close(socket_kernel);
+			socket_kernel = -1;
 			terminar_programa();
             break;
 		default:
@@ -220,12 +228,23 @@ void* gestionar_solicitudes_io(void* pthread_arg){
 			log_info(logger, "Se leyó el dato de la memoria y se envió a IO");
 			break;
 
-		case -1:
-			log_error(logger, "el cliente se desconecto. Terminando servidor");
-			close(io_socket);
-			log_info(logger, "Socket cerrado. SOCKET: [%d]", io_socket);
+		case ESCRIBIR_DATO_EN_MEMORIA:
+		log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 
-			return;
+		t_peticion_memoria* solicitud = peticion_recibir(io_socket, ESCRIBIR_DATO_EN_MEMORIA);
+		log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d], Tam_Dato: [%d]", solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
+
+		set_memoria(solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
+
+		esperar_retardo();
+		enviar_status(SUCCESS, io_socket);
+		log_info(logger, "Se escribió dato en memoria correctamente, envio: [%d]", SUCCESS);
+		break;
+
+		case -1:
+			log_error(logger, "La IO se desconecto. Terminando servidor");
+			close(io_socket);
+			io_socket = -1;
 			break;
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata. CODIGO: [%d]", cod_op);

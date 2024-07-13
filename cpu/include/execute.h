@@ -22,9 +22,11 @@ void exec_sub(char**);
 void exec_jnz(char**);
 void exec_operacion_io(char** instr_tokenizada);
 void exec_resize(char** instr_tokenizada);
+
 void exec_mov_in(char** instr_tokenizada);
 void exec_mov_out(char** instr_tokenizada);
 void exec_cp_string(char **instr_tokenizada);
 void exec_io_stdout_write(char **instr_tokenizada);
+void exec_io_stdin_read(char** instr_tokenizada);
 
 #endif

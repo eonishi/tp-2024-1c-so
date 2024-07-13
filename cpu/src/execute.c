@@ -50,6 +50,11 @@ void execute(char **instr_tokenizada)
         exec_operacion_io(instr_tokenizada);                
         break;
     case IO_STDIN_READ:
+        tengo_pcb = 0;
+        siguiente_pc(pcb_actual);
+        
+        exec_io_stdin_read(instr_tokenizada);
+        break;     
     case IO_STDOUT_WRITE:
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
@@ -240,8 +245,7 @@ void exec_cp_string(char** instr_tokenizada){
         t_peticion_memoria* peticion_a_enviar = list_get(peticiones_lectura, i);
         leer_dato_memoria(peticion_a_enviar, &ptr_string_copiado);
     }
-
-    // Escribir el string en la dirección lógica dl_dst
+      // Escribir el string en la dirección lógica dl_dst
     t_list *peticiones_escritura = mmu(dl_dst, tam_string, string_copiado);
     list_iterate(peticiones_escritura, enviar_peticiones_de_escribir);
 
@@ -249,6 +253,32 @@ void exec_cp_string(char** instr_tokenizada){
     free(string_copiado);
     // Despues hay que liberar todas las peticiones tambien para mov_in y mov_out
 }
+
+/*
+IO_STDIN_READ (Interfaz, Registro Dirección, Registro Tamaño): Esta instrucción solicita al Kernel que mediante 
+la interfaz ingresada se lea desde el STDIN (Teclado) un valor cuyo tamaño está delimitado por el valor del 
+Registro Tamaño y el mismo se guarde a partir de la Dirección Lógica almacenada en el Registro Dirección.
+*/
+void exec_io_stdin_read(char** instr_tokenizada){
+   // IO_STDIN_READ, Interfaz, Registro Direccion, Registro Tamaño
+    char* registro_direccion = instr_tokenizada[2];
+    char* registro_tamanio = instr_tokenizada[3];
+    log_info(logger, "Registro dirección: [%s], Registro Tamanio: [%s]", registro_direccion, registro_tamanio);
+
+    uint32_t* direccion_logica = get_registro(registro_direccion);
+    uint32_t* tamanio = get_registro(registro_tamanio);
+    log_info(logger, "Dirección logica: [%d], Tamaño: [%d]", *direccion_logica, *tamanio);
+
+    t_list *peticiones_lectura = mmu(*direccion_logica, *tamanio, NULL);
+
+    solicitud_bloqueo_por_io solicitud;
+    solicitud.instruc_io_tokenizadas = instr_tokenizada;
+    solicitud.pcb = pcb_actual;
+    solicitud.peticiones_memoria = peticiones_lectura;
+
+    enviar_bloqueo_por_io(solicitud, socket_kernel);
+}
+
 
 void exec_io_stdout_write(char** instr_tokenizada){
     // IO_STDOUT_WRITE, Interfaz, Registro Direccion, Registro Tamaño
