@@ -28,6 +28,7 @@ static void gestionar_comando_leido(char** linea_leida){
 
         case INICIAR_PLANIFICACION:
             planificacion_activada = 1;
+			//log_info(logger,"planificacion valor: %d",planificacion_activada);
             break;
 
         case DETENER_PLANIFICACION:

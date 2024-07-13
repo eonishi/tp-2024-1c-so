@@ -8,7 +8,9 @@ pthread_mutex_t mutex_quantum = PTHREAD_MUTEX_INITIALIZER;
 pthread_t hilo_quantum;
 
 void *iniciar_planificacion_corto(){
-    while(planificacion_activada){
+    
+    while(1){// si se hace while(planificacion_activada) salta el while porque empieza en cero y luego no ejecuta
+        if(planificacion_activada){
 		log_info(logger, "Corto: Esperando otro proceso en ready");					
         sem_wait(&sem_proceso_en_ready);  			
 		log_info(logger, "Corto: Llegó proceso en ready");		
@@ -22,6 +24,7 @@ void *iniciar_planificacion_corto(){
         dispatch_proceso_planificador(pcb);
 
         gestionar_respuesta_cpu();
+        }
     }
 }
 
