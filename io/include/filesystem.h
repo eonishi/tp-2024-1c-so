@@ -1,6 +1,8 @@
 #ifndef IO_FILESYSTEM_H_
 #define IO_FILESYSTEM_H_
 
+#include <commons/config.h>
+#include <stdlib.h>
 #include "configuracion.h"
 #include <commons/bitarray.h>
 #include <sys/mman.h>
@@ -26,5 +28,11 @@ int asignar_bloque(int fd);
 int buscar_bloque_libre();
 
 void imprimir_bitmap();
+
+bool truncar_archivo(char* nombre, int size);
+
+bool hay_bloques_contiguos_para_extender(int bloques_necesarios);
+bool hay_bloques_libres_suficientes(int bloques_necesarios);
+
 
 #endif

@@ -2,26 +2,7 @@
 
 static void *BLOQUES;
 static t_bitarray* BLOQ_BITMAP;
-static size_t bitmap_length;
 int tam_filesystem = 0;
-
-void prueba_escribir(){
-    // Puedes acceder y modificar los datos a través del puntero `map`
-    // Por ejemplo, puedes imprimir los primeros bytes del archivo
-    printf("Primeros bytes del archivo: %.*s\n", tam_filesystem, (char *)BLOQUES);
-    // Modificar el contenido del archivo (por ejemplo, escribir "Hola" en los primeros bytes)
-    const char *message = "Hola";
-    snprintf((char *)BLOQUES, tam_filesystem, "%s", message);
-}
-
-void prueba_escribir_bitmap(){
-    // Puedes acceder y modificar los datos a través del puntero `map`
-    // Por ejemplo, puedes imprimir los primeros bytes del archivo
-    printf("Primeros bytes del archivo: %.*s\n", tam_filesystem, (char *)BLOQUES);
-    // Modificar el contenido del archivo (por ejemplo, escribir "Hola" en los primeros bytes)
-    const char *message = "Hola";
-    snprintf((char *)BLOQUES, tam_filesystem, "%s", message);
-}
 
 bool inicializar_filesystem(){
     tam_filesystem = config.block_count * config.block_size;
@@ -94,7 +75,6 @@ void inicializar_bitmap(){
     //+-------------------------------+----------------+
     t_bitarray *bloq_bitmap = (t_bitarray *)mapped_file; // Primero convertimos el puntero generico a un puntero t_bitarray
     bloq_bitmap->bitarray = (char *)mapped_file + sizeof(t_bitarray); // Convertirmos el puntero generico a (char *) para poder "saltear" los primeros 16 bytes
-
     BLOQ_BITMAP = bloq_bitmap;
 
     
@@ -182,16 +162,24 @@ void *enlazar_archivo(FILE *fd, int tam_archivo) {
 bool crear_archivo(char* nombre){
     int fd = open(nombre, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
+    //TODO: VER SI AGREGAR VALIDACION DE SI YA EXISTE EL ARCHIVO
     if (fd == -1) {
         log_error(logger, "Error al crear el archivo: [%s]", nombre);
-
         return false;
     }
 
     int bloque = asignar_bloque(fd);
 
+    if (bloque == -1){
+        log_error(logger, "No se puedo asignar un bloque");
+        close(fd);
+
+        return false;
+    }
+
     // Contenido inicial del archivo
-    const char* contenido_inicial = "BLOQUE_INICIAL=0\nTAMANIO_ARCHIVO=0\n";
+    const char* contenido_inicial[100];
+    sprintf(contenido_inicial, "BLOQUE_INICIAL=%d\nTAMANIO_ARCHIVO=0\n", bloque);
     ssize_t bytes_escritos = write(fd, contenido_inicial, strlen(contenido_inicial));
 
     if (bytes_escritos == -1) {
@@ -206,35 +194,123 @@ bool crear_archivo(char* nombre){
 }
 
 
+
 int asignar_bloque(int fd){
     int bloque = buscar_bloque_libre();
+
+    if(bloque == -1){
+        return -1;
+    }
+
+    bitarray_set_bit(BLOQ_BITMAP, bloque);
 
     return bloque;
 }
 
+
 int buscar_bloque_libre(){
-    return 1;
+    for (size_t i = 0; i < config.block_count; i++){
+        if (!bitarray_test_bit(BLOQ_BITMAP, i)){
+            log_info(logger, "Bloque disponible [%d]", i);
+            return i;
+        }
+    }
+    log_error(logger, "No hay bloques disponibles");
+    return -1;
 }
 
 void imprimir_bitmap() {
     log_info(logger, "Bitmap de bloques: ");
 
     char* bitmap = BLOQ_BITMAP->bitarray;
-    int bitmap_size = BLOQ_BITMAP->size;
 
     printf("[");
     bool primero = true;
-    for (int i = 0; i < bitmap_size; i++) {
-        for (int bit = 0; bit < 8; bit++) {
-            if (!primero) {
+    for (int i = 0; i < config.block_count; i++) {
+        if (!primero) {
                 printf(",");
             }
             primero = false;
-            bool libre = !(bitmap[i] & (1 << bit));
-            printf("%d", libre ? 0 : 1);
-        }
+            bool valor_del_bit = bitarray_test_bit(BLOQ_BITMAP, i);
+            printf("%d", valor_del_bit);
     }
     printf("]\n");
+}
+
+
+bool truncar_archivo(char* nombre, int new_size){
+    log_info(logger, "Entro a funcion truncar_archivo... size:[%d]", new_size);
+
+    int fd = open(nombre, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+    if (fd == -1) {
+        log_error(logger, "Error al leer el archivo: [%s]", nombre);
+        return false;
+    }
+
+    t_config* config_loader = config_create(nombre);
+
+    if(config_loader == NULL) {
+        log_error(logger, "No se encontro el archivo: [%s]", nombre);
+        exit(EXIT_FAILURE);
+    }
+
+    int bloques_a_ocupar = new_size/config.block_size; // TODO GUARDA CON IMPARES
+    int bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
+    int tam_archivo = config_get_int_value(config_loader, "TAMANIO_ARCHIVO");
+    int bloques_actuales_ocupados = (tam_archivo == 0) ? 1 : tam_archivo/8;
+
+    log_info(logger, "bloques_a_ocupar: [%d]", bloques_a_ocupar);
+    log_info(logger, "bloque_inicial: [%d]", bloque_inicial);
+    log_info(logger, "tam_archivo: [%d]", tam_archivo);
+    log_info(logger, "bloques_actuales_ocupados: [%d]", bloques_actuales_ocupados);    
+
+    if(new_size > tam_archivo){
+        int bloques_necesarios = bloques_a_ocupar - bloques_actuales_ocupados;
+
+        if(!hay_bloques_contiguos_para_extender(bloques_necesarios)){
+            log_info(logger, "No hay bloques contiguos suficientes.");
+
+            if(!hay_bloques_libres_suficientes(bloques_necesarios)){
+                log_error(logger, "No hay bloques libres suficientes.");
+
+                close(fd);
+                return false;
+            }
+
+            // Retiramos archivo del bitmap
+            // Compactamos bitmap
+            // Insertamos archivo en bitmap
+            // Guardamos bitmap
+            bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
+        }
+    }
+
+    ftruncate(fd, new_size);
+
+    // Actualizamos properties del archivo
+    char* new_size_char[5];
+    sprintf(new_size_char, "%d", new_size);
+    config_set_value(config_loader, "TAMANIO_ARCHIVO", new_size_char);
+    char* bloque_inicial_char[5];
+    sprintf(bloque_inicial_char, "%d", bloque_inicial);
+    config_set_value(config_loader, "BLOQUE_INICIAL", bloque_inicial_char);
+    config_save(config_loader);
+    // Actualizamos bitmap
+    // Actualizamos 
+
+    close(fd);
+
+    return true;
+}
+
+bool hay_bloques_contiguos_para_extender(int bloques_necesarios){
+    // TODO implementar
+    return true;
+}
+
+bool hay_bloques_libres_suficientes(int bloques_necesarios){
+    return true;
 }
 
     // Sincronizar los cambios al archivo // TODO esto se puede sacar me parece

@@ -50,6 +50,10 @@
     "error.h": "c",
     "txt.h": "c",
     "temporal.h": "c",
-    "io_dialfs.h": "c"
+    "io_dialfs.h": "c",
+    "filesystem.h": "c",
+    "cstdio": "c",
+    "utility": "c",
+    "frame.h": "c"
   }
 }
