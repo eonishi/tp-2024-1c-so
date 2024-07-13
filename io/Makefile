@@ -42,4 +42,6 @@ clean:
 	rm -rf obj
 	rm -rf *.out
 	rm -rf *.log
+	rm -rf *.dat
+	rm -rf *.txt
 	make clean -C ../shared
