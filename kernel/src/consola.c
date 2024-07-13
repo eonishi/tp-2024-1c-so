@@ -9,7 +9,8 @@ const table_element tabla_comandos[] = {
 	{"DETENER_PLANIFICACION", DETENER_PLANIFICACION},
 	{"MULTIPROGRAMACION", MULTIPROGRAMACION},
 	{"PROCESO_ESTADO", PROCESO_ESTADO},
-	{"EJECUTAR_SCRIPT", EJECUTAR_SCRIPT}
+	{"EJECUTAR_SCRIPT", EJECUTAR_SCRIPT},
+	{"INICIAR_PLANIFICADOR", INICIAR_PLANIFICADOR}
 };
 
 static comando_consola get_comando(char* comando_token){
@@ -26,6 +27,11 @@ static void gestionar_comando_leido(char** linea_leida){
             imprimir_colas();
             break;
 
+        case INICIAR_PLANIFICADOR:
+            crear_hilo_planificador_corto();//permite crear un nuevo hilo de planificador luego de detenerlo
+			//agregar un flag de control para no crear dos hilos de estos
+            break;
+
         case INICIAR_PLANIFICACION:
             planificacion_activada = 1;
 			//log_info(logger,"planificacion valor: %d",planificacion_activada);
@@ -34,6 +40,7 @@ static void gestionar_comando_leido(char** linea_leida){
         case DETENER_PLANIFICACION:
             planificacion_activada = 0;
 			interrumpir_proceso_ejecutando();
+			cancelar_hilo_planificador(); //DETIENE EL HILO DEL PLANIFICADOR CORTO
             break;
 
         case INICIAR_PROCESO:
@@ -146,5 +153,34 @@ void iniciar_consola()
 		gestionar_comando_leido(leido_split);
 		free(leido_split);
 		free(leido);
+	}
+}
+void crear_hilo_planificador_corto(){
+	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
+	if(string_equals_ignore_case(config->algoritmo_planificacion, "FIFO")){
+		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
+		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
+	}else if(string_equals_ignore_case(config->algoritmo_planificacion, "RR")){
+		log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
+		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
+	}else if(string_equals_ignore_case(config->algoritmo_planificacion, "VRR")){
+		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
+		iniciar_hilo(iniciar_planificacion_corto_VRR, hilo_planificador_corto_VRR);
+	}else{
+		log_error(logger, "Algoritmo de planificación desconocido.");
+		terminar_programa();
+	}
+}
+
+void cancelar_hilo_planificador(){
+	if (string_equals_ignore_case(config->algoritmo_planificacion,"FIFO")){
+		pthread_cancel(hilo_planificador_corto);
+		log_info(logger,"HILO PLANIFICADOR FIFO CANCELADO");
+	}else if(string_equals_ignore_case(config->algoritmo_planificacion,"RR")){
+		pthread_cancel(hilo_planificador_corto_RR);
+		log_info(logger,"HILO PLANIFICADOR RR CANCELADO");
+	}else if(string_equals_ignore_case(config->algoritmo_planificacion,"VRR")){
+		pthread_cancel(hilo_planificador_corto_VRR);
+		log_info(logger,"HILO PLANIFICADOR VRR CANCELADO");
 	}
 }

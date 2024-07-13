@@ -86,6 +86,7 @@ void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void* args){
 		pthread_detach(thread);
 	}
 }
+/*
 void crear_hilo_planificador_corto(){
 	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
 	if(string_equals_ignore_case(config->algoritmo_planificacion, "FIFO")){
@@ -115,6 +116,7 @@ void cancelar_hilo_planificador(){
 		log_info(logger,"HILO PLANIFICADOR VRR CANCELADO");
 	}
 }
+*/
 /*void cambiar_algoritmo_planificadorCorto(algoritmo_planificador algoritmoNuevo){
 	//todo
 }*/

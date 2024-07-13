@@ -67,8 +67,8 @@ void dispatch_proceso();
 void iniciar_hilo(void *func, pthread_t thread);
 void *esperar_y_escuchar_conexiones_io();
 void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void *args);
-void crear_hilo_planificador_corto();
-void cancelar_hilo_planificador();
+//void crear_hilo_planificador_corto();
+//void cancelar_hilo_planificador();
 //void cambiar_algoritmo_planificadorCorto(algoritmo_planificador);
 
 #endif
