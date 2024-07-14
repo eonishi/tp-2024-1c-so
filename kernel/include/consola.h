@@ -9,7 +9,6 @@
 #include "colas_planificador.h"
 #include "interrupcion.h"
 #include "planificador_corto.h"
-//#include "kernel.h"
 #include "../../shared/include/table_element.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"

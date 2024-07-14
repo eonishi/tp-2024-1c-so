@@ -92,8 +92,8 @@ void gestionar_respuesta_cpu(){
                 break;
             }
         case INTERRUPCION:
-            //temporal_stop(q_transcurrido); //detengo el contador de quantum usado
-            //q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
+            //temporal_stop(q_transcurrido); //detengo el contador de quantum usado -> migrado a gestor_io
+            //q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos -> migrado a gestor_io
             pcb = recibir_pcb(socket_cpu_dispatch);
             //log_info(logger, "Recibi proceso PID [%d] desalojado por INTERRUPCION CODIGO: [%d]", pcb->pid, cod_op);
             //pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
@@ -144,13 +144,14 @@ void *iniciar_planificacion_corto_VRR(){
             sem_wait(&sem_cpu_libre);
             log_info(logger, "Corto VRR: Cpu libre! pasando proximo proceso a execute..");	
             if(!queue_is_empty(cola_readyVRR)){
-                //dar paso a ready normal
+                //dar paso a readyVRR prioritario
                 log_info(logger, "La cola prioritaria NO esta vacia.");
                  elemVRR* auxVRR = queue_pop(cola_readyVRR);
                  pcb = auxVRR->pcbVRR;
-                 q_usado = auxVRR->quantum_usado;
+                 q_usado = auxVRR->quantum_usado; //aca defino el quantum que va a usar el proceso en la cola ready prioridad
             }else{
-                //dar paso a la cola ready VRR
+                //dar paso a la cola ready normal
+                q_usado = 0; //por que si hubo ejecucion de cola prioritaria queda seteado el valor de ese proceso
                 log_info(logger, "La cola prioritaria está vacia.");
                 pcb = pop_cola_ready();
             } 
