@@ -39,10 +39,18 @@ void execute(char **instr_tokenizada)
         exec_cp_string(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
+    case IO_FS_TRUNCATE:
+        uint32_t* dato_registro = get_registro(instr_tokenizada[3]);
+
+        reemplazar_registro_por_dato(instr_tokenizada, 3, *dato_registro);
+
+        tengo_pcb = 0;
+        siguiente_pc(pcb_actual);
+        exec_operacion_io(instr_tokenizada);                
+        break;
     case IO_GEN_SLEEP:
     case IO_FS_CREATE:
     case IO_FS_DELETE:
-    case IO_FS_TRUNCATE:
     case IO_FS_WRITE:
     case IO_FS_READ:
         tengo_pcb = 0;
@@ -74,6 +82,21 @@ void execute(char **instr_tokenizada)
     }
 
     free(instr_tokenizada);
+}
+
+void reemplazar_registro_por_dato(char** instr_tokenizada, int index, int valor){
+    // Calcula el tamaño necesario para la cadena
+    size_t buffer_size = snprintf(NULL, 0, "%u", valor) + 1;
+
+    // Asigna suficiente espacio para la cadena resultante
+    instr_tokenizada[index] = realloc(instr_tokenizada[3], buffer_size);
+    if (instr_tokenizada[index] == NULL) {
+        log_error(logger, "Error al intentar reemplazar registro por dato");
+        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO);
+    }
+
+    // Convierte dato_registro a cadena y guarda en instr_tokenizada[3]
+    snprintf(instr_tokenizada[index], buffer_size, "%u", valor);
 }
 
 void exec_set(char **instr_tokenizada){

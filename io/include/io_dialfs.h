@@ -2,6 +2,7 @@
 #define IO_DIALFS_H_
 
 #include "configuracion.h"
+#include "conexion.h"
 #include <commons/bitarray.h>
 #include <sys/mman.h>
 #include <fcntl.h>

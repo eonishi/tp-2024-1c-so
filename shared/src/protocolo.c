@@ -298,3 +298,37 @@ uint32_t recibir_dato_leido_de_memoria(int socket){
 
      return deserializar_uint32(list_get(lista_bytes, 0));
 }
+
+void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, int socket){
+    size_t size_nombre = strlen(solicitud.nombre_archivo) + 1;
+    t_paquete* paquete = crear_paquete(TRUNCAR_ARCHIVO_FS);
+
+    void* stream_nombre_archivo = serializar_char(solicitud.nombre_archivo);
+    agregar_a_paquete(paquete, stream_nombre_archivo, size_nombre);
+
+    void* stream_tamanio_archivo = serializar_int(solicitud.tamanio_archivo);
+    agregar_a_paquete(paquete, stream_tamanio_archivo, sizeof(int));
+
+    enviar_paquete(paquete, socket);
+
+    free(stream_nombre_archivo);
+    free(stream_tamanio_archivo);
+
+    eliminar_paquete(paquete);
+}
+
+solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket){
+    t_list* lista_bytes = recibir_paquete(socket);
+
+    char* nombre_archivo = list_get(lista_bytes, 0);
+    void* tam_archivo_bytes = list_get(lista_bytes, 1);
+
+    int tam_archivo = deserializar_int(tam_archivo_bytes);
+
+    free(lista_bytes);
+    free(tam_archivo_bytes);
+
+    solicitud_truncar_archivo solicitud = {nombre_archivo, tam_archivo};
+
+    return solicitud;
+}

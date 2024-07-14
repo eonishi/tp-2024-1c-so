@@ -55,6 +55,14 @@ void enviar_dato_leido_de_memoria(uint32_t dato, int socket);
 uint32_t recibir_dato_leido_de_memoria(int socket);
 
 
+typedef struct{
+    char *nombre_archivo;
+    int tamanio_archivo;
+} solicitud_truncar_archivo;
+
+void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, int socket);
+solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket);
+
 // Temporales
 void* serializar_char(char* string);
 void* serializar_int(int number);
