@@ -99,7 +99,7 @@ bool archivo_esta_vacio(int fd) {
     return false;
 }
 
-bool inicializar_bloques_en_archivo(FILE* fd){
+bool inicializar_bloques_en_archivo(int fd){
         // Inicialización de bloques
         void *init_bloques = calloc(config.block_size, config.block_count);
         if (init_bloques == NULL) {
@@ -148,7 +148,7 @@ bool inicializar_bitmap_en_archivo(int fd) {
     return true;
 }
 
-void *enlazar_archivo(FILE *fd, int tam_archivo) {    
+void *enlazar_archivo(int fd, int tam_archivo) {    
     void *map = mmap(NULL, tam_archivo, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (map == MAP_FAILED) {
@@ -201,7 +201,7 @@ bool crear_archivo(char* nombre){
     }
 
     // Contenido inicial del archivo
-    const char* contenido_inicial[100];
+    char* contenido_inicial[100];
     sprintf(contenido_inicial, "BLOQUE_INICIAL=%d\nTAMANIO_ARCHIVO=0\n", bloque);
     ssize_t bytes_escritos = write(fd, contenido_inicial, strlen(contenido_inicial));
 
