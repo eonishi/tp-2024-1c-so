@@ -14,6 +14,12 @@ extern t_log *logger;
 extern io_config config;
 extern int kernel_socket;
 
+typedef struct 
+{
+    char* nombre;
+    t_config* config;
+} fcb;
+
 bool inicializar_filesystem();
 void inicializar_bloques();
 void inicializar_bitmap();
@@ -32,10 +38,11 @@ void imprimir_bitmap();
 
 bool truncar_archivo(char* nombre, int size);
 
-bool hay_bloques_contiguos_para_extender(int bloques_necesarios);
+bool hay_bloques_contiguos_para_extender(int bloque_inicial, int cantidad_bloques_actuales, int bloques_necesarios);
 bool hay_bloques_libres_suficientes(int bloques_necesarios);
 
-void asignar_rango_de_bloques_bitmap(int desde, int hasta);
+void asignar_bloques_bitmap_por_rango(int desde, int hasta);
+void liberar_bloques_bitmap_por_rango(int desde, int hasta);
 
 
 #endif

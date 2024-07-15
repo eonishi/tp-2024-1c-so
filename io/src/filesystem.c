@@ -3,10 +3,12 @@
 static void *BLOQUES;
 static t_bitarray* BLOQ_BITMAP;
 int tam_filesystem = 0;
+t_list* fcb_list;
 
 // ---- Init FS --------------------------//
 bool inicializar_filesystem(){
     tam_filesystem = config.block_count * config.block_size;
+    fcb_list = list_create();
 
     inicializar_bloques();
     inicializar_bitmap();
@@ -213,6 +215,19 @@ bool crear_archivo(char* nombre){
 
     close(fd);
 
+    t_config* config_loader = config_create(nombre);
+
+    if(config_loader == NULL) {
+        log_error(logger, "No se encontro el archivo: [%s]", nombre);
+        exit(EXIT_FAILURE);
+    }
+
+    fcb* new_fcb = (fcb*)malloc(sizeof(fcb));
+    new_fcb->nombre = nombre;
+    new_fcb->config = config_loader;
+
+    list_add(fcb_list, new_fcb);
+
     return true;
 }
 
@@ -240,6 +255,10 @@ int buscar_bloque_libre(){
 }
 // -----------------------------------------------//
 
+char* nombre_aux;
+bool condicion_por_nombre(void* file_control_block){
+    return strcmp(((fcb*)file_control_block)->nombre, nombre_aux) == 0;
+}
 
 // ---- Truncate --------------------------//
 bool truncar_archivo(char* nombre, int new_size){
@@ -252,7 +271,16 @@ bool truncar_archivo(char* nombre, int new_size){
         return false;
     }
 
-    t_config* config_loader = config_create(nombre);
+    log_info(logger, "Cantidad de archivos en fcb_list: [%d]", fcb_list->elements_count);
+
+
+    nombre_aux = nombre;
+    fcb* file_control_block = (fcb*) list_find(fcb_list, condicion_por_nombre);
+
+    log_info(logger, "Archivo encontrado en fcb_list: [%s]", file_control_block->nombre);
+
+
+    t_config* config_loader = file_control_block->config;
 
     if(config_loader == NULL) {
         log_error(logger, "No se encontro el archivo: [%s]", nombre);
@@ -272,7 +300,7 @@ bool truncar_archivo(char* nombre, int new_size){
     if(new_size > tam_archivo){
         int bloques_necesarios = bloques_a_ocupar - bloques_actuales_ocupados;
 
-        if(!hay_bloques_contiguos_para_extender(bloques_necesarios)){
+        if(!hay_bloques_contiguos_para_extender(bloque_inicial, bloques_actuales_ocupados, bloques_necesarios)){
             log_info(logger, "No hay bloques contiguos suficientes.");
 
             if(!hay_bloques_libres_suficientes(bloques_necesarios)){
@@ -283,7 +311,9 @@ bool truncar_archivo(char* nombre, int new_size){
             }
 
             // Retiramos archivo del bitmap
+            liberar_bloques_bitmap_por_rango(bloque_inicial, bloque_inicial + (bloques_actuales_ocupados-1));
             // Compactamos bitmap
+            compactar();
             // Insertamos archivo en bitmap
             // Guardamos bitmap
             bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
@@ -301,27 +331,56 @@ bool truncar_archivo(char* nombre, int new_size){
     config_set_value(config_loader, "BLOQUE_INICIAL", bloque_inicial_char);
     config_save(config_loader);
     // Actualizamos bitmap
-    asignar_rango_de_bloques_bitmap(bloque_inicial, bloques_a_ocupar);
+    asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
+
+    log_info(logger, "Final truncate: TAMANIO_ARCHIVO: [%d]", config_get_int_value(config_loader, "TAMANIO_ARCHIVO"));
 
     close(fd);
 
     return true;
 }
 
-void asignar_rango_de_bloques_bitmap(int desde, int hasta){
+void asignar_bloques_bitmap_por_rango(int desde, int hasta){
     for(int i = desde; i < hasta; i++ ){
         bitarray_set_bit(BLOQ_BITMAP, i);
     }    
 }
 
-bool hay_bloques_contiguos_para_extender(int bloques_necesarios){
-    // TODO implementar
+bool hay_bloques_contiguos_para_extender(int bloque_inicial, int cantidad_bloques_actuales, int bloques_necesarios){
+    // Ejemplo: 0 (bloque_inicial) + 2 (cantidad_bloques_actuales) -> Ocupa el 0 y 1, y el 2 es el siguiente;
+    int siguiente_bloque = (bloque_inicial + cantidad_bloques_actuales); 
+
+    for(int i = siguiente_bloque ; i < (siguiente_bloque + bloques_necesarios); i++){
+        if(bitarray_test_bit(BLOQ_BITMAP, i)) // Si alguno está ocupado, retorno false;
+            return false;
+    }
+
     return true;
 }
 
 bool hay_bloques_libres_suficientes(int bloques_necesarios){
-    // TODO implementar
-    return true;
+    int libres = 0;
+    for(int i = 0 ; i < (config.block_count); i++){
+        if(!bitarray_test_bit(BLOQ_BITMAP, i)) 
+            libres++;
+        if(libres == bloques_necesarios){
+            return true;
+        }
+    }
+
+ 
+    return false;
+}
+
+void liberar_bloques_bitmap_por_rango(int desde, int hasta){
+    for(int i = desde; i <= hasta; i++){
+        bitarray_clean_bit(BLOQ_BITMAP, i);
+    }
+}
+
+void compactar(){
+    log_info(logger, "Compactar() falta implementarlo");
+    // Pero podemos volver a leer los archivos
 }
 // -----------------------------------------------//
 
