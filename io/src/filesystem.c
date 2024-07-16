@@ -1,6 +1,5 @@
 #include "../include/filesystem.h"
 
-// ---- Init FS --------------------------//
 bool inicializar_filesystem(){
     inicializar_lista_fcb();
     inicializar_bloques();
@@ -8,7 +7,6 @@ bool inicializar_filesystem(){
     return true;
 }
 
-// ---- CREATE --------------------------//
 bool crear_archivo(char* nombre){
     int fd = open(nombre, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
@@ -47,19 +45,11 @@ bool crear_archivo(char* nombre){
         exit(EXIT_FAILURE);
     }
 
-    // Agregar archivo a lista_fcb
-    fcb* new_fcb = (fcb*)malloc(sizeof(fcb));
-    new_fcb->nombre = nombre;
-    new_fcb->config = config_loader;
-
-    crear_fcb(new_fcb);
-    // --
+    crear_fcb(nombre, config_loader);
 
     return true;
 }
-// -----------------------------------------------//
 
-// ---- Truncate --------------------------//
 bool truncar_archivo(char* nombre, int new_size){
     log_info(logger, "Entro a funcion truncar_archivo... size:[%d]", new_size);
 
@@ -82,9 +72,9 @@ bool truncar_archivo(char* nombre, int new_size){
     int bloques_a_ocupar = calcular_bloques_a_ocupar(new_size); 
     int bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
     int tam_archivo = config_get_int_value(config_loader, "TAMANIO_ARCHIVO");
-    int bloques_actuales_ocupados = (tam_archivo == 0) ? 1 : tam_archivo/8;
-
+    
     if(new_size > tam_archivo){
+        int bloques_actuales_ocupados = (tam_archivo == 0) ? 1 : tam_archivo/8;
         int bloques_necesarios = bloques_a_ocupar - bloques_actuales_ocupados;
 
         if(!hay_bloques_contiguos_para_extender(bloque_inicial, bloques_actuales_ocupados, bloques_necesarios)){
@@ -96,7 +86,6 @@ bool truncar_archivo(char* nombre, int new_size){
                 close(fd);
                 return false;
             }
-
 
             eliminar_fcb_por_nombre(nombre);
             compactar();
@@ -114,21 +103,17 @@ bool truncar_archivo(char* nombre, int new_size){
     // Actualizamos bitmap
     asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
 
-    log_info(logger, "Final truncate: TAMANIO_ARCHIVO: [%d]", config_get_int_value(config_loader, "TAMANIO_ARCHIVO"));
-
     close(fd);
 
     return true;
 }
 
-
-
 bool hay_bloques_contiguos_para_extender(int bloque_inicial, int cantidad_bloques_actuales, int bloques_necesarios){
     // Ejemplo: 0 (bloque_inicial) + 2 (cantidad_bloques_actuales) -> Ocupa el 0 y 1, y el 2 es el siguiente;
-    int siguiente_bloque = (bloque_inicial + cantidad_bloques_actuales); 
+    int bloque_siguiente = (bloque_inicial + cantidad_bloques_actuales); 
 
-    for(int i = siguiente_bloque ; i < (siguiente_bloque + bloques_necesarios); i++){
-        if(esta_bloque_ocupado(i)) // Si alguno está ocupado, retorno false;
+    for(int i = bloque_siguiente ; i < (bloque_siguiente + bloques_necesarios); i++){
+        if(esta_bloque_ocupado(i)) 
             return false;
     }
 
@@ -149,13 +134,9 @@ bool hay_bloques_libres_suficientes(int bloques_necesarios){
     return false;
 }
 
-
-
 void compactar(){
-    log_info(logger, "liberar_bitmap_de_bloques...");
     liberar_bitmap_de_bloques();
-    // Liberar bloques??
-
+    // TODO: Sera necesario Liberar bloques??
     // Volvemos a insertar secuencialmente los archivos
     for(int i = 0; i < cantidad_de_fcbs(); i++){
         fcb* fcb = obtener_fcb(i);
@@ -163,27 +144,19 @@ void compactar(){
         log_info(logger, "Volviendo a guardar archivo: [%s]", fcb->nombre);
         reubicar_archivo_desde_fcb(fcb);
     }
-    // Reorganizar bloques?    
-}
-
-void reubicar_archivo_desde_fcb(fcb* fcb){
-    int bloque_inicial = asignar_bloque();
-    int tamanio_archivo = config_get_int_value(fcb->config, "TAMANIO_ARCHIVO");
-    int bloques_a_ocupar = calcular_bloques_a_ocupar(tamanio_archivo);
-
-    asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
-    set_campo_de_archivo("BLOQUE_INICIAL", bloque_inicial, fcb->config);
-    config_save(fcb->config);
+    // TODO: Sera necesario reorganizar bloques también??
 }
 
 // -----------------------------------------------//
 
-// Sincronizar los cambios al archivo // TODO esto se puede sacar me parece
+// TODO: En teoría hay que sincronizar... pero cuando???
+// Sincronizar los cambios al archivo // 
 //if (msync(map, tam_archivo, MS_SYNC) == -1) {
     //  log_info(logger, "Error al sincronizar el archivo");
     //return NULL;
 //}
 
+// TODO: Y también desmapear...
 // Desmapear el archivo
 //if (munmap(BLOQUES, tam_filesystem) == -1) {
     //  log_info(logger, "Error al desmapear el archivo");

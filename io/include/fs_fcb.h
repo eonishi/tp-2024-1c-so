@@ -16,10 +16,11 @@ typedef struct
     t_config* config;
 } fcb;
 
-// Utils fcb_list
+
 void inicializar_lista_fcb();
+
 int cantidad_de_fcbs();
-void crear_fcb(fcb* fcb);
+void crear_fcb(char* nombre, t_config* config_loader);
 fcb* obtener_fcb(int index);
 fcb* obtener_fcb_por_nombre(char* nombre);
 void eliminar_fcb_por_nombre(char* nombre);

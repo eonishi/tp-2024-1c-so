@@ -229,4 +229,14 @@ int calcular_bloques_a_ocupar(int size){
 }
 
 
+void reubicar_archivo_desde_fcb(fcb* fcb){
+    int bloque_inicial = asignar_bloque();
+    int tamanio_archivo = config_get_int_value(fcb->config, "TAMANIO_ARCHIVO");
+    int bloques_a_ocupar = calcular_bloques_a_ocupar(tamanio_archivo);
+
+    asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
+    set_campo_de_archivo("BLOQUE_INICIAL", bloque_inicial, fcb->config);
+    config_save(fcb->config);
+}
+
 // -----------------------------------------------//

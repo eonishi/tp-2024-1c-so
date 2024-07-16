@@ -6,8 +6,12 @@ void inicializar_lista_fcb(){
     fcb_list = list_create();
 }
 
-void crear_fcb(fcb* fcb){
-    list_add(fcb_list, fcb);
+void crear_fcb(char* nombre, t_config* config_loader){
+    fcb* new_fcb = (fcb*)malloc(sizeof(fcb));
+    new_fcb->nombre = nombre;
+    new_fcb->config = config_loader;
+
+    list_add(fcb_list, new_fcb);
 }
 
 fcb* obtener_fcb(int index){

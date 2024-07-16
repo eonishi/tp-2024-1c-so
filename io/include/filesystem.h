@@ -20,7 +20,6 @@ bool crear_archivo(char* nombre);
 bool truncar_archivo(char* nombre, int size);
 void guardar_archivo_desde_fcb(fcb* fcb);
 
-
 // Bloques
 bool hay_bloques_contiguos_para_extender(int bloque_inicial, int cantidad_bloques_actuales, int bloques_necesarios);
 bool hay_bloques_libres_suficientes(int bloques_necesarios);

@@ -23,17 +23,23 @@ bool inicializar_bitmap_en_archivo(int fd);
 
 // Utils
 void imprimir_bitmap();
-int asignar_bloque();
+
 int buscar_bloque_libre();
+int asignar_bloque();
+void asignar_bloques_bitmap_por_rango(int desde, int hasta);
+
+bool esta_bloque_ocupado(int index);
+int calcular_bloques_a_ocupar(int size);
+
+void liberar_bitmap_de_bloques();
+void liberar_bloques_bitmap_por_rango(int desde, int hasta);
+
+void reubicar_archivo_desde_fcb(fcb* fcb);
 
 //
 bool archivo_esta_vacio(int fd);
 void *enlazar_archivo(int fd, int tam_archivo);
-void asignar_bloques_bitmap_por_rango(int desde, int hasta);
-void liberar_bitmap_de_bloques();
-void liberar_bloques_bitmap_por_rango(int desde, int hasta);
-bool esta_bloque_ocupado(int index);
-int calcular_bloques_a_ocupar(int size);
+
 
 
 
