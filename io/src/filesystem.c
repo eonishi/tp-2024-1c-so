@@ -315,14 +315,11 @@ bool truncar_archivo(char* nombre, int new_size){
                 return false;
             }
 
-            // Retiramos el archivo de FCB_LIST
-            log_info(logger, "Eliminamos FCB");
+
             eliminar_fcb_por_nombre(nombre);
-            log_info(logger, "Compactamos");
             compactar();
-            log_info(logger, "Guardamos archivo");
-            guardar_archivo_desde_fcb(file_control_block);
-            log_info(logger, "Despues guardar_archivo_desde_fcb");
+            reubicar_archivo_desde_fcb(file_control_block);
+            
             bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
         }
     }
@@ -405,12 +402,12 @@ void compactar(){
         fcb* fcb = list_get(fcb_list, i);
 
         log_info(logger, "Volviendo a guardar archivo: [%s]", fcb->nombre);
-        guardar_archivo_desde_fcb(fcb);
+        reubicar_archivo_desde_fcb(fcb);
     }
     // Reorganizar bloques?    
 }
 
-void guardar_archivo_desde_fcb(fcb* fcb){
+void reubicar_archivo_desde_fcb(fcb* fcb){
     int bloque_inicial = asignar_bloque();
     int tamanio_archivo = config_get_int_value(fcb->config, "TAMANIO_ARCHIVO");
     int bloques_a_ocupar = calcular_bloques_a_ocupar(tamanio_archivo);
