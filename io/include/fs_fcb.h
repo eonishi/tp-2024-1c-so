@@ -2,7 +2,10 @@
 #define IO_FS_FCB_H_
 
 #include <commons/config.h>
+#include <commons/log.h>
+#include <stdlib.h>
 #include <string.h>
+#include <commons/bitarray.h>
 
 
 extern t_log *logger;

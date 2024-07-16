@@ -1,4 +1,4 @@
-#include "../include/filesystem.h"
+#include "../include/fs_fcb.h"
 
 t_list* fcb_list;
 
@@ -19,6 +19,7 @@ int cantidad_de_fcbs(){
 }
 
 char* nombre_aux;
+
 bool condicion_por_nombre(void* file_control_block){
     return strcmp(((fcb*)file_control_block)->nombre, nombre_aux) == 0;
 }

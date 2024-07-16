@@ -36,6 +36,10 @@ void io_dialfs() {
 
                 enviar_status(FIN_EJECUCION_IO, kernel_socket);
             break;
+            case -1:
+                log_error(logger, "Se desconecto el kernel");
+                exit(EXIT_FAILURE);
+            break;
             default:
                 log_error(logger, "Codigo de operacion no reconocido");
                 break;
