@@ -1,8 +1,6 @@
 #include "../include/io_dialfs.h"
 
 void io_dialfs() {
-    inicializar_filesystem();
-
     log_info(logger, "Hola, soy IO DIALFS :)");
 
     while (kernel_socket != -1){
