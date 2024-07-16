@@ -10,7 +10,7 @@ void *iniciar_planificacion_largo(){
             
 
             pcb* newPcb = pop_cola_new();
-            newPcb->estado = READY;
+            //newPcb->estado = READY; //el cambio de estado se maneja dentro de las funciones push
 
             push_cola_ready(newPcb);
 

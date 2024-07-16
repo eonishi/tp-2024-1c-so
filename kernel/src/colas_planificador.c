@@ -46,6 +46,7 @@ void imprimir_cola(char* nombre, t_queue* cola){
 }
 
 void push_cola_new(pcb* pcb){
+    log_info(logger,"PID: %d - Estado Anterior:' ' - Estado Actual: NEW", pcb->pid);
     pcb->estado = NEW;
     queue_push(cola_new, pcb);
 }
@@ -55,6 +56,7 @@ pcb* pop_cola_new(){
 }
 
 void push_cola_ready(pcb* pcb){
+    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: READY", pcb->pid, pcb->estado);
     pcb->estado = READY;
     queue_push(cola_ready, pcb);
 }
@@ -64,6 +66,7 @@ pcb* pop_cola_ready(){
 }
 
 void push_cola_blocked(pcb* pcb){
+    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: BLOCKED", pcb->pid, pcb->estado);
     pcb->estado = BLOCKED;
     queue_push(cola_blocked, pcb);
 }
@@ -73,6 +76,7 @@ pcb* pop_cola_blocked(){
 }
 
 void push_cola_exit(pcb* pcb){
+    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: EXIT", pcb->pid, pcb->estado);
     pcb->estado = EXIT;
     queue_push(cola_exit, pcb);
 
@@ -83,6 +87,7 @@ void push_cola_exit(pcb* pcb){
 }
 
 void push_cola_execute(pcb* pcb){
+    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: EXECUTE", pcb->pid, pcb->estado);
     pcb->estado = EXECUTE;
     queue_push(cola_execute, pcb);
 }
@@ -92,6 +97,7 @@ pcb* pop_cola_execute(){
 }
 
 void push_cola_ready_priority(pcb* pcb, int quantum_pendiente){
+    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: READY PRIORIDAD", pcb->pid, pcb->estado);
     pcb->estado = READY;
     elemVRR element = {.pcbVRR = pcb, .quantum_usado = quantum_pendiente};
     queue_push(cola_readyVRR, &element);
