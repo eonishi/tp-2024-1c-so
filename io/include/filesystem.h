@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "configuracion.h"
+#include "fs_fcb.h"
 #include <commons/bitarray.h>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -13,12 +14,6 @@
 extern t_log *logger;
 extern io_config config;
 extern int kernel_socket;
-
-typedef struct 
-{
-    char* nombre;
-    t_config* config;
-} fcb;
 
 // Init
 bool inicializar_filesystem();
@@ -35,7 +30,6 @@ bool truncar_archivo(char* nombre, int size);
 void guardar_archivo_desde_fcb(fcb* fcb);
 
 
-
 // Bloques
 int asignar_bloque();
 int buscar_bloque_libre();
@@ -47,11 +41,5 @@ void liberar_bloques_bitmap_por_rango(int desde, int hasta);
 
 // Utiles
 void imprimir_bitmap();
-
-// Utils fcb_list
-fcb* obtener_fcb_por_nombre(char* nombre);
-void eliminar_fcb_por_nombre(char* nombre);
-bool condicion_por_nombre(void* file_control_block);
-void set_campo_de_archivo(char* campo , int valor, t_config* config_loader);
 
 #endif

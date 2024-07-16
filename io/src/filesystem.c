@@ -3,13 +3,12 @@
 static void *BLOQUES;
 static t_bitarray* BLOQ_BITMAP;
 int tam_filesystem = 0;
-t_list* fcb_list;
 
 // ---- Init FS --------------------------//
 bool inicializar_filesystem(){
     tam_filesystem = config.block_count * config.block_size;
-    fcb_list = list_create();
 
+    inicializar_lista_fcb();
     inicializar_bloques();
     inicializar_bitmap();
 
@@ -225,7 +224,7 @@ bool crear_archivo(char* nombre){
     new_fcb->nombre = nombre;
     new_fcb->config = config_loader;
 
-    list_add(fcb_list, new_fcb);
+    crear_fcb(new_fcb);
     // --
 
     return true;
@@ -254,23 +253,6 @@ int buscar_bloque_libre(){
     return -1;
 }
 // -----------------------------------------------//
-
-char* nombre_aux;
-bool condicion_por_nombre(void* file_control_block){
-    return strcmp(((fcb*)file_control_block)->nombre, nombre_aux) == 0;
-}
-
-fcb* obtener_fcb_por_nombre(char* nombre){
-    nombre_aux = nombre;
-
-    return (fcb*) list_find(fcb_list, condicion_por_nombre);
-}
-
-void eliminar_fcb_por_nombre(char* nombre){
-    nombre_aux = nombre;
-    
-    list_remove_by_condition(fcb_list, condicion_por_nombre);
-}
 
 // ---- Truncate --------------------------//
 bool truncar_archivo(char* nombre, int new_size){
@@ -319,7 +301,7 @@ bool truncar_archivo(char* nombre, int new_size){
             eliminar_fcb_por_nombre(nombre);
             compactar();
             reubicar_archivo_desde_fcb(file_control_block);
-            
+
             bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
         }
     }
@@ -398,8 +380,8 @@ void compactar(){
     // Liberar bloques??
 
     // Volvemos a insertar secuencialmente los archivos
-    for(int i = 0; i < fcb_list->elements_count; i++){
-        fcb* fcb = list_get(fcb_list, i);
+    for(int i = 0; i < cantidad_de_fcbs(); i++){
+        fcb* fcb = obtener_fcb(i);
 
         log_info(logger, "Volviendo a guardar archivo: [%s]", fcb->nombre);
         reubicar_archivo_desde_fcb(fcb);
@@ -417,12 +399,6 @@ void reubicar_archivo_desde_fcb(fcb* fcb){
     config_save(fcb->config);
 }
 
-void set_campo_de_archivo(char* campo , int valor, t_config* config_loader){
-    char* valor_char[5];
-    sprintf(valor_char, "%d", valor);
-    config_set_value(config_loader, campo, valor_char);
-    config_save(config_loader);
-}
 // -----------------------------------------------//
 
 // Sincronizar los cambios al archivo // TODO esto se puede sacar me parece
