@@ -80,7 +80,6 @@ void inicializar_bitmap(){
     bloq_bitmap->bitarray = (char *)mapped_file + sizeof(t_bitarray); // Convertirmos el puntero generico a (char *) para poder "saltear" los primeros 16 bytes
     BLOQ_BITMAP = bloq_bitmap;
 
-    
     close(fd);
 }
 
@@ -158,7 +157,6 @@ void *enlazar_archivo(int fd, int tam_archivo) {
         return NULL;
     }
 
-
     return map;
 }
 // -----------------------------------------------//
@@ -193,7 +191,7 @@ bool crear_archivo(char* nombre){
         return false;
     }
 
-    int bloque = asignar_bloque(fd);
+    int bloque = asignar_bloque();
 
     if (bloque == -1){
         log_error(logger, "No se puedo asignar un bloque");
@@ -222,16 +220,18 @@ bool crear_archivo(char* nombre){
         exit(EXIT_FAILURE);
     }
 
+    // Agregar archivo a lista_fcb
     fcb* new_fcb = (fcb*)malloc(sizeof(fcb));
     new_fcb->nombre = nombre;
     new_fcb->config = config_loader;
 
     list_add(fcb_list, new_fcb);
+    // --
 
     return true;
 }
 
-int asignar_bloque(int fd){
+int asignar_bloque(){
     int bloque = buscar_bloque_libre();
 
     if(bloque == -1){
@@ -260,6 +260,18 @@ bool condicion_por_nombre(void* file_control_block){
     return strcmp(((fcb*)file_control_block)->nombre, nombre_aux) == 0;
 }
 
+fcb* obtener_fcb_por_nombre(char* nombre){
+    nombre_aux = nombre;
+
+    return (fcb*) list_find(fcb_list, condicion_por_nombre);
+}
+
+void eliminar_fcb_por_nombre(char* nombre){
+    nombre_aux = nombre;
+    
+    list_remove_by_condition(fcb_list, condicion_por_nombre);
+}
+
 // ---- Truncate --------------------------//
 bool truncar_archivo(char* nombre, int new_size){
     log_info(logger, "Entro a funcion truncar_archivo... size:[%d]", new_size);
@@ -271,14 +283,7 @@ bool truncar_archivo(char* nombre, int new_size){
         return false;
     }
 
-    log_info(logger, "Cantidad de archivos en fcb_list: [%d]", fcb_list->elements_count);
-
-
-    nombre_aux = nombre;
-    fcb* file_control_block = (fcb*) list_find(fcb_list, condicion_por_nombre);
-
-    log_info(logger, "Archivo encontrado en fcb_list: [%s]", file_control_block->nombre);
-
+    fcb* file_control_block = obtener_fcb_por_nombre(nombre);
 
     t_config* config_loader = file_control_block->config;
 
@@ -287,7 +292,7 @@ bool truncar_archivo(char* nombre, int new_size){
         exit(EXIT_FAILURE);
     }
 
-    int bloques_a_ocupar = (new_size + config.block_size - 1) / config.block_size; // Redondeo hacia arriba
+    int bloques_a_ocupar = calcular_bloques_a_ocupar(new_size); 
     int bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
     int tam_archivo = config_get_int_value(config_loader, "TAMANIO_ARCHIVO");
     int bloques_actuales_ocupados = (tam_archivo == 0) ? 1 : tam_archivo/8;
@@ -310,12 +315,14 @@ bool truncar_archivo(char* nombre, int new_size){
                 return false;
             }
 
-            // Retiramos archivo del bitmap
-            liberar_bloques_bitmap_por_rango(bloque_inicial, bloque_inicial + (bloques_actuales_ocupados-1));
-            // Compactamos bitmap
+            // Retiramos el archivo de FCB_LIST
+            log_info(logger, "Eliminamos FCB");
+            eliminar_fcb_por_nombre(nombre);
+            log_info(logger, "Compactamos");
             compactar();
-            // Insertamos archivo en bitmap
-            // Guardamos bitmap
+            log_info(logger, "Guardamos archivo");
+            guardar_archivo_desde_fcb(file_control_block);
+            log_info(logger, "Despues guardar_archivo_desde_fcb");
             bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
         }
     }
@@ -323,13 +330,8 @@ bool truncar_archivo(char* nombre, int new_size){
     ftruncate(fd, new_size);
 
     // Actualizamos properties del archivo
-    char* new_size_char[5];
-    sprintf(new_size_char, "%d", new_size);
-    config_set_value(config_loader, "TAMANIO_ARCHIVO", new_size_char);
-    char* bloque_inicial_char[5];
-    sprintf(bloque_inicial_char, "%d", bloque_inicial);
-    config_set_value(config_loader, "BLOQUE_INICIAL", bloque_inicial_char);
-    config_save(config_loader);
+    set_campo_de_archivo("TAMANIO_ARCHIVO", new_size, config_loader);
+    set_campo_de_archivo("BLOQUE_INICIAL", bloque_inicial, config_loader);
     // Actualizamos bitmap
     asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
 
@@ -338,6 +340,14 @@ bool truncar_archivo(char* nombre, int new_size){
     close(fd);
 
     return true;
+}
+
+
+int calcular_bloques_a_ocupar(int size){
+    if(size == 0)
+        return 1;
+
+    return (size + config.block_size - 1) / config.block_size;// Redondeo hacia arriba
 }
 
 void asignar_bloques_bitmap_por_rango(int desde, int hasta){
@@ -378,9 +388,43 @@ void liberar_bloques_bitmap_por_rango(int desde, int hasta){
     }
 }
 
+void liberar_bitmap_de_bloques(){
+    for(int i = 0; i <= config.block_count; i++){
+        bitarray_clean_bit(BLOQ_BITMAP, i);
+    }
+}
+
+
 void compactar(){
-    log_info(logger, "Compactar() falta implementarlo");
-    // Pero podemos volver a leer los archivos
+    log_info(logger, "liberar_bitmap_de_bloques...");
+    liberar_bitmap_de_bloques();
+    // Liberar bloques??
+
+    // Volvemos a insertar secuencialmente los archivos
+    for(int i = 0; i < fcb_list->elements_count; i++){
+        fcb* fcb = list_get(fcb_list, i);
+
+        log_info(logger, "Volviendo a guardar archivo: [%s]", fcb->nombre);
+        guardar_archivo_desde_fcb(fcb);
+    }
+    // Reorganizar bloques?    
+}
+
+void guardar_archivo_desde_fcb(fcb* fcb){
+    int bloque_inicial = asignar_bloque();
+    int tamanio_archivo = config_get_int_value(fcb->config, "TAMANIO_ARCHIVO");
+    int bloques_a_ocupar = calcular_bloques_a_ocupar(tamanio_archivo);
+
+    asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
+    set_campo_de_archivo("BLOQUE_INICIAL", bloque_inicial, fcb->config);
+    config_save(fcb->config);
+}
+
+void set_campo_de_archivo(char* campo , int valor, t_config* config_loader){
+    char* valor_char[5];
+    sprintf(valor_char, "%d", valor);
+    config_set_value(config_loader, campo, valor_char);
+    config_save(config_loader);
 }
 // -----------------------------------------------//
 

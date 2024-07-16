@@ -31,10 +31,14 @@ bool archivo_esta_vacio(int fd);
 void *enlazar_archivo(int fd, int tam_archivo);
 
 bool crear_archivo(char* nombre);
-int asignar_bloque(int fd);
+int asignar_bloque();
 int buscar_bloque_libre();
+int calcular_bloques_a_ocupar(int size);
+void guardar_archivo_desde_fcb(fcb* fcb);
 
 void imprimir_bitmap();
+
+void set_campo_de_archivo(char* campo , int valor, t_config* config_loader);
 
 bool truncar_archivo(char* nombre, int size);
 
@@ -44,5 +48,9 @@ bool hay_bloques_libres_suficientes(int bloques_necesarios);
 void asignar_bloques_bitmap_por_rango(int desde, int hasta);
 void liberar_bloques_bitmap_por_rango(int desde, int hasta);
 
+// Utils fcb_list
+fcb* obtener_fcb_por_nombre(char* nombre);
+void eliminar_fcb_por_nombre(char* nombre);
+bool condicion_por_nombre(void* file_control_block);
 
 #endif
