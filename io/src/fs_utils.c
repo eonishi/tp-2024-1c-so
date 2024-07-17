@@ -16,10 +16,11 @@ char* concat_chars(char* str1, char* str2){
 }
 
 int fs_open(const char* filename, int flags, mode_t mode){
+    // TODO hacer funcionar fullpath home/utnso/dialfs
     char* path = concat_chars(config.path_base_dialfs, filename);
-    log_info(logger, "Abriendo archivo: [%s]", path);
+    log_info(logger, "Abriendo archivo: [%s]", filename);
 
-    int fd = open(path, flags, mode);
+    int fd = open(filename, flags, mode);
 
     // free(path);
 
