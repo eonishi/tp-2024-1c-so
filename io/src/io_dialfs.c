@@ -34,6 +34,18 @@ void io_dialfs() {
 
                 enviar_status(FIN_EJECUCION_IO, kernel_socket);
             break;
+            case ELIMINAR_ARCHIVO_FS:
+                log_info(logger, "Solicitud IO_FS_DELETE recibida");
+
+                char* nombre_archivo_a_eliminar = recibir_mensaje(kernel_socket);
+
+                if(!eliminar_archivo(nombre_archivo_a_eliminar)){
+                    log_error(logger, "No se pudo crear el archivo");
+                    // TODO: Enviar respuesta de error?
+                }
+
+                enviar_status(FIN_EJECUCION_IO, kernel_socket);
+            break;
             case -1:
                 log_error(logger, "Se desconecto el kernel");
                 exit(EXIT_FAILURE);

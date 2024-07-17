@@ -50,6 +50,20 @@ bool crear_archivo(char* nombre){
     return true;
 }
 
+bool eliminar_archivo(char* nombre) {
+    eliminar_bloques_ocupados_por_archivo(nombre);
+
+    if (remove(nombre) == 0) {      
+        eliminar_fcb_por_nombre(nombre);
+
+        return true; 
+    } else {
+        log_error(logger, "Error al eliminar el archivo");
+
+        return false; // Falló al intentar eliminar el archivo
+    }
+}
+
 bool truncar_archivo(char* nombre, int new_size){
     log_info(logger, "Entro a funcion truncar_archivo... size:[%d]", new_size);
 
@@ -88,8 +102,12 @@ bool truncar_archivo(char* nombre, int new_size){
             }
 
             eliminar_fcb_por_nombre(nombre);
+            
             compactar();
+
             reubicar_archivo_desde_fcb(file_control_block);
+            insertar_fcb(file_control_block);
+
 
             bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
         }
@@ -104,6 +122,10 @@ bool truncar_archivo(char* nombre, int new_size){
     asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
 
     close(fd);
+
+    
+    log_info(logger, "Final truncat");
+    log_info(logger, "file_control_block->config->path: [%s]", file_control_block->config->path);
 
     return true;
 }

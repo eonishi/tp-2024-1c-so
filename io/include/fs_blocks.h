@@ -28,6 +28,7 @@ void imprimir_bitmap();
 int buscar_bloque_libre();
 int asignar_bloque();
 void asignar_bloques_bitmap_por_rango(int desde, int hasta);
+void eliminar_bloques_ocupados_por_archivo(char* nombre);
 
 bool esta_bloque_ocupado(int index);
 int calcular_bloques_a_ocupar(int size);

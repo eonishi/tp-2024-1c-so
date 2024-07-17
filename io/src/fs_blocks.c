@@ -210,6 +210,22 @@ void liberar_bloques_bitmap_por_rango(int desde, int hasta){
     }
 }
 
+void eliminar_bloques_ocupados_por_archivo(char* nombre){
+    fcb* fcb = obtener_fcb_por_nombre(nombre);
+    int bloque_inicial = config_get_int_value(fcb->config, "BLOQUE_INICIAL");
+    int tam_archivo = config_get_int_value(fcb->config, "TAMANIO_ARCHIVO");
+    int bloques_ocupados = calcular_bloques_a_ocupar(tam_archivo);
+
+    if(bloques_ocupados == 1){
+        bitarray_clean_bit(BLOQ_BITMAP, bloque_inicial);
+    }
+    else{
+        int bloque_final = (bloque_inicial + bloques_ocupados) - 1;
+
+        liberar_bloques_bitmap_por_rango(bloque_inicial, bloque_final);
+    }
+}
+
 void liberar_bitmap_de_bloques(){
     for(int i = 0; i <= config.block_count; i++){
         bitarray_clean_bit(BLOQ_BITMAP, i);

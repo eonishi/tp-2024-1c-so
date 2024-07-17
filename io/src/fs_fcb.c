@@ -14,6 +14,10 @@ void crear_fcb(char* nombre, t_config* config_loader){
     list_add(fcb_list, new_fcb);
 }
 
+void insertar_fcb(fcb* fcb){
+    list_add(fcb_list, fcb);
+}
+
 fcb* obtener_fcb(int index){
     list_get(fcb_list, index);
 }

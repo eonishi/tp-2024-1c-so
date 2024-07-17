@@ -18,6 +18,7 @@ extern io_config config;
 extern int kernel_socket;
 
 bool crear_archivo(char* nombre);
+bool eliminar_archivo(char* nombre);
 bool truncar_archivo(char* nombre, int size);
 void guardar_archivo_desde_fcb(fcb* fcb);
 

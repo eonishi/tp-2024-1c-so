@@ -88,7 +88,7 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* pe
             break;
         case IO_FS_DELETE:
             file_name = instruc_io_tokenizadas[2];
-            enviar_mensaje(EJECUTAR_INSTRUCCION_IO, file_name, conexion_io->socket);
+            enviar_mensaje(ELIMINAR_ARCHIVO_FS, file_name, conexion_io->socket);
             break;
         case IO_FS_TRUNCATE:
             file_name = instruc_io_tokenizadas[2];

@@ -21,6 +21,7 @@ void inicializar_lista_fcb();
 
 int cantidad_de_fcbs();
 void crear_fcb(char* nombre, t_config* config_loader);
+void insertar_fcb(fcb* fcb);
 fcb* obtener_fcb(int index);
 fcb* obtener_fcb_por_nombre(char* nombre);
 void eliminar_fcb_por_nombre(char* nombre);
