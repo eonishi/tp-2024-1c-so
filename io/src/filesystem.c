@@ -8,7 +8,7 @@ bool inicializar_filesystem(){
 }
 
 bool crear_archivo(char* nombre){
-    int fd = open(nombre, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    int fd = fs_open(nombre, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
     //TODO: VER SI AGREGAR VALIDACION DE SI YA EXISTE EL ARCHIVO
     if (fd == -1) {
@@ -53,7 +53,7 @@ bool crear_archivo(char* nombre){
 bool truncar_archivo(char* nombre, int new_size){
     log_info(logger, "Entro a funcion truncar_archivo... size:[%d]", new_size);
 
-    int fd = open(nombre, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    int fd = fs_open(nombre, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
     if (fd == -1) {
         log_error(logger, "Error al leer el archivo: [%s]", nombre);

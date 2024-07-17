@@ -7,6 +7,7 @@
 #include "configuracion.h"
 #include "fs_fcb.h"
 #include "fs_blocks.h"
+#include "fs_utils.h"
 #include <commons/bitarray.h>
 #include <sys/mman.h>
 #include <fcntl.h>

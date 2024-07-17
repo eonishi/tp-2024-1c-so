@@ -4,6 +4,7 @@ static void *BLOQUES;
 static t_bitarray* BLOQ_BITMAP;
 int tam_filesystem = 0;
 
+
 void inicializar_bloques(){
     tam_filesystem = config.block_count * config.block_size;
 
@@ -12,7 +13,7 @@ void inicializar_bloques(){
 }
 
 void inicializar_archivo_bloques(){
-    int fd = open("bloques.dat", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    int fd = fs_open("bloques.dat", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
     if (fd == -1) {
         log_error(logger, "Error al abrir/crear el archivo");
@@ -39,9 +40,7 @@ void inicializar_archivo_bloques(){
 }
 
 void inicializar_archivo_bitmap(){
-    log_info(logger, "inicializar_bitmap()...");
-
-    int fd = open("bitmap.dat", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    int fd = fs_open("bitmap.dat", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
     if (fd == -1) {
         log_error(logger, "Error al abrir/crear el archivo bitmap.dat");
@@ -51,7 +50,7 @@ void inicializar_archivo_bitmap(){
     if (archivo_esta_vacio(fd)) {
         log_info(logger, "El bitmap está vacio");
         if (!inicializar_bitmap_en_archivo(fd)) {
-            log_error(logger, "Error al intentar inicializar los bloques en el archivo");
+            log_error(logger, "Error al intentar inicializar el bitmap de bloques en el archivo");
             close(fd);
             exit(EXIT_FAILURE);
         }
