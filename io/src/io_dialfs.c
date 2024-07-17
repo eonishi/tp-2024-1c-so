@@ -1,7 +1,7 @@
 #include "../include/io_dialfs.h"
 
 void io_dialfs() {
-    log_info(logger, "Hola, soy IO DIALFS :)");
+    log_info(logger, "IO DIALSFS iniciada");
 
     while (kernel_socket != -1){
         imprimir_bitmap();

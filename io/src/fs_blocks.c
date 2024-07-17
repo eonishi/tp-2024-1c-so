@@ -58,12 +58,11 @@ void inicializar_archivo_bitmap(){
     
     int bitmap_file_size = sizeof(t_bitarray) + config.block_count/8; // 32 bloques -> 32 bits -> ocupa 4 bytes 
 
-    log_info(logger, "bitmap_file_size = [%d]", bitmap_file_size);
     ftruncate(fd, bitmap_file_size);
     
     void* mapped_file = (t_bitarray*) enlazar_archivo(fd, bitmap_file_size);    
 
-    if(!BLOQ_BITMAP){
+    if(!mapped_file){
         log_error(logger, "No se pudo enlazar el archivo");        
     }
 
@@ -144,6 +143,7 @@ bool inicializar_bitmap_en_archivo(int fd) {
 }
 
 void *enlazar_archivo(int fd, int tam_archivo) {    
+    // Con MAP_SHARED se sincroniza automáticamente
     void *map = mmap(NULL, tam_archivo, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (map == MAP_FAILED) {

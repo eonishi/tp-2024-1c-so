@@ -65,8 +65,6 @@ bool eliminar_archivo(char* nombre) {
 }
 
 bool truncar_archivo(char* nombre, int new_size){
-    log_info(logger, "Entro a funcion truncar_archivo... size:[%d]", new_size);
-
     int fd = fs_open(nombre, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
     if (fd == -1) {
@@ -123,10 +121,6 @@ bool truncar_archivo(char* nombre, int new_size){
 
     close(fd);
 
-    
-    log_info(logger, "Final truncat");
-    log_info(logger, "file_control_block->config->path: [%s]", file_control_block->config->path);
-
     return true;
 }
 
@@ -163,7 +157,6 @@ void compactar(){
     for(int i = 0; i < cantidad_de_fcbs(); i++){
         fcb* fcb = obtener_fcb(i);
 
-        log_info(logger, "Volviendo a guardar archivo: [%s]", fcb->nombre);
         reubicar_archivo_desde_fcb(fcb);
     }
     // TODO: Sera necesario reorganizar bloques también??
@@ -171,14 +164,13 @@ void compactar(){
 
 // -----------------------------------------------//
 
-// TODO: En teoría hay que sincronizar... pero cuando???
 // Sincronizar los cambios al archivo // 
 //if (msync(map, tam_archivo, MS_SYNC) == -1) {
     //  log_info(logger, "Error al sincronizar el archivo");
     //return NULL;
 //}
 
-// TODO: Y también desmapear...
+// TODO: agregar desmapear...
 // Desmapear el archivo
 //if (munmap(BLOQUES, tam_filesystem) == -1) {
     //  log_info(logger, "Error al desmapear el archivo");
