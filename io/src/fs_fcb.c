@@ -4,6 +4,42 @@ t_list* fcb_list;
 
 void inicializar_lista_fcb(){
     fcb_list = list_create();
+    recuperar_archivos_existentes();
+}
+
+void recuperar_archivos_existentes() {
+    struct dirent* entry;
+    DIR* dir = fs_opendir();
+
+    if (dir == NULL) {
+        perror("No se puede abrir el directorio");
+        return;
+    }
+
+    int recuperados = 0;
+
+    while ((entry = readdir(dir)) != NULL) {
+        // Comprobar si el archivo tiene extensión .txt
+        if (strstr(entry->d_name, ".txt") != NULL) {
+            fcb* new_fcb = (fcb*)malloc(sizeof(fcb));
+            if (new_fcb == NULL) {
+                perror("Error al asignar memoria para fcb");
+                closedir(dir);
+                return;
+            }
+
+            new_fcb->nombre = strdup(entry->d_name); 
+            new_fcb->config = config_create(new_fcb->nombre); 
+
+            insertar_fcb(new_fcb);
+
+            recuperados++;
+        }
+    }
+
+    log_info(logger, "Archivos recuperados: [%d]", recuperados);
+
+    closedir(dir);
 }
 
 void crear_fcb(char* nombre, t_config* config_loader){

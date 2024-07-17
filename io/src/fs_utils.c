@@ -31,3 +31,15 @@ int fs_open(const char* filename, int flags, mode_t mode){
     return fd;
 }
 
+DIR* fs_opendir (){
+    // TODO: config.path_base_dialfs
+    DIR* dir = opendir(".");
+
+    if (dir == NULL) {
+        perror("No se puede abrir el directorio");
+        return;
+    }
+
+    return dir;
+}
+

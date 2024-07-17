@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <commons/bitarray.h>
+#include <dirent.h>
+#include "fs_utils.h"
 
 
 extern t_log *logger;
