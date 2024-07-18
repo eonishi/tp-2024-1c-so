@@ -99,8 +99,11 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* pe
             enviar_solicitud_truncar_archivo_fs(solicitud, conexion_io->socket);
 
             break;
-        case IO_FS_READ:
         case IO_FS_WRITE:
+            enviar_instruccion_io(instruc_io_tokenizadas, peticiones_memoria, conexion_io->socket);
+            
+            break;
+        case IO_FS_READ:
             log_error(logger, "Operacion no implementada");
             break;
         default:

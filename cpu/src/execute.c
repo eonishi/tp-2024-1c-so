@@ -48,11 +48,15 @@ void execute(char **instr_tokenizada)
         siguiente_pc(pcb_actual);
         exec_operacion_io(instr_tokenizada);                
         break;
+    case IO_FS_READ:
+    case IO_FS_WRITE:
+        tengo_pcb = 0;
+        siguiente_pc(pcb_actual);
+        exec_io_fs_write(instr_tokenizada);         
+        break;
     case IO_GEN_SLEEP:
     case IO_FS_CREATE:
     case IO_FS_DELETE:
-    case IO_FS_WRITE:
-    case IO_FS_READ:
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
         exec_operacion_io(instr_tokenizada);                
@@ -314,6 +318,37 @@ void exec_io_stdout_write(char** instr_tokenizada){
     log_info(logger, "Dirección logica: [%d], Tamaño: [%d]", *direccion_logica, *tamanio);
 
     t_list *peticiones_lectura = mmu(*direccion_logica, *tamanio, NULL);
+
+    solicitud_bloqueo_por_io solicitud;
+    solicitud.instruc_io_tokenizadas = instr_tokenizada;
+    solicitud.pcb = pcb_actual;
+    solicitud.peticiones_memoria = peticiones_lectura;
+
+    enviar_bloqueo_por_io(solicitud, socket_kernel);
+}
+
+/* IO_FS_WRITE (Interfaz, Nombre Archivo, Registro Dirección, Registro Tamaño, Registro Puntero Archivo): 
+        Esta instrucción solicita al Kernel que mediante la interfaz seleccionada, 
+        se lea desde Memoria la cantidad de bytes indicadas por el Registro Tamaño a partir de la 
+        dirección lógica que se encuentra en el Registro Dirección y se escriban en el archivo 
+        a partir del valor del Registro Puntero Archivo.
+ */
+void exec_io_fs_write(char** instr_tokenizada){    
+    char* registro_direccion = instr_tokenizada[3];
+    char* registro_tamanio = instr_tokenizada[4];
+    char* registro_puntero_archivo = instr_tokenizada[5];
+    
+    log_info(logger, "Registro dirección: [%s], Registro Tamanio: [%s], Reg Puntero archivo: [%s]", registro_direccion, registro_tamanio, registro_puntero_archivo);
+
+    uint32_t* direccion_logica = get_registro(registro_direccion);
+    uint32_t* tamanio = get_registro(registro_tamanio);
+    int32_t* puntero_archivo = get_registro(registro_puntero_archivo);
+
+    reemplazar_registro_por_dato(instr_tokenizada, 5, *puntero_archivo);
+
+    log_info(logger, "Dirección logica: [%d], Tamaño: [%d], Puntero Archivo: [%d]", *direccion_logica, *tamanio, *puntero_archivo);
+
+    t_list *peticiones_lectura = mmu(*direccion_logica, *tamanio, NULL);    
 
     solicitud_bloqueo_por_io solicitud;
     solicitud.instruc_io_tokenizadas = instr_tokenizada;

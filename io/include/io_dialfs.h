@@ -12,7 +12,9 @@
 extern t_log *logger;
 extern io_config config;
 extern int kernel_socket;
+extern int memory_socket;
 
 void io_dialfs();
+static void controlar_peticion();
 
 #endif

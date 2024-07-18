@@ -63,6 +63,7 @@ typedef struct{
 void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, int socket);
 solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket);
 
+
 // Temporales
 void* serializar_char(char* string);
 void* serializar_int(int number);
