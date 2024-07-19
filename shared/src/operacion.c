@@ -33,7 +33,7 @@ int get_valor(char* token_valor){
 
 bool io_tiene_operacion(int* operaciones_io, char* operacion_token, io_tipo tipo_io){
     operacion op_a_revisar = get_operacion(&operacion_token);
-    if(!tipo_io == DIALFS){
+    if(tipo_io == DIALFS){
         return  operaciones_io[0] == op_a_revisar 
         ||      operaciones_io[1] == op_a_revisar
         ||      operaciones_io[2] == op_a_revisar
@@ -46,7 +46,7 @@ bool io_tiene_operacion(int* operaciones_io, char* operacion_token, io_tipo tipo
 }
 
 void log_operaciones(int* operaciones_io, io_tipo tipo_io){
-    if(!tipo_io == DIALFS){
+    if(tipo_io == DIALFS){
         log_info(logger, "Operaciones IO: [%d] [%d] [%d] [%d] [%d]", operaciones_io[0], operaciones_io[1], operaciones_io[2], operaciones_io[3], operaciones_io[4]);
     }
     else{

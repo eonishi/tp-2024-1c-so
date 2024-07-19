@@ -34,6 +34,6 @@ typedef enum {
 } comando_consola;
 
 void iniciar_consola();
-void crear_hilo_planificador_corto();
-void cancelar_hilo_planificador();
+//void crear_hilo_planificador_corto();
+//void cancelar_hilo_planificador();
 #endif

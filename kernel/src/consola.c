@@ -125,6 +125,11 @@ static void gestionar_comando_leido(char** linea_leida){
 			break;
 
 		case MULTIPROGRAMACION:
+			int* valor = get_valor(linea_leida[1]);
+
+			log_info(logger, "Cambio de grado de multiprogacion de: [%d] a: [%d]", config->grado_multiprogramacion ,valor);
+			config->grado_multiprogramacion = valor;
+			break;
 
 		default:
             log_warning(logger, "Comando desconocido");
@@ -142,7 +147,7 @@ void iniciar_consola()
 		log_info(logger, "Ingrese INICIAR_PROCESO:");
 
 		leido = readline("> ");
-		log_info(logger, "Linea ingresada: %s", leido);
+		log_info(aux_log, "Linea ingresada: %s", leido);
 
 		char** leido_split = string_n_split(leido, 2, " ");
 		char* comando_token = leido_split[0];

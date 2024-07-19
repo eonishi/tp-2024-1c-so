@@ -3,6 +3,7 @@
 
 int main(){
     logger = iniciar_logger("kernel.log", "KERNEL");
+	aux_log = iniciar_logger("aux_kernel.log", "KERNEL");
 	log_info(logger, "Logger de Kernel iniciado");
 
 	config = inicializar_config();
@@ -86,37 +87,7 @@ void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void* args){
 		pthread_detach(thread);
 	}
 }
-/*
-void crear_hilo_planificador_corto(){
-	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
-	if(string_equals_ignore_case(config->algoritmo_planificacion, "FIFO")){
-		log_info(logger, "Creando hilo para el planificador de corto plazo FIFO...");
-		iniciar_hilo(iniciar_planificacion_corto, hilo_planificador_corto);
-	}else if(string_equals_ignore_case(config->algoritmo_planificacion, "RR")){
-		log_info(logger, "Creando hilo para el planificador de corto plazo ROUND ROBIN...");
-		iniciar_hilo(iniciar_planificacion_corto_RR, hilo_planificador_corto_RR);
-	}else if(string_equals_ignore_case(config->algoritmo_planificacion, "VRR")){
-		log_info(logger, "Creando hilo para el planificador de corto plazo VIRTUAL ROUND ROBIN...");
-		iniciar_hilo(iniciar_planificacion_corto_VRR, hilo_planificador_corto_VRR);
-	}else{
-		log_error(logger, "Algoritmo de planificación desconocido.");
-		terminar_programa();
-	}
-}
 
-void cancelar_hilo_planificador(){
-	if (string_equals_ignore_case(config->algoritmo_planificacion,"FIFO")){
-		pthread_cancel(hilo_planificador_corto);
-		log_info(logger,"HILO PLANIFICADOR FIFO CANCELADO");
-	}else if(string_equals_ignore_case(config->algoritmo_planificacion,"RR")){
-		pthread_cancel(hilo_planificador_corto_RR);
-		log_info(logger,"HILO PLANIFICADOR RR CANCELADO");
-	}else if(string_equals_ignore_case(config->algoritmo_planificacion,"VRR")){
-		pthread_cancel(hilo_planificador_corto_VRR);
-		log_info(logger,"HILO PLANIFICADOR VRR CANCELADO");
-	}
-}
-*/
 /*void cambiar_algoritmo_planificadorCorto(algoritmo_planificador algoritmoNuevo){
 	//todo
 }*/

@@ -1,0 +1,4 @@
+IO_FS_CREATE FS delete.txt
+IO_FS_CREATE FS delete2.txt
+IO_FS_DELETE FS delete.txt
+EXIT
