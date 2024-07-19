@@ -32,10 +32,6 @@ void *escuchar_io(void *socket){
 			loggear_pcb(pcb);
 			log_info(logger, "Respuesta DISPATCH_PROCESO recibida");
 			break;		
-		case MENSAJE:
-            log_info(logger, "Recibi MENSAJE. CODIGO: %d", cod_op);
-			recibir_mensaje(cliente_fd);
-			break;
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
             // Escuchar_IO deberia traer como parametro tambien el nombre de la interfaz
@@ -76,6 +72,8 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* pe
         return false;
     }
 
+    char* file_name;
+
     switch (get_operacion(instruc_io_tokenizadas)){
         case IO_GEN_SLEEP:
         case IO_STDIN_READ:
@@ -85,14 +83,29 @@ bool validar_y_enviar_instruccion_a_io(char** instruc_io_tokenizadas, t_list* pe
             enviar_instruccion_io(instruc_io_tokenizadas, peticiones_memoria, conexion_io->socket);
             break;
         case IO_FS_CREATE:
+            file_name = instruc_io_tokenizadas[2];
+            enviar_mensaje(CREAR_ARCHIVO_FS, file_name, conexion_io->socket);
+            break;
         case IO_FS_DELETE:
-            char* file_name = instruc_io_tokenizadas[2];
-            enviar_mensaje(EJECUTAR_INSTRUCCION_IO, file_name, conexion_io->socket);
+            file_name = instruc_io_tokenizadas[2];
+            enviar_mensaje(ELIMINAR_ARCHIVO_FS, file_name, conexion_io->socket);
             break;
         case IO_FS_TRUNCATE:
-        case IO_FS_READ:
+            file_name = instruc_io_tokenizadas[2];
+            char* size = instruc_io_tokenizadas[3];
+            
+            solicitud_truncar_archivo solicitud = {file_name, atoi(size)};
+
+            enviar_solicitud_truncar_archivo_fs(solicitud, conexion_io->socket);
+
+            break;
         case IO_FS_WRITE:
+            enviar_instruccion_io(instruc_io_tokenizadas, peticiones_memoria, conexion_io->socket);
+            
+            break;
+        case IO_FS_READ:
             log_error(logger, "Operacion no implementada");
+            break;
         default:
             log_error(logger, "Operacion no reconocida");
             break;

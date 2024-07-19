@@ -1,0 +1,5 @@
+SET BX 100
+IO_FS_CREATE FS salida.txt
+IO_FS_CREATE FS salida2.txt
+IO_FS_TRUNCATE FS salida.txt BX
+EXIT

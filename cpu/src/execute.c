@@ -39,12 +39,24 @@ void execute(char **instr_tokenizada)
         exec_cp_string(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
+    case IO_FS_TRUNCATE:
+        uint32_t dato_registro = reg_to_uint32(get_registro(instr_tokenizada[3]), instr_tokenizada[3]);
+
+        reemplazar_registro_por_dato(instr_tokenizada, 3, dato_registro);
+
+        tengo_pcb = 0;
+        siguiente_pc(pcb_actual);
+        exec_operacion_io(instr_tokenizada);                
+        break;
+    case IO_FS_READ:
+    case IO_FS_WRITE:
+        tengo_pcb = 0;
+        siguiente_pc(pcb_actual);
+        exec_io_fs_write(instr_tokenizada);         
+        break;
     case IO_GEN_SLEEP:
     case IO_FS_CREATE:
     case IO_FS_DELETE:
-    case IO_FS_TRUNCATE:
-    case IO_FS_WRITE:
-    case IO_FS_READ:
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
         exec_operacion_io(instr_tokenizada);                
@@ -74,6 +86,21 @@ void execute(char **instr_tokenizada)
     }
 
     free(instr_tokenizada);
+}
+
+void reemplazar_registro_por_dato(char** instr_tokenizada, int index, int valor){
+    // Calcula el tamaño necesario para la cadena
+    size_t buffer_size = snprintf(NULL, 0, "%u", valor) + 1;
+
+    // Asigna suficiente espacio para la cadena resultante
+    instr_tokenizada[index] = realloc(instr_tokenizada[3], buffer_size);
+    if (instr_tokenizada[index] == NULL) {
+        log_error(logger, "Error al intentar reemplazar registro por dato");
+        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO);
+    }
+
+    // Convierte dato_registro a cadena y guarda en instr_tokenizada[3]
+    snprintf(instr_tokenizada[index], buffer_size, "%u", valor);
 }
 
 void exec_set(char **instr_tokenizada){
@@ -192,11 +219,11 @@ void exec_mov_out(char** instr_tokenizada){
     char* registro_datos = instr_tokenizada[2];
     log_info(logger, "Registro dirección: [%s], Registro datos: [%s]", registro_direccion, registro_datos);
 
-    uint32_t* direccion_logica = get_registro(registro_direccion);
+    uint32_t direccion_logica = reg_to_uint32(get_registro(registro_direccion), registro_direccion);
     void* dato_a_escribir = get_registro(registro_datos);
-    log_info(logger, "Dirección logica: [%d], Dato a escribir: [%d]", *direccion_logica, dato_a_escribir);
+    log_info(logger, "Dirección logica: [%d], Dato a escribir: [%d]", direccion_logica, dato_a_escribir);
 
-    t_list* direcciones_fisicas = mmu(*direccion_logica, tam_registro(registro_datos), dato_a_escribir);
+    t_list* direcciones_fisicas = mmu(direccion_logica, tam_registro(registro_datos), dato_a_escribir);
     list_iterate(direcciones_fisicas, enviar_peticiones_de_escribir);
 }
 
@@ -218,12 +245,12 @@ void exec_mov_in(char** instr_tokenizada){
     
     log_info(logger, "Registro datos: [%s], Registro dirección: [%s]", registro_datos, registro_direccion);
 
-    uint32_t* direccion_logica = get_registro(registro_direccion);
+    uint32_t direccion_logica = reg_to_uint32(get_registro(registro_direccion), registro_direccion);
     void* registro_que_guarda_dato = get_registro(registro_datos);
 
-    log_info(logger, "Dirección logica: [%d], Valor actual en registro de datos: [%d]", *direccion_logica, registro_que_guarda_dato);
+    log_info(logger, "Dirección logica: [%d], Valor actual en registro de datos: [%d]", direccion_logica, registro_que_guarda_dato);
 
-    t_list *direcciones_fisicas = mmu(*direccion_logica, tam_registro(registro_datos), NULL);
+    t_list *direcciones_fisicas = mmu(direccion_logica, tam_registro(registro_datos), NULL);
     for(int i=0; i<list_size(direcciones_fisicas); i++){
         t_peticion_memoria* peticion_a_enviar = list_get(direcciones_fisicas, i);
         leer_dato_memoria(peticion_a_enviar, &registro_que_guarda_dato);
@@ -265,11 +292,13 @@ void exec_io_stdin_read(char** instr_tokenizada){
     char* registro_tamanio = instr_tokenizada[3];
     log_info(logger, "Registro dirección: [%s], Registro Tamanio: [%s]", registro_direccion, registro_tamanio);
 
-    uint32_t* direccion_logica = get_registro(registro_direccion);
-    uint32_t* tamanio = get_registro(registro_tamanio);
-    log_info(logger, "Dirección logica: [%d], Tamaño: [%d]", *direccion_logica, *tamanio);
 
-    t_list *peticiones_lectura = mmu(*direccion_logica, *tamanio, NULL);
+    uint32_t direccion_logica = reg_to_uint32(get_registro(registro_direccion), registro_direccion);
+    uint32_t tamanio = reg_to_uint32(get_registro(registro_tamanio), registro_tamanio);
+
+    log_info(logger, "Dirección logica: [%d], Tamaño: [%d]", direccion_logica, tamanio);
+
+    t_list *peticiones_lectura = mmu(direccion_logica, tamanio, NULL);
 
     solicitud_bloqueo_por_io solicitud;
     solicitud.instruc_io_tokenizadas = instr_tokenizada;
@@ -286,11 +315,42 @@ void exec_io_stdout_write(char** instr_tokenizada){
     char* registro_tamanio = instr_tokenizada[3];
     log_info(logger, "Registro dirección: [%s], Registro Tamanio: [%s]", registro_direccion, registro_tamanio);
 
-    uint32_t* direccion_logica = get_registro(registro_direccion);
-    uint32_t* tamanio = get_registro(registro_tamanio);
-    log_info(logger, "Dirección logica: [%d], Tamaño: [%d]", *direccion_logica, *tamanio);
+    uint32_t direccion_logica = reg_to_uint32(get_registro(registro_direccion), registro_direccion);
+    uint32_t tamanio = reg_to_uint32(get_registro(registro_tamanio), registro_tamanio);
+    log_info(logger, "Dirección logica: [%d], Tamaño: [%d]", direccion_logica, tamanio);
 
-    t_list *peticiones_lectura = mmu(*direccion_logica, *tamanio, NULL);
+    t_list *peticiones_lectura = mmu(direccion_logica, tamanio, NULL);
+
+    solicitud_bloqueo_por_io solicitud;
+    solicitud.instruc_io_tokenizadas = instr_tokenizada;
+    solicitud.pcb = pcb_actual;
+    solicitud.peticiones_memoria = peticiones_lectura;
+
+    enviar_bloqueo_por_io(solicitud, socket_kernel);
+}
+
+/* IO_FS_WRITE (Interfaz, Nombre Archivo, Registro Dirección, Registro Tamaño, Registro Puntero Archivo): 
+        Esta instrucción solicita al Kernel que mediante la interfaz seleccionada, 
+        se lea desde Memoria la cantidad de bytes indicadas por el Registro Tamaño a partir de la 
+        dirección lógica que se encuentra en el Registro Dirección y se escriban en el archivo 
+        a partir del valor del Registro Puntero Archivo.
+ */
+void exec_io_fs_write(char** instr_tokenizada){    
+    char* registro_direccion = instr_tokenizada[3];
+    char* registro_tamanio = instr_tokenizada[4];
+    char* registro_puntero_archivo = instr_tokenizada[5];
+    
+    log_info(logger, "Registro dirección: [%s], Registro Tamanio: [%s], Reg Puntero archivo: [%s]", registro_direccion, registro_tamanio, registro_puntero_archivo);
+
+    uint32_t direccion_logica = reg_to_uint32(get_registro(registro_direccion), registro_direccion);
+    uint32_t tamanio = reg_to_uint32(get_registro(registro_tamanio), registro_tamanio);
+    int32_t puntero_archivo = reg_to_uint32(get_registro(registro_puntero_archivo), registro_puntero_archivo);
+
+    reemplazar_registro_por_dato(instr_tokenizada, 5, puntero_archivo);
+
+    log_info(logger, "Dirección logica: [%d], Tamaño: [%d], Puntero Archivo: [%d]", direccion_logica, tamanio, puntero_archivo);
+
+    t_list *peticiones_lectura = mmu(direccion_logica, tamanio, NULL);    
 
     solicitud_bloqueo_por_io solicitud;
     solicitud.instruc_io_tokenizadas = instr_tokenizada;

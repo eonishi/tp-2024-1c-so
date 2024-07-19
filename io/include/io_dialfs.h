@@ -2,6 +2,7 @@
 #define IO_DIALFS_H_
 
 #include "configuracion.h"
+#include "conexion.h"
 #include <commons/bitarray.h>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -11,7 +12,9 @@
 extern t_log *logger;
 extern io_config config;
 extern int kernel_socket;
+extern int memory_socket;
 
 void io_dialfs();
+static void controlar_peticion();
 
 #endif

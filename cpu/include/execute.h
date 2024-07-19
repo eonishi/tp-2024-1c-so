@@ -29,4 +29,6 @@ void exec_cp_string(char **instr_tokenizada);
 void exec_io_stdout_write(char **instr_tokenizada);
 void exec_io_stdin_read(char** instr_tokenizada);
 
+void reemplazar_registro_por_dato(char** instr_tokenizada, int index, int valor);
+
 #endif
