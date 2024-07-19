@@ -1,7 +1,9 @@
 #ifndef CONEXION_KERNEL_H_
 #define CONEXION_KERNEL_H_
 
+#include <semaphore.h>
 #include <commons/log.h>
+#include <commons/collections/queue.h>
 #include <stdlib.h>
 #include "configuracion.h"
 #include "../../shared/include/client.h"
@@ -19,6 +21,8 @@ typedef struct{
     char *nombre_interfaz;
     io_tipo tipo;
     int* operaciones;
+    t_queue* cola_espera;
+    sem_t sem_cliente;
 } conexion_io;
 
 extern t_list* lista_conexiones_io;

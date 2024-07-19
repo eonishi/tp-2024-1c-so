@@ -27,10 +27,10 @@ static void gestionar_comando_leido(char** linea_leida){
             imprimir_colas();
             break;
 
-        case INICIAR_PLANIFICADOR:
-            crear_hilo_planificador_corto();//permite crear un nuevo hilo de planificador luego de detenerlo
-			//agregar un flag de control para no crear dos hilos de estos
-            break;
+        //case INICIAR_PLANIFICADOR:
+        //    crear_hilo_planificador_corto();//permite crear un nuevo hilo de planificador luego de detenerlo
+		//	//agregar un flag de control para no crear dos hilos de estos
+        //    break;
 
         case INICIAR_PLANIFICACION:
             planificacion_activada = 1;
@@ -40,7 +40,7 @@ static void gestionar_comando_leido(char** linea_leida){
         case DETENER_PLANIFICACION:
             planificacion_activada = 0;
 			interrumpir_proceso_ejecutando();
-			cancelar_hilo_planificador(); //DETIENE EL HILO DEL PLANIFICADOR CORTO
+			//cancelar_hilo_planificador(); //DETIENE EL HILO DEL PLANIFICADOR CORTO
             break;
 
         case INICIAR_PROCESO:
@@ -155,6 +155,7 @@ void iniciar_consola()
 		free(leido);
 	}
 }
+/*
 void crear_hilo_planificador_corto(){
 	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
 	if(string_equals_ignore_case(config->algoritmo_planificacion, "FIFO")){
@@ -184,3 +185,4 @@ void cancelar_hilo_planificador(){
 		log_info(logger,"HILO PLANIFICADOR VRR CANCELADO");
 	}
 }
+*/

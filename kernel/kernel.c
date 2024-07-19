@@ -1,6 +1,5 @@
 #include "include/kernel.h"
 
-
 int main(){
     logger = iniciar_logger("kernel.log", "KERNEL");
 	log_info(logger, "Logger de Kernel iniciado");
@@ -42,16 +41,19 @@ void* esperar_y_escuchar_conexiones_io(){
         conexion_io* conexion_io = recibir_conexion_io(socket_server_kernel);
 
 		list_add(lista_conexiones_io, conexion_io);
-		iniciar_hilo_con_args(escuchar_io, io_threads[io_thread_index++], &conexion_io->socket);
+		iniciar_hilo_con_args(escuchar_io, io_threads[io_thread_index++], conexion_io);
     }
 }
 
+pthread_mutex_t mutex_interfaz_buscada;
 
 void iniciar_semaforos() {
 	sem_init(&sem_nuevo_proceso, 0, 0);
 	sem_init(&sem_proceso_en_ready, 0, 0);
 	sem_init(&sem_cpu_libre, 0, 1);
 	sem_init(&sem_grado_multiprog, 0, config->grado_multiprogramacion);
+
+	pthread_mutex_init(&mutex_interfaz_buscada, NULL);
 }
 
 void terminar_programa()
@@ -86,7 +88,7 @@ void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void* args){
 		pthread_detach(thread);
 	}
 }
-/*
+
 void crear_hilo_planificador_corto(){
 	log_info(logger, "algortimo: %s", config->algoritmo_planificacion);
 	if(string_equals_ignore_case(config->algoritmo_planificacion, "FIFO")){
@@ -116,7 +118,3 @@ void cancelar_hilo_planificador(){
 		log_info(logger,"HILO PLANIFICADOR VRR CANCELADO");
 	}
 }
-*/
-/*void cambiar_algoritmo_planificadorCorto(algoritmo_planificador algoritmoNuevo){
-	//todo
-}*/

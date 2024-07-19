@@ -30,16 +30,19 @@ void *iniciar_planificacion_corto(){
 
 
 void dispatch_proceso_planificador(pcb* newPcb){
+    log_warning(logger, "Estoy por enviar pcb!");
     enviar_pcb(newPcb, socket_cpu_dispatch, DISPATCH_PROCESO);
+
     if (strcmp(config->algoritmo_planificacion, "FIFO") != 0){
         q_transcurrido = temporal_create();
     }//aca creo el contador de quantum usado para VRR
+
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");    
 }
 
 void gestionar_respuesta_cpu(){
-	t_list* lista;
     
+    log_warning(logger, "Arranca?");
 	int cod_op = recibir_operacion(socket_cpu_dispatch);
 	log_info(logger, "Codigo recibido desde el cpu: [%d]", cod_op);
 
@@ -58,23 +61,38 @@ void gestionar_respuesta_cpu(){
 			sem_post(&sem_grado_multiprog);
             		
 			break;		
+
 		case PROCESO_BLOQUEADO:
             cancelar_hilo_quantum();
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
+
             if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
                 log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
-                solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
-                solicitud.pcb->estado = BLOCKED;
-                loggear_pcb(solicitud.pcb);	
-                log_peticiones(solicitud.peticiones_memoria);	
-                push_cola_blocked(solicitud.pcb);
-                log_info(logger, "Tokens de instr: [%s][%s][%s]", solicitud.instruc_io_tokenizadas[0],solicitud.instruc_io_tokenizadas[1], solicitud.instruc_io_tokenizadas[2]);
-                bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas, solicitud.peticiones_memoria);
-                if(!enviado)
-                    log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
+
+                pcb = recibir_pcb(socket_cpu_dispatch);
+
+                loggear_pcb(pcb);
+                log_warning(logger, "Instrucciones del proceso: [%s], [%s], [%s]", 
+                    pcb->solicitud_io->instruc_io_tokenizadas[0], 
+                    pcb->solicitud_io->instruc_io_tokenizadas[1], 
+                    pcb->solicitud_io->instruc_io_tokenizadas[2]
+                );
+
+                if(!validar_instruccion_a_io(pcb->solicitud_io->instruc_io_tokenizadas, pcb)){
+                    log_error(logger, "Error de validación de instrucción a IO");
+                    log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
+                    push_cola_exit(pcb);
+                    sem_post(&sem_cpu_libre);
+                    break;
+                }
+
+                log_warning(logger, "Proceso [%d] validado", pcb->pid);
+                enviar_proceso_a_esperar_io(pcb);
+
                 sem_post(&sem_cpu_libre);
                 break;
             }
+            /*
             else{//estoy usando RR o VRR
                 temporal_stop(q_transcurrido); //detengo el contador de quantum usado
                 q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
@@ -90,7 +108,7 @@ void gestionar_respuesta_cpu(){
                     log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
                 sem_post(&sem_cpu_libre);
                 break;
-            }
+            }*/
         case INTERRUPCION:
             //temporal_stop(q_transcurrido); //detengo el contador de quantum usado -> migrado a gestor_io
             //q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos -> migrado a gestor_io

@@ -34,10 +34,8 @@ pthread_t hilo_servidor_kernel;
 pthread_t hilo_escucha_cpu;
 
 // Variables Planificador
-int planificacion_activada = 0;
+int planificacion_activada = 1;
 
-// -- Colas
-extern t_queue *cola_new, *cola_exit, *cola_ready, *cola_blocked, *cola_execute, *cola_readyVRR;
 // -- Semaforos
 sem_t sem_nuevo_proceso;
 sem_t sem_grado_multiprog;
@@ -67,8 +65,7 @@ void dispatch_proceso();
 void iniciar_hilo(void *func, pthread_t thread);
 void *esperar_y_escuchar_conexiones_io();
 void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void *args);
-//void crear_hilo_planificador_corto();
-//void cancelar_hilo_planificador();
-//void cambiar_algoritmo_planificadorCorto(algoritmo_planificador);
+void crear_hilo_planificador_corto();
+void cancelar_hilo_planificador();
 
 #endif
