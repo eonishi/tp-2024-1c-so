@@ -63,8 +63,11 @@ void io_dialfs() {
                          log_info(logger, "Peticion [%d] de [%d]", i, list_size(peticiones_memoria));
                          peticion_lectura_enviar(peticion, &ptr_string, memory_socket);
                          controlar_peticion();
+                         log_info(logger, "Peticion [%d] Recibido: [%s]", i, string_a_imprimir);
                     }
 
+                    log_info(logger, "Tamanio: [%d]", sizeof(string_a_imprimir));
+                    log_info(logger, "Leido: [%s]", string_a_imprimir);
                     // [] Imprimir resultado
                     printf("%s\n", string_a_imprimir);
                 break;
