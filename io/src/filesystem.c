@@ -162,6 +162,25 @@ void compactar(){
     // TODO: Sera necesario reorganizar bloques también??
 }
 
+
+bool escribir_archivo(char*nombre, void* datos, int tam_total, int puntero_archivo){
+    fcb* fcb = obtener_fcb_por_nombre(nombre);
+
+    int bloque_inicial = config_get_int_value(fcb->config, "BLOQUE_INICIAL");
+
+    int byte_inicial = calcular_byte_inicial_de_bloque(bloque_inicial);
+
+    int posicion_inicial = byte_inicial + puntero_archivo;
+
+    if(!escribir_datos_en_bloques(posicion_inicial, datos, tam_total)){
+        log_error(logger, "No se pudo escribir el archivo.");
+
+        return false;
+    };
+
+    return true;
+}
+
 // -----------------------------------------------//
 
 // Sincronizar los cambios al archivo // 

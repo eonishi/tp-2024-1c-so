@@ -55,21 +55,30 @@ void io_dialfs() {
                     // [] Enviar peticiones a memoria y guardar el resultado
                     size_t tam_total = peticiones_tam_total(peticiones_memoria);
                     log_info(logger, "Tam total de las peticiones [%d]", tam_total);
-                    void* string_a_imprimir = malloc(tam_total);
-                    void* ptr_string = string_a_imprimir;
+                    void* datos = malloc(tam_total);
+                    void* ptr_string = datos;
 
                     for (int i = 0; i < list_size(peticiones_memoria); i++){
                          t_peticion_memoria* peticion = list_get(peticiones_memoria, i);
-                         log_info(logger, "Peticion [%d] de [%d]", i, list_size(peticiones_memoria));
+                         log_info(logger, "Peticion [%d] de [%d]", i+1, list_size(peticiones_memoria));
                          peticion_lectura_enviar(peticion, &ptr_string, memory_socket);
                          controlar_peticion();
-                         log_info(logger, "Peticion [%d] Recibido: [%s]", i, string_a_imprimir);
+                         log_info(logger, "Peticion [%d] Recibido: [%s]", i+1, datos);
                     }
 
-                    log_info(logger, "Tamanio: [%d]", sizeof(string_a_imprimir));
-                    log_info(logger, "Leido: [%s]", string_a_imprimir);
-                    // [] Imprimir resultado
-                    printf("%s\n", string_a_imprimir);
+                    log_info(logger, "Leido desde memoria: [%s]", datos);
+
+                    char* nombre_archivo_escribir = tokens_instr[2];
+                    char* puntero_archivo = tokens_instr[4];
+                    if(!escribir_archivo(nombre_archivo_escribir, datos, tam_total, atoi(puntero_archivo))){
+                        log_error(logger, "No se pudo escribir el archivo");
+
+                        // TODO: Enviar respuesta de error?
+                    }
+
+                    log_info(logger, "Se ha escrito correctamente el archivo: [%s]", nombre_archivo_escribir);
+
+                    enviar_status(FIN_EJECUCION_IO, kernel_socket);                                    
                 break;
             case -1:
                 log_error(logger, "Se desconecto el kernel");
