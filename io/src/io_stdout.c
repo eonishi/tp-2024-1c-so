@@ -17,9 +17,10 @@ void io_stdout() {
                     log_peticiones(peticiones_memoria);
 
                     // [] Enviar peticiones a memoria y guardar el resultado
-                    size_t tam_total = peticiones_tam_total(peticiones_memoria);
+                    size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
                     log_info(logger, "Tam total de las peticiones [%d]", tam_total);
                     void* string_a_imprimir = malloc(tam_total);
+                    memset(string_a_imprimir, 0, tam_total);
                     void* ptr_string = string_a_imprimir;
 
                     for (int i = 0; i < list_size(peticiones_memoria); i++){

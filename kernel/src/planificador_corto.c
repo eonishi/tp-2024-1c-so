@@ -52,6 +52,7 @@ void gestionar_respuesta_cpu(){
 			pcb = recibir_pcb(socket_cpu_dispatch);
 			loggear_pcb(pcb);
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); //validar log minimo
             push_cola_exit(pcb);
 
 			sem_post(&sem_cpu_libre);
@@ -62,9 +63,10 @@ void gestionar_respuesta_cpu(){
             cancelar_hilo_quantum();
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
             if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
-                log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
+                log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %s", traduce_cod_op(cod_op));
                 solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
-                solicitud.pcb->estado = BLOCKED;
+                //solicitud.pcb->estado = BLOCKED;// no hace falta, se asigna en el push
+                log_info(logger,"PID: %d - Bloqueado por: %s", solicitud.pcb->pid, solicitud.instruc_io_tokenizadas);//validar logueo minimo
                 loggear_pcb(solicitud.pcb);	
                 log_peticiones(solicitud.peticiones_memoria);	
                 push_cola_blocked(solicitud.pcb);
@@ -78,9 +80,10 @@ void gestionar_respuesta_cpu(){
             else{//estoy usando RR o VRR
                 temporal_stop(q_transcurrido); //detengo el contador de quantum usado
                 q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
-                log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
+                log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %s", traduce_cod_op(cod_op));
                 solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
-                solicitud.pcb->estado = BLOCKED;
+                //solicitud.pcb->estado = BLOCKED; //lo hace la funcion push
+                log_info(logger,"PID: %d - Bloqueado por: %s", solicitud.pcb->pid, solicitud.instruc_io_tokenizadas);//validar logueo minimo
                 solicitud.pcb->quantum -= q_usado;
                 loggear_pcb(solicitud.pcb);			
                 push_cola_blocked(solicitud.pcb);
@@ -93,16 +96,24 @@ void gestionar_respuesta_cpu(){
             }
         case INTERRUPCION:
             pcb = recibir_pcb(socket_cpu_dispatch);
-            //log_info(logger, "Recibi proceso PID [%d] desalojado por INTERRUPCION CODIGO: [%d]", pcb->pid, cod_op);
-            //pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
+            log_info(logger, "FIn de Quantum: PID %d desalojado por fin de Quantum.", pcb->pid);
+            pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
             loggear_pcb(pcb);
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
             push_cola_ready(pcb);
             sem_post(&sem_cpu_libre);
             sem_post(&sem_proceso_en_ready);		
             break;
+        case ERROR_DE_PROCESAMIENTO:
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
+            break;
+        case OUT_OF_MEMORY:
+        log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid); //validar log minimo
+        break;
 		case -1:
+            pcb = recibir_pcb(socket_cpu_dispatch);
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 			break;

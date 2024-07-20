@@ -59,6 +59,7 @@ void push_cola_ready(pcb* pcb){
     log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: READY", pcb->pid, pcb->estado);
     pcb->estado = READY;
     queue_push(cola_ready, pcb);
+    imprimir_cola("READY:",cola_ready);
 }
 
 pcb* pop_cola_ready(){
@@ -101,6 +102,7 @@ void push_cola_ready_priority(pcb* pcb, int quantum_pendiente){
     pcb->estado = READY;
     elemVRR element = {.pcbVRR = pcb, .quantum_usado = quantum_pendiente};
     queue_push(cola_readyVRR, &element);
+    imprimir_cola("READY PRIORIDAD:",cola_readyVRR);
 }
 
 elemVRR* pop_cola_ready_priority(){

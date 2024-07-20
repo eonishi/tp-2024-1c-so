@@ -99,8 +99,8 @@ static void gestionar_comando_leido(char** linea_leida){
 			log_info(logger, "==============================================");
 			char *string_pid = linea_leida[1];
 			unsigned pid_a_finalizar = atol(string_pid);
-			log_info(logger, "Inicio de ejecución de FINALIZAR_PROCESO con PID: [%d]", pid_a_finalizar);
-
+			log_info(logger, "Finaliza el proceso <%d> - Motivo: INTERRUPTED_BY_USER", pid_a_finalizar); //validar log minimo
+			//log_info(logger, "Inicio de ejecución de FINALIZAR_PROCESO con PID: [%d]", pid_a_finalizar);
 			// Detener la planificación si está activada
 			bool reanudar_planificacion = 0;
 			if(planificacion_activada){
