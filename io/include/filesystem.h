@@ -19,6 +19,8 @@ extern int kernel_socket;
 
 bool crear_archivo(char* nombre);
 bool eliminar_archivo(char* nombre);
+bool escribir_archivo(char*nombre, void* datos, int tam_total, int puntero_archivo);
+bool leer_archivo(char*nombre, int puntero_archivo, int tam_a_leer, void** datos_leidos);
 bool truncar_archivo(char* nombre, int size);
 void guardar_archivo_desde_fcb(fcb* fcb);
 

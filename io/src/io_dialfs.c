@@ -52,24 +52,12 @@ void io_dialfs() {
                     log_info(logger, "Instruccion recibida de Kernel [%s]", tokens_instr[0]);
                     log_peticiones(peticiones_memoria);
 
-                    // [] Enviar peticiones a memoria y guardar el resultado
-                    size_t tam_total = peticiones_tam_total(peticiones_memoria);
-                    log_info(logger, "Tam total de las peticiones [%d]", tam_total);
-                    void* string_a_imprimir = malloc(tam_total);
-                    void* ptr_string = string_a_imprimir;
-
-                    for (int i = 0; i < list_size(peticiones_memoria); i++){
-                         t_peticion_memoria* peticion = list_get(peticiones_memoria, i);
-                         log_info(logger, "Peticion [%d] de [%d]", i, list_size(peticiones_memoria));
-                         peticion_lectura_enviar(peticion, &ptr_string, memory_socket);
-                         controlar_peticion();
-                         log_info(logger, "Peticion [%d] Recibido: [%s]", i, string_a_imprimir);
+                    if(strcmp(tokens_instr[0], "IO_FS_WRITE") == 0){
+                        exec_io_write(tokens_instr, peticiones_memoria);
                     }
-
-                    log_info(logger, "Tamanio: [%d]", sizeof(string_a_imprimir));
-                    log_info(logger, "Leido: [%s]", string_a_imprimir);
-                    // [] Imprimir resultado
-                    printf("%s\n", string_a_imprimir);
+                    else{
+                        exec_io_read(tokens_instr, peticiones_memoria);
+                    }
                 break;
             case -1:
                 log_error(logger, "Se desconecto el kernel");
@@ -80,6 +68,71 @@ void io_dialfs() {
                 break;
         }
     }
+}
+
+void exec_io_write(char** tokens_instr, t_list *peticiones_memoria){   
+    // [] Enviar peticiones a memoria y guardar el resultado
+    size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
+    log_info(logger, "Tam total de las peticiones [%d]", tam_total);
+    void* datos = malloc(tam_total);
+    memset(datos, 0, tam_total);
+    void* ptr_string = datos;
+
+    for (int i = 0; i < list_size(peticiones_memoria); i++){
+            t_peticion_memoria* peticion = list_get(peticiones_memoria, i);
+            log_info(logger, "Peticion [%d] de [%d]", i+1, list_size(peticiones_memoria));
+            peticion_lectura_enviar(peticion, &ptr_string, memory_socket);
+            controlar_peticion();
+            log_info(logger, "Peticion [%d] Recibido: [%s]", i+1, datos);
+    }
+
+    log_info(logger, "Leido desde memoria: [%s]", datos);
+
+    char* nombre_archivo_escribir = tokens_instr[2];
+    char* puntero_archivo = tokens_instr[4];
+
+    if(!escribir_archivo(nombre_archivo_escribir, datos, tam_total, atoi(puntero_archivo))){
+        log_error(logger, "No se pudo escribir el archivo");
+        // TODO: Enviar respuesta de error?
+    }
+
+    log_info(logger, "Se ha escrito correctamente el archivo: [%s]", nombre_archivo_escribir);
+
+    enviar_status(FIN_EJECUCION_IO, kernel_socket);  
+}
+
+void exec_io_read(char** tokens_instr, t_list *peticiones_memoria){
+    char* nombre_archivo = tokens_instr[2];
+    char* puntero_archivo = tokens_instr[4];
+    size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
+    
+    char* datos_leidos = malloc(tam_total);
+    if (datos_leidos == NULL) {
+        log_error(logger, "Error al asignar memoria para datos_leidos");
+        return; // TODO: Enviar respuesta de error?
+    }
+
+    memset(datos_leidos, 0, tam_total);
+
+    if(!leer_archivo(nombre_archivo,atoi(puntero_archivo), tam_total, &datos_leidos)){
+        log_error(logger, "No se pudo leer el archivo");
+        // TODO: Enviar respuesta de error?
+    }
+
+    log_info(logger, "Leido desde archivo: [%s]", datos_leidos);
+
+    // Distribuir dato entre todas las peticiones
+    peticiones_distribuir_dato(peticiones_memoria, datos_leidos, tam_total-1); // TODO ???
+
+    for (int i = 0; i < list_size(peticiones_memoria); i++){
+        t_peticion_memoria* peticion = list_get(peticiones_memoria, i);
+        peticion_escritura_enviar(peticion, memory_socket);
+        controlar_peticion();
+    }
+    
+    // devolver status
+    enviar_status(FIN_EJECUCION_IO, kernel_socket);
+    log_info(logger, "Instruccion IO ejecutada");
 }
 
 static void controlar_peticion(){
