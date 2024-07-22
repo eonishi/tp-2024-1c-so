@@ -271,4 +271,22 @@ bool escribir_datos_en_bloques(int posicion_inicial, void* datos, int tam_total)
     return true;
 }
 
+bool leer_datos_en_bloques(int posicion_inicial, int tam_total, void** datos_leidos) {
+    if (posicion_inicial + tam_total > config.block_count * config.block_size) {
+        log_error(logger, "Error: Se intenta leer fuera de los límites de los bloques");
+        return false;
+    }
+
+    *datos_leidos = malloc(tam_total);
+    if (*datos_leidos == NULL) {
+        log_error(logger, "Error: No se pudo asignar memoria para los datos leídos");
+        return false;
+    }
+
+    // Copiar los datos desde BLOQUES a datos_leidos
+    memcpy(*datos_leidos, (char*)BLOQUES + posicion_inicial, tam_total);
+
+    return true;
+}
+
 // -----------------------------------------------//

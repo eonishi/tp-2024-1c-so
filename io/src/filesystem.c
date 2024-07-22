@@ -181,6 +181,27 @@ bool escribir_archivo(char*nombre, void* datos, int tam_total, int puntero_archi
     return true;
 }
 
+bool leer_archivo(char*nombre, int puntero_archivo, int tam_a_leer, void** datos_leidos){
+        fcb* fcb = obtener_fcb_por_nombre(nombre);
+
+    int bloque_inicial = config_get_int_value(fcb->config, "BLOQUE_INICIAL");
+
+    int byte_inicial = calcular_byte_inicial_de_bloque(bloque_inicial);
+
+    int posicion_inicial = byte_inicial + puntero_archivo;
+
+    if(!leer_datos_en_bloques(posicion_inicial, tam_a_leer, datos_leidos)){
+        log_error(logger, "No se pudo leer el archivo.");
+
+        return false;
+    };
+
+    log_info(logger, "resultado leer_datos_en_bloques: [%s]", *datos_leidos);
+
+    return true;
+}
+
+
 // -----------------------------------------------//
 
 // Sincronizar los cambios al archivo // 

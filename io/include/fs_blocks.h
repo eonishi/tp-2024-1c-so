@@ -26,6 +26,7 @@ bool inicializar_bitmap_en_archivo(int fd);
 void imprimir_bitmap();
 
 bool escribir_datos_en_bloques(int posicion_inicial, void* datos, int tam_total);
+bool leer_datos_en_bloques(int posicion_inicial, int tam_total, void** datos_leidos);
 int buscar_bloque_libre();
 int asignar_bloque();
 void asignar_bloques_bitmap_por_rango(int desde, int hasta);
