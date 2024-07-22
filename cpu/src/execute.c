@@ -52,7 +52,7 @@ void execute(char **instr_tokenizada)
     case IO_FS_WRITE:
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
-        exec_io_fs_write(instr_tokenizada);         
+        exec_io_fs_read_write(instr_tokenizada);         
         break;
     case IO_GEN_SLEEP:
     case IO_FS_CREATE:
@@ -335,7 +335,7 @@ void exec_io_stdout_write(char** instr_tokenizada){
         dirección lógica que se encuentra en el Registro Dirección y se escriban en el archivo 
         a partir del valor del Registro Puntero Archivo.
  */
-void exec_io_fs_write(char** instr_tokenizada){    
+void exec_io_fs_read_write(char** instr_tokenizada){    
     char* registro_direccion = instr_tokenizada[3];
     char* registro_tamanio = instr_tokenizada[4];
     char* registro_puntero_archivo = instr_tokenizada[5];
