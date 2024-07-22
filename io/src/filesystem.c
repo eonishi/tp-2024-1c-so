@@ -10,7 +10,6 @@ bool inicializar_filesystem(){
 bool crear_archivo(char* nombre){
     int fd = fs_open(nombre, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
-    //TODO: VER SI AGREGAR VALIDACION DE SI YA EXISTE EL ARCHIVO
     if (fd == -1) {
         log_error(logger, "Error al crear el archivo: [%s]", nombre);
         return false;
@@ -38,10 +37,10 @@ bool crear_archivo(char* nombre){
 
     close(fd);
 
-    t_config* config_loader = config_create(nombre);
+    t_config* config_loader = config_create(fs_fullpath(nombre));
 
     if(config_loader == NULL) {
-        log_error(logger, "No se encontro el archivo: [%s]", nombre);
+        log_error(logger, "No se encontro el archivo del filesystem: [%s]", nombre);
         exit(EXIT_FAILURE);
     }
 
@@ -53,7 +52,7 @@ bool crear_archivo(char* nombre){
 bool eliminar_archivo(char* nombre) {
     eliminar_bloques_ocupados_por_archivo(nombre);
 
-    if (remove(nombre) == 0) {      
+    if (remove(fs_fullpath(nombre)) == 0) {      
         eliminar_fcb_por_nombre(nombre);
 
         return true; 

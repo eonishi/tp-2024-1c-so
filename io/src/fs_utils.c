@@ -1,39 +1,50 @@
 #include "../include/fs_utils.h"
 
-char* concat_chars(char* str1, char* str2){
-    size_t length = strlen(str1) + strlen(str2) + 1;
+char* fs_fullpath(char* filename) {
+    char* fs_path = config.path_base_dialfs;
+    size_t len1 = strlen(fs_path);
+    size_t len2 = strlen(filename);
+    char* result = malloc(len1 + len2 + 2); // +2 para '/' y '\0'
 
-    char* result = (char*)malloc(length);
-    if (result == NULL) {
-        perror("No se pudo asignar memoria");
-        return EXIT_FAILURE;
+    if (!result) {
+        return NULL; // Manejar error de asignación
     }
 
-    strcpy(result, str1);
-    strcat(result, str2);
+    strcpy(result, fs_path);
+
+    // Agregar '/' si no está presente al final de str1
+    if (fs_path[len1 - 1] != '/') {
+        result[len1] = '/';
+        strcpy(result + len1 + 1, filename);
+    } else {
+        strcpy(result + len1, filename);
+    }
 
     return result;
 }
 
-int fs_open(const char* filename, int flags, mode_t mode){
-    // TODO hacer funcionar fullpath home/utnso/dialfs
-    char* path = concat_chars(config.path_base_dialfs, filename);
-    log_info(logger, "Abriendo archivo: [%s]", filename);
 
-    int fd = open(filename, flags, mode);
+int fs_open(const char* filename, int flags, mode_t mode) {
+    char* path = fs_fullpath(filename);
 
-    // free(path);
-
-    if (fd == -1) {
-        log_error(logger, "Error al abrir el archivo: [%s]", filename);
+    if (!path) {
+        log_error(logger, "Error al asignar memoria para el path.");
+        return -1;
     }
 
+    log_info(logger, "Ruta completa del archivo: [%s]", path);
+
+    int fd = open(path, flags, mode);
+    if (fd == -1) {
+        log_error(logger, "Error al abrir el archivo: [%s]", path);
+    }
+
+    free(path);
     return fd;
 }
-
 DIR* fs_opendir (){
     // TODO: config.path_base_dialfs
-    DIR* dir = opendir(".");
+    DIR* dir = opendir(config.path_base_dialfs);
 
     if (dir == NULL) {
         perror("No se puede abrir el directorio");
