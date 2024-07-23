@@ -110,8 +110,6 @@ bool truncar_archivo(char* nombre, int new_size){
         }
     }
 
-    ftruncate(fd, new_size);
-
     // Actualizamos properties del archivo
     set_campo_de_archivo("TAMANIO_ARCHIVO", new_size, config_loader);
     set_campo_de_archivo("BLOQUE_INICIAL", bloque_inicial, config_loader);
