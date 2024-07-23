@@ -13,7 +13,7 @@ void inicializar_bloques(){
 }
 
 void inicializar_archivo_bloques(){
-    int fd = fs_open("bloques.dat", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    int fd = fs_open("bloques.dat", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
     if (fd == -1) {
         log_error(logger, "Error al abrir/crear el archivo");

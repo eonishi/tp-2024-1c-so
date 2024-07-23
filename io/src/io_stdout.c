@@ -25,12 +25,11 @@ void io_stdout() {
 
                     for (int i = 0; i < list_size(peticiones_memoria); i++){
                          t_peticion_memoria* peticion = list_get(peticiones_memoria, i);
-                         log_info(logger, "Peticion [%d] de [%d]", i, list_size(peticiones_memoria));
+                         log_info(logger, "Peticion [%d] de [%d]", i+1, list_size(peticiones_memoria));
                          peticion_lectura_enviar(peticion, &ptr_string, memory_socket);
                          controlar_peticion();
                     }
-
-                    // [] Imprimir resultado
+                    // [] Imprimir resultado          
                     printf("%s\n", string_a_imprimir);
 
                     // [] Enviar status a Kernel
