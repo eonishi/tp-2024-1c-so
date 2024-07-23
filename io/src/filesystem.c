@@ -156,6 +156,9 @@ void compactar(){
 
         reubicar_archivo_desde_fcb(fcb);
     }
+
+    // ejecutar instruccion
+    usleep(config.retraso_compatacion * 1000);
     // TODO: Sera necesario reorganizar bloques también??
 }
 
