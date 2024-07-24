@@ -64,7 +64,8 @@ void inicializar_io(char* nombre_interfaz, char* path_config){
     }
     else if(string_equals_ignore_case(config.interfaz_tipo, "DIALFS")){
         crear_conexion_memoria();
-        inicializar_filesystem();
+
+        if(!inicializar_filesystem()) exit(EXIT_FAILURE);
         
         iniciar_io_dialfs(nombre_interfaz);
         log_info(logger, "Interfaz DialFS inicializada");

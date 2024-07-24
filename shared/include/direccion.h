@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include "protocolo.h"
 #include "paquete.h"
+#include "serializar.h"
+#include "comunicacion.h"
 
 typedef struct{
     uint32_t direccion_fisica;
@@ -14,6 +16,7 @@ typedef struct{
 
 t_peticion_memoria *peticion_crear(uint32_t direccion_fisica, void *dato, size_t tam_dato);
 void peticion_destruir(t_peticion_memoria *direccion);
+void liberar_peticiones(t_list *peticiones);
 
 void peticion_enviar(t_peticion_memoria *peticion_a_enviar, op_code CODE, int socket);
 void peticion_escritura_enviar(t_peticion_memoria *peticion_escribir, int socket_memoria);

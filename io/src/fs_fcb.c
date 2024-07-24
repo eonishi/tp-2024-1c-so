@@ -82,7 +82,7 @@ void eliminar_fcb_por_nombre(char* nombre){
 
 
 void set_campo_de_archivo(char* campo , int valor, t_config* config_loader){
-    char* valor_char[5];
+    char valor_char[5];
     sprintf(valor_char, "%d", valor);
     config_set_value(config_loader, campo, valor_char);
     config_save(config_loader);
