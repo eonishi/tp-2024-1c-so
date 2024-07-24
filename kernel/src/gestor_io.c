@@ -19,15 +19,26 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
             );
             break;
         case IO_FS_CREATE:
-        case IO_FS_DELETE:
             file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
             enviar_mensaje(CREAR_ARCHIVO_FS, file_name, conexion_io->socket);
-            
+            break;
+        case IO_FS_DELETE:
+            file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
+            enviar_mensaje(ELIMINAR_ARCHIVO_FS, file_name, conexion_io->socket);
             break;
         case IO_FS_TRUNCATE:
+            file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
+            char* size = pcb_io->solicitud->instruc_io_tokenizadas[3];
+            
+            solicitud_truncar_archivo solicitud = {file_name, atoi(size)};
+            enviar_solicitud_truncar_archivo_fs(solicitud, conexion_io->socket);
+
+            break;
         case IO_FS_READ:
         case IO_FS_WRITE:
-            log_error(logger, "Operacion no implementada");
+            enviar_instruccion_io(pcb_io->solicitud->instruc_io_tokenizadas, 
+             pcb_io->solicitud->peticiones_memoria,
+             conexion_io->socket);
         default:
             log_error(logger, "Operacion no reconocida");
             break;
