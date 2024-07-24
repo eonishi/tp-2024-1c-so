@@ -59,8 +59,6 @@ void gestionar_respuesta_cpu(){
             push_cola_exit(pcb);
 
 			sem_post(&sem_cpu_libre);
-			sem_post(&sem_grado_multiprog);
-            		
 			break;		
 
 		case PROCESO_BLOQUEADO_IO:
@@ -140,7 +138,6 @@ void gestionar_respuesta_cpu(){
 
             // Sincronizacion de ejecucion
             sem_post(&sem_cpu_libre);
-            sem_post(&sem_grado_multiprog);
 
             break;
 
@@ -205,6 +202,8 @@ void gestionar_respuesta_cpu(){
 
         case OUT_OF_MEMORY:
         log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid); //validar log minimo
+        // TODO:
+        // [] Mandar a exit y sincronizar CPU
         break;
       
 		case -1:
