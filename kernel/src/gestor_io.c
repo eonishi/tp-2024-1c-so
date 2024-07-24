@@ -122,6 +122,7 @@ bool validar_instruccion_a_io(char** instruc_io_tokenizadas, pcb* pcb){
 }
 
 static char *interfaz_buscada;
+pthread_mutex_t mutex_interfaz_buscada = PTHREAD_MUTEX_INITIALIZER;
 static bool interfaz_es_la_buscada(void *conexion_buscada){
     conexion_io* conexion = (conexion_io*) conexion_buscada;
     return string_equals_ignore_case(conexion->nombre_interfaz, interfaz_buscada);

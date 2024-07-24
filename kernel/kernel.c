@@ -42,15 +42,12 @@ void* esperar_y_escuchar_conexiones_io(){
     }
 }
 
-pthread_mutex_t mutex_interfaz_buscada;
-
 void iniciar_semaforos() {
 	sem_init(&sem_nuevo_proceso, 0, 0);
 	sem_init(&sem_proceso_en_ready, 0, 0);
 	sem_init(&sem_cpu_libre, 0, 1);
 	sem_init(&sem_grado_multiprog, 0, config->grado_multiprogramacion);
-
-	pthread_mutex_init(&mutex_interfaz_buscada, NULL);
+	sem_init(&sem_planificacion_activa, 0, 0);
 }
 
 void terminar_programa()
