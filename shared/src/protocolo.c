@@ -88,11 +88,14 @@ solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_de_una_io
 }
 
 
-int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int socket_cliente){
+int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int pid, int socket_cliente){
     // TODO: teniendo en cuenta que la validación de la existencia de io y correspondencia de instruccion
     // la hace kernel, es redundante enviar toda la instruccion tokenizada. Se podría enviar lo necesario para la ejecucion.
 
     t_paquete* paquete = crear_paquete(EJECUTAR_INSTRUCCION_IO);
+
+    void* stream_pid = serializar_int(pid);
+    agregar_a_paquete(paquete, stream_pid, sizeof(int));
 
     serializar_lista_strings_y_agregar_a_paquete(instruccion_tokenizada, paquete);
 
@@ -105,14 +108,18 @@ int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memo
 }
 
 // Solucion temporal: recibo un puntero a una lista de peticiones de memoria
-char** recibir_instruccion_io(int socket_cliente, t_list** peticiones_memoria){
+solicitud_instruccion_io recibir_instruccion_io(int socket_cliente){
     t_list* bytes = recibir_paquete(socket_cliente);
 
-    char** tokens = deserializar_lista_strings(bytes, 0);
+    int pid = deserializar_int(list_get(bytes, 0));
 
-    *peticiones_memoria = peticiones_desempaquetar_segun_index(bytes, 1 + string_array_size(tokens));
+    char** tokens = deserializar_lista_strings(bytes, 1);
 
-    return tokens;
+    t_list* peticiones_memoria = peticiones_desempaquetar_segun_index(bytes, 2 + string_array_size(tokens));
+
+    solicitud_instruccion_io result = {pid, tokens, peticiones_memoria};
+
+    return result;
 }
 
 void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, int socket){

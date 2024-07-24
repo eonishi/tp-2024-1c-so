@@ -40,8 +40,13 @@ void io_stdin() {
 
         switch (cod_op){
             case EJECUTAR_INSTRUCCION_IO:
-                t_list *peticiones_memoria;
-                char** tokens_instr = recibir_instruccion_io(kernel_socket, &peticiones_memoria);
+                solicitud_instruccion_io solicitud = recibir_instruccion_io(kernel_socket);
+                int pid = solicitud.pid;
+                t_list *peticiones_memoria = solicitud.peticiones_memoria;
+                char** tokens_instr = solicitud.tokens;
+
+                log_info(logger,"RECIBIDO EJECUTAR_INSTRUCCION_IO, pid: [%d]", pid);
+                
                 log_info(logger, "Instruccion recibida de Kernel [%s]", tokens_instr[0]);
                 log_peticiones(peticiones_memoria);
 

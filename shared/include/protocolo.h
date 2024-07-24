@@ -36,8 +36,16 @@ typedef struct{
 void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel, int socket_cliente);
 solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_cliente);
 
-int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int socket_cliente);
-char** recibir_instruccion_io(int socket_cliente, t_list** ptr_peticiones_memoria);
+
+typedef struct{
+    int pid;
+    char **tokens;
+    t_list* peticiones_memoria;
+} solicitud_instruccion_io;
+
+
+int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int pid, int socket_cliente);
+solicitud_instruccion_io recibir_instruccion_io(int socket_cliente);
 
 typedef struct{
     char *nombre_archivo;

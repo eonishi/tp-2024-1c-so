@@ -16,6 +16,7 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
             enviar_instruccion_io(
                 pcb_io->solicitud->instruc_io_tokenizadas,
                 pcb_io->solicitud->peticiones_memoria,
+                pcb_io->pid,
                 conexion_io->socket
             );
             break;
@@ -37,7 +38,10 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
             break;
         case IO_FS_READ:
         case IO_FS_WRITE:
-            enviar_instruccion_io(pcb_io->solicitud->instruc_io_tokenizadas, pcb_io->solicitud->peticiones_memoria, conexion_io->socket);
+            enviar_instruccion_io(pcb_io->solicitud->instruc_io_tokenizadas, 
+             pcb_io->solicitud->peticiones_memoria,
+             pcb_io->pid, 
+             conexion_io->socket);
         default:
             log_error(logger, "Operacion no reconocida");
             break;
