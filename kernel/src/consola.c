@@ -125,7 +125,7 @@ static void gestionar_comando_leido(char** linea_leida){
 			break;
 
 		case MULTIPROGRAMACION:
-			int* valor = get_valor(linea_leida[1]);
+			int valor = get_valor(linea_leida[1]);
 
 			log_info(logger, "Cambio de grado de multiprogacion de: [%d] a: [%d]", config->grado_multiprogramacion ,valor);
 			config->grado_multiprogramacion = valor;

@@ -43,9 +43,6 @@ void execute(char **instr_tokenizada)
         uint32_t dato_registro = reg_to_uint32(get_registro(instr_tokenizada[3]), instr_tokenizada[3]);
 
         reemplazar_registro_por_dato(instr_tokenizada, 3, dato_registro);
-
-        tengo_pcb = 0;
-        siguiente_pc(pcb_actual);
         exec_operacion_io(instr_tokenizada);                
         break;
     case IO_FS_READ:
@@ -57,12 +54,9 @@ void execute(char **instr_tokenizada)
     case IO_GEN_SLEEP:
     case IO_FS_CREATE:
     case IO_FS_DELETE:
-
-    case IO_FS_TRUNCATE:
-    case IO_FS_WRITE:
-    case IO_FS_READ:
         exec_operacion_io(instr_tokenizada);                
         break;
+
     case IO_STDIN_READ:
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
@@ -331,12 +325,10 @@ void exec_io_stdout_write(char** instr_tokenizada){
 
     t_list *peticiones_lectura = mmu(direccion_logica, tamanio, NULL);
 
-    solicitud_bloqueo_por_io solicitud;
-    solicitud.instruc_io_tokenizadas = instr_tokenizada;
-    solicitud.pcb = pcb_actual;
-    solicitud.peticiones_memoria = peticiones_lectura;
+    solicitud_bloqueo_por_io* solicitud = crear_solicitud_io(instr_tokenizada, peticiones_lectura);
+    pcb_actual->solicitud = solicitud;
 
-    enviar_bloqueo_por_io(solicitud, socket_kernel);
+    enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO_IO);
 }
 
 /* IO_FS_WRITE (Interfaz, Nombre Archivo, Registro Dirección, Registro Tamaño, Registro Puntero Archivo): 

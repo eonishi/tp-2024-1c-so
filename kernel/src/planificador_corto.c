@@ -64,20 +64,37 @@ void gestionar_respuesta_cpu(){
 			break;		
 
 		case PROCESO_BLOQUEADO_IO:
+            log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %s", traduce_cod_op(cod_op));
+
             cancelar_hilo_quantum();
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
 
+            pcb = recibir_pcb(socket_cpu_dispatch);
+            loggear_pcb(pcb);
+            log_info(logger,"PID: %d - Bloqueado por: %s", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
+
             if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
-                log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
+                if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
+                    log_error(logger, "Error de validación de instrucción a IO");
+                    log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
+                    push_cola_exit(pcb);
+                    sem_post(&sem_cpu_libre);
+                    break;
+                }
 
-                pcb = recibir_pcb(socket_cpu_dispatch);
+                enviar_proceso_a_esperar_io(pcb);
+                sem_post(&sem_cpu_libre);
 
+                break;
+            }
+            
+            else{//estoy usando RR o VRR
+                temporal_stop(q_transcurrido); //detengo el contador de quantum usado
+                q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
+                
+                //solicitud.pcb->estado = BLOCKED; //lo hace la funcion push
+                pcb->quantum -= q_usado;
                 loggear_pcb(pcb);
-                log_warning(logger, "Instrucciones del proceso: [%s], [%s], [%s]", 
-                    pcb->solicitud->instruc_io_tokenizadas[0], 
-                    pcb->solicitud->instruc_io_tokenizadas[1], 
-                    pcb->solicitud->instruc_io_tokenizadas[2]
-                );
 
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
                     log_error(logger, "Error de validación de instrucción a IO");
@@ -87,50 +104,44 @@ void gestionar_respuesta_cpu(){
                     break;
                 }
 
-                log_warning(logger, "Proceso [%d] validado", pcb->pid);
                 enviar_proceso_a_esperar_io(pcb);
+                sem_post(&sem_cpu_libre);
 
-                sem_post(&sem_cpu_libre);
-                break;
-            }
-            
-            else{//estoy usando RR o VRR
-                temporal_stop(q_transcurrido); //detengo el contador de quantum usado
-                q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
-                log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %s", traduce_cod_op(cod_op));
-                solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
-                //solicitud.pcb->estado = BLOCKED; //lo hace la funcion push
-                log_info(logger,"PID: %d - Bloqueado por: %s", solicitud.pcb->pid, solicitud.instruc_io_tokenizadas);//validar logueo minimo
-                solicitud.pcb->quantum -= q_usado;
-                loggear_pcb(solicitud.pcb);			
-                push_cola_blocked(solicitud.pcb);
-                log_info(logger, "Tokens de instr: [%s][%s][%s]", solicitud.instruc_io_tokenizadas[0],solicitud.instruc_io_tokenizadas[1], solicitud.instruc_io_tokenizadas[2]);
-                bool enviado = validar_y_enviar_instruccion_a_io(solicitud.instruc_io_tokenizadas, solicitud.peticiones_memoria);
-                if(!enviado)
-                    log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
-                sem_post(&sem_cpu_libre);
                 break;
             }
       
         case INTERRUPCION:
             pcb = recibir_pcb(socket_cpu_dispatch);
+            loggear_pcb(pcb);
+
+            // Existen interrupcion que no son por quantum
+            // TODO: Gestionar casos donde la interrupcion no es por Q
+
             log_info(logger, "FIn de Quantum: PID %d desalojado por fin de Quantum.", pcb->pid);
             pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
-            loggear_pcb(pcb);
+
+
+            // Gestion del proceso en las colas y su sincronizacion
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
             push_cola_ready(pcb);
             sem_post(&sem_cpu_libre);
-            sem_post(&sem_proceso_en_ready);		
+
             break;
             
         case ERROR_DE_PROCESAMIENTO:
             log_error(logger, "Recibi ERROR_DE_PROCESAMIENTO. CODIGO: %d", cod_op);
             log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
+
             pcb = recibir_pcb(socket_cpu_dispatch);
+
+            // Gestion del proceso en colas
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
             push_cola_exit(pcb);
+
+            // Sincronizacion de ejecucion
             sem_post(&sem_cpu_libre);
             sem_post(&sem_grado_multiprog);
+
             break;
 
         case PROCESO_SOLICITA_RECURSO:
@@ -297,7 +308,9 @@ const char* traduce_cod_op(op_code code) {
         case RESPUESTA: return "RESPUESTA";
         case INTERRUPCION: return "INTERRUPCION";
         case PROCESO_TERMINADO: return "PROCESO_TERMINADO";
-        case PROCESO_BLOQUEADO: return "PROCESO_BLOQUEADO";
+        case PROCESO_BLOQUEADO_IO: return "PROCESO_BLOQUEADO";
+        case PROCESO_SOLICITA_RECURSO: return "PROCESO_SOLICITA_RECURSO";
+        case PROCESO_LIBERA_RECURSO: return "PROCESO_LIBERA_RECURSO";
         case PROCESO_DESALOJADO: return "PROCESO_DESALOJADO";
         case ERROR_DE_PROCESAMIENTO: return "ERROR_DE_PROCESAMIENTO";
         case EJECUTAR_INSTRUCCION_IO: return "EJECUTAR_INSTRUCCION_IO";
