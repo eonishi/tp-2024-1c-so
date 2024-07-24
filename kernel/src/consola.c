@@ -1,6 +1,7 @@
 #include "../include/consola.h"
 
 static int pcb_counter = 1; // Variable global para llevar la referencia de los PID
+int diferencia_grado_multiprog = 0;
 
 const table_element tabla_comandos[] = {
 	{"INICIAR_PROCESO", INICIAR_PROCESO},
@@ -126,8 +127,16 @@ static void gestionar_comando_leido(char** linea_leida){
 
 		case MULTIPROGRAMACION:
 			int valor = get_valor(linea_leida[1]);
-
 			log_info(logger, "Cambio de grado de multiprogacion de: [%d] a: [%d]", config->grado_multiprogramacion ,valor);
+
+			diferencia_grado_multiprog = valor - config->grado_multiprogramacion;
+
+			if(diferencia_grado_multiprog > 0){
+				for(int i = 0; i < diferencia_grado_multiprog; i++){
+					sem_post(&sem_grado_multiprog);
+				}
+			}
+			
 			config->grado_multiprogramacion = valor;
 			break;
 

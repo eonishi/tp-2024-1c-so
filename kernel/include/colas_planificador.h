@@ -21,7 +21,8 @@ typedef struct {
 
 extern elemVRR *elemento_VRR;
 extern t_list *lista_conexiones_io;
-extern sem_t sem_proceso_en_ready;
+extern sem_t sem_proceso_en_ready, sem_grado_multiprog;
+extern int diferencia_grado_multiprog;
 
 void inicializar_colas_planificador();
 

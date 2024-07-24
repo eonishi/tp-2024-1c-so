@@ -104,6 +104,11 @@ void push_cola_exit(pcb* pcb){
     // Liberar recursos
     liberar_recurso_del_proceso(pcb->pid);
 
+    if(diferencia_grado_multiprog < 0)
+        diferencia_grado_multiprog++;
+    else
+        sem_post(&sem_grado_multiprog);
+
     // Envio operacion de liberar el proceso en memoria
     enviar_cantidad(pcb->pid, LIBERAR_PROCESO_EN_MEMORIA, socket_memoria);
     op_code status = recibir_operacion(socket_memoria);
