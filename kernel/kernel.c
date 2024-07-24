@@ -2,6 +2,7 @@
 
 int main(){
     logger = iniciar_logger("kernel.log", "KERNEL");
+	aux_log = iniciar_logger("aux_kernel.log", "KERNEL");
 	log_info(logger, "Logger de Kernel iniciado");
 
 	config = inicializar_config();
@@ -90,3 +91,4 @@ void crear_hilo_planificador_corto(){
 //		log_info(logger,"HILO PLANIFICADOR VRR CANCELADO");
 //	}
 //}
+

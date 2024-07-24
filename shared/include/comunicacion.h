@@ -22,10 +22,9 @@ void enviar_buffer(void *buffer, int size, int socket_cliente);
 int esperar_handshake(int socket);
 int esperar_respuesta(int socket, op_code codigo_esperado);
 t_list* recibir_paquete(int);
-void recibir_mensaje(int);
+char* recibir_mensaje(int);
 int recibir_operacion(int); // Sirve como recibir status
 void* recibir_buffer(int*, int);
-char *recibir_respuesta(int socket);
 unsigned recibir_interrupcion(int);
 unsigned deserializar_interrupcion(void*);
 unsigned recibir_cantidad(int);

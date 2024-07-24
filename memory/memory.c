@@ -152,7 +152,7 @@ void* gestionar_solicitudes_cpu(){
 			log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 
 			t_peticion_memoria* solicitud = peticion_recibir(socket_cpu, ESCRIBIR_DATO_EN_MEMORIA);
-			log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d], Tam_Dato: [%d]", solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], Tam_Dato: [%zu]", solicitud->direccion_fisica, solicitud->tam_dato);
 
 			set_memoria(solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 
@@ -165,9 +165,12 @@ void* gestionar_solicitudes_cpu(){
 			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
 
 			t_peticion_memoria* solicitud_lectura = peticion_recibir(socket_cpu, LEER_DATO_DE_MEMORIA);
-			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%d]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%zu]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
 
 			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
+
+			log_info(logger, "DATO LEIDO:...");
+			log_info(logger, "DATO LEIDO: [%s]", ptr_base_del_dato);
 
 			esperar_retardo();
 			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, socket_cpu);
@@ -218,9 +221,11 @@ void* gestionar_solicitudes_io(void* pthread_arg){
 			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
 
 			t_peticion_memoria* solicitud_lectura = peticion_recibir(io_socket, LEER_DATO_DE_MEMORIA);
-			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%d]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
+			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%zu]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
 
 			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
+
+			log_info(logger, "DATO LEIDO: [%s]", ptr_base_del_dato);
 
 			esperar_retardo();
 			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, io_socket);
@@ -232,7 +237,7 @@ void* gestionar_solicitudes_io(void* pthread_arg){
 		log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 
 		t_peticion_memoria* solicitud = peticion_recibir(io_socket, ESCRIBIR_DATO_EN_MEMORIA);
-		log_info(logger, "Recibido. Dirección_fisica: [%d], Dato: [%d], Tam_Dato: [%d]", solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
+		log_info(logger, "Recibido. Dirección_fisica: [%d], Tam_Dato: [%zu]", solicitud->direccion_fisica, solicitud->tam_dato);
 
 		set_memoria(solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 

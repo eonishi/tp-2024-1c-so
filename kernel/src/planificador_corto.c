@@ -30,19 +30,16 @@ void *iniciar_planificacion_corto(){
 
 
 void dispatch_proceso_planificador(pcb* newPcb){
-    log_warning(logger, "Estoy por enviar pcb!");
     enviar_pcb(newPcb, socket_cpu_dispatch, DISPATCH_PROCESO);
 
     if (strcmp(config->algoritmo_planificacion, "FIFO") != 0){
         q_transcurrido = temporal_create();
-    }//aca creo el contador de quantum usado para VRR
-
+    }//aca creo el contador de quantum usado para RR/VRR
 	log_info(logger, "Solicitud DISPATCH_PROCESO enviada a CPU");    
 }
 
 void gestionar_respuesta_cpu(){
     
-    log_warning(logger, "Arranca?");
 	int cod_op = recibir_operacion(socket_cpu_dispatch);
 	log_info(logger, "Codigo recibido desde el cpu: [%d]", cod_op);
 
@@ -51,13 +48,14 @@ void gestionar_respuesta_cpu(){
 	switch (cod_op) {
 		case PROCESO_TERMINADO:
             cancelar_hilo_quantum();
-			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
+			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %s", traduce_cod_op(cod_op));
 			pcb = recibir_pcb(socket_cpu_dispatch);
 			loggear_pcb(pcb);
 
-            log_warning(logger, "Estoy por hacer pop&destroy");
+
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
-            log_warning(logger, "Estoy por hacer push_cola_exit");
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); //validar log minimo
+
             push_cola_exit(pcb);
 
 			sem_post(&sem_cpu_libre);
@@ -95,14 +93,15 @@ void gestionar_respuesta_cpu(){
                 sem_post(&sem_cpu_libre);
                 break;
             }
-            /*
+            
             else{//estoy usando RR o VRR
                 temporal_stop(q_transcurrido); //detengo el contador de quantum usado
                 q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
-                log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %d", cod_op);
+                log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %s", traduce_cod_op(cod_op));
                 solicitud_bloqueo_por_io solicitud = recibir_solicitud_bloqueo_por_io(socket_cpu_dispatch);
-                solicitud.pcb->estado = BLOCKED;
-                solicitud.pcb->quantum -= q_usado;//////////no calcule el q_usado en este punto
+                //solicitud.pcb->estado = BLOCKED; //lo hace la funcion push
+                log_info(logger,"PID: %d - Bloqueado por: %s", solicitud.pcb->pid, solicitud.instruc_io_tokenizadas);//validar logueo minimo
+                solicitud.pcb->quantum -= q_usado;
                 loggear_pcb(solicitud.pcb);			
                 push_cola_blocked(solicitud.pcb);
                 log_info(logger, "Tokens de instr: [%s][%s][%s]", solicitud.instruc_io_tokenizadas[0],solicitud.instruc_io_tokenizadas[1], solicitud.instruc_io_tokenizadas[2]);
@@ -111,14 +110,12 @@ void gestionar_respuesta_cpu(){
                     log_error(logger, "Hubo un error al intentar enviar las instrucciones a IO");
                 sem_post(&sem_cpu_libre);
                 break;
-            }*/
+            }
+      
         case INTERRUPCION:
-            //temporal_stop(q_transcurrido); //detengo el contador de quantum usado -> migrado a gestor_io
-            //q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos -> migrado a gestor_io
             pcb = recibir_pcb(socket_cpu_dispatch);
-            //log_info(logger, "Recibi proceso PID [%d] desalojado por INTERRUPCION CODIGO: [%d]", pcb->pid, cod_op);
-            //pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
-            //pcb->estado = READY;
+            log_info(logger, "FIn de Quantum: PID %d desalojado por fin de Quantum.", pcb->pid);
+            pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
             loggear_pcb(pcb);
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
             push_cola_ready(pcb);
@@ -128,6 +125,7 @@ void gestionar_respuesta_cpu(){
             
         case ERROR_DE_PROCESAMIENTO:
             log_error(logger, "Recibi ERROR_DE_PROCESAMIENTO. CODIGO: %d", cod_op);
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
             pcb = recibir_pcb(socket_cpu_dispatch);
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
             push_cola_exit(pcb);
@@ -193,9 +191,15 @@ void gestionar_respuesta_cpu(){
             enviar_pcb(pcb, socket_cpu_dispatch, DISPATCH_PROCESO);
             gestionar_respuesta_cpu();
             break;
-            
+
+        case OUT_OF_MEMORY:
+        log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid); //validar log minimo
+        break;
+      
 		case -1:
+            pcb = recibir_pcb(socket_cpu_dispatch);
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 			break;
@@ -213,7 +217,8 @@ void *iniciar_planificacion_corto_RR(){
             sem_wait(&sem_cpu_libre);
             log_info(logger, "CortoRR: Cpu libre! pasando proximo proceso a execute..");	
             pcb* pcb = pop_cola_ready();
-            pcb->estado = EXECUTE;
+            push_cola_execute(pcb);
+            //pcb->estado = EXECUTE; //// REVISAR SI HACE FALTA, LOS CAMBIOS DE ESTADO DEBEN MANEJARSE CON LOS PUSH
             dispatch_proceso_planificador(pcb);
             crear_hilo_quantum();
             gestionar_respuesta_cpu();
@@ -273,4 +278,32 @@ void cancelar_hilo_quantum(){
                 pthread_cancel(hilo_quantum);
                 log_info(logger, "hilo quantum cancelado.");
             }
+}
+
+const char* traduce_cod_op(op_code code) {
+    switch (code) {
+        case MENSAJE: return "MENSAJE";
+        case PAQUETE: return "PAQUETE";
+        case HANDSHAKE: return "HANDSHAKE";
+        case CREAR_PROCESO_EN_MEMORIA: return "CREAR_PROCESO_EN_MEMORIA";
+        case LIBERAR_PROCESO_EN_MEMORIA: return "LIBERAR_PROCESO_EN_MEMORIA";
+        case DISPATCH_PROCESO: return "DISPATCH_PROCESO";
+        case FETCH_INSTRUCCION: return "FETCH_INSTRUCCION";
+        case REDIMENSIONAR_MEMORIA_PROCESO: return "REDIMENSIONAR_MEMORIA_PROCESO";
+        case ESCRIBIR_DATO_EN_MEMORIA: return "ESCRIBIR_DATO_EN_MEMORIA";
+        case LEER_DATO_DE_MEMORIA: return "LEER_DATO_DE_MEMORIA";
+        case DATO_LEIDO_DE_MEMORIA: return "DATO_LEIDO_DE_MEMORIA";
+        case CONSULTAR_TABLA_DE_PAGINAS: return "CONSULTAR_TABLA_DE_PAGINAS";
+        case RESPUESTA: return "RESPUESTA";
+        case INTERRUPCION: return "INTERRUPCION";
+        case PROCESO_TERMINADO: return "PROCESO_TERMINADO";
+        case PROCESO_BLOQUEADO: return "PROCESO_BLOQUEADO";
+        case PROCESO_DESALOJADO: return "PROCESO_DESALOJADO";
+        case ERROR_DE_PROCESAMIENTO: return "ERROR_DE_PROCESAMIENTO";
+        case EJECUTAR_INSTRUCCION_IO: return "EJECUTAR_INSTRUCCION_IO";
+        case FIN_EJECUCION_IO: return "FIN_EJECUCION_IO";
+        case SUCCESS: return "SUCCESS";
+        case OUT_OF_MEMORY: return "OUT_OF_MEMORY";
+        default: return "UNKNOWN";
+    }
 }

@@ -10,6 +10,7 @@
 #include "../../shared/include/pcb.h"
 
 extern t_log *logger;
+extern t_log *aux_log;
 extern int socket_memoria;
 extern t_list *recursos_disponibles;
 

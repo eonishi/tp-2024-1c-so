@@ -122,17 +122,12 @@ void* recibir_buffer(int* size, int socket_cliente)
 	return buffer;
 }
 
-void recibir_mensaje(int socket_cliente)
+char* recibir_mensaje(int socket_cliente)
 {
 	int size;
 	char* buffer = recibir_buffer(&size, socket_cliente);
 	log_info(logger, "Mensaje recibido: [%s]", buffer); // TODO  REVISAR
-	free(buffer);
-}
-
-char* recibir_respuesta(int socket){
-	int size;
-	char* buffer = recibir_buffer(&size, socket);
+	
 	return buffer;
 }
 

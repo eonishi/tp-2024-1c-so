@@ -39,4 +39,12 @@ solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_cliente);
 int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int socket_cliente);
 char** recibir_instruccion_io(int socket_cliente, t_list** ptr_peticiones_memoria);
 
+typedef struct{
+    char *nombre_archivo;
+    int tamanio_archivo;
+} solicitud_truncar_archivo;
+
+void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, int socket);
+solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket);
+
 #endif

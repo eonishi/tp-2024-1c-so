@@ -135,16 +135,46 @@ size_t peticiones_tam_total(t_list* peticiones){
     return acumulador;
 }
 
-void peticiones_distribuir_dato(t_list* peticiones, void* dato_entero, size_t tam_dato){
-    if(peticiones_tam_total(peticiones) != tam_dato) return;
+void peticiones_distribuir_dato(t_list* peticiones, void* dato_entero, size_t tam_dato) {
+    if (peticiones_tam_total(peticiones) != tam_dato) {
+        log_error(logger, "El tamaño total de las peticiones no coincide con tam_dato");
+        return; 
+    }
 
-    void* ptr_dato_entero = dato_entero; 
+    void* ptr_dato_entero = dato_entero;
+    if (ptr_dato_entero == NULL) {
+        log_error(logger, "El puntero dato_entero es NULL");
+        return;
+    }
 
     size_t offset = 0;
-    for(int i = 0; i < list_size(peticiones); i++){
+    for (int i = 0; i < list_size(peticiones); i++) {
         t_peticion_memoria* peticion = list_get(peticiones, i);
+        if (peticion == NULL) {
+            log_error(logger, "Peticion es NULL en la posicion %d", i);
+            continue;
+        }
+
+        if (peticion->tam_dato == 0) {
+            log_error(logger, "peticion->tam_dato es 0 en la posicion %d", i);
+            continue;
+        }
+
         peticion->dato = malloc(peticion->tam_dato);
-        memcpy(peticion->dato, ptr_dato_entero + offset, peticion->tam_dato);
+        if (peticion->dato == NULL) {
+            log_error(logger, "Error al asignar memoria para peticion->dato en la posicion %d", i);
+            continue;
+        }
+
+        // Verificar límites antes de hacer memcpy
+        if (offset + peticion->tam_dato > tam_dato) {
+            log_error(logger, "Offset + peticion->tam_dato supera el tamaño de dato_entero en la posición %d", i);
+            free(peticion->dato);
+            continue;
+        }
+
+        memcpy(peticion->dato, (char*)ptr_dato_entero + offset, peticion->tam_dato);
+
         offset += peticion->tam_dato;
     }
 }

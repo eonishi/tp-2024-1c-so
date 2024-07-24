@@ -68,10 +68,8 @@ void *escuchar_io(void *args){
             }else {
 			    push_cola_ready(pcb_blocked);
             }
-
-            //  io_libre post() // Semaforo que avisa que la io ya esta libre para nuevo uso
-
-			break;
+			  break;
+        
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
             cerrar_conexion_io(conexion->nombre_interfaz);

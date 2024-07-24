@@ -57,12 +57,15 @@ t_list* mmu(unsigned direccion_logica, size_t tam_dato, void* dato){
                 list_add(direcciones_fisica, nueva_peticion);
             }
         }
-
         // No existe en la TLB, Hacer consulta a la tabla de paginas:
         else{
             log_info(logger, "MISS TLB!!! i: [%d], numero_pagina:[%d], ", i, numero_pagina);
             unsigned frame_number = consultar_tabla_de_paginas(numero_pagina);
-            agregar_entrada_tlb(pcb_actual->pid, numero_pagina, frame_number);
+
+            if(config.cantidad_entradas_tlb > 0){
+                agregar_entrada_tlb(pcb_actual->pid, numero_pagina, frame_number);
+            }
+            
             if(i == 0){
                 bytes_a_leer = min(tam_dato, TAM_PAGINA - offset);
                 t_peticion_memoria* nueva_peticion = peticion_crear(frame_number * TAM_PAGINA+offset, ptr_byte_dato, bytes_a_leer);

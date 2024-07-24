@@ -17,19 +17,19 @@ void io_stdout() {
                     log_peticiones(peticiones_memoria);
 
                     // [] Enviar peticiones a memoria y guardar el resultado
-                    size_t tam_total = peticiones_tam_total(peticiones_memoria);
+                    size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
                     log_info(logger, "Tam total de las peticiones [%d]", tam_total);
                     void* string_a_imprimir = malloc(tam_total);
+                    memset(string_a_imprimir, 0, tam_total);
                     void* ptr_string = string_a_imprimir;
 
                     for (int i = 0; i < list_size(peticiones_memoria); i++){
                          t_peticion_memoria* peticion = list_get(peticiones_memoria, i);
-                         log_info(logger, "Peticion [%d] de [%d]", i, list_size(peticiones_memoria));
+                         log_info(logger, "Peticion [%d] de [%d]", i+1, list_size(peticiones_memoria));
                          peticion_lectura_enviar(peticion, &ptr_string, memory_socket);
                          controlar_peticion();
                     }
-
-                    // [] Imprimir resultado
+                    // [] Imprimir resultado          
                     printf("%s\n", string_a_imprimir);
 
                     // [] Enviar status a Kernel
