@@ -1,6 +1,7 @@
 #ifndef TABLAS_DE_PAGINAS_H_
 #define TABLAS_DE_PAGINAS_H_
 
+#include <pthread.h>
 #include <commons/collections/dictionary.h>
 #include <commons/collections/list.h>
 #include <commons/string.h>
@@ -12,6 +13,7 @@ struct t_proceso_en_memoria;
 
 extern t_list* procesos_en_memoria;
 extern unsigned PID_a_liberar, PID_solicitado;
+extern pthread_mutex_t mutex_procesos_en_memoria;
 
 t_tabla_paginas *crear_tabla_paginas();
 unsigned get_frame_number_by_pagina(unsigned nro_pagina);
