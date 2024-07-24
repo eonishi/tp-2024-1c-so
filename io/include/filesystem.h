@@ -2,6 +2,7 @@
 #define IO_FILESYSTEM_H_
 
 #include <commons/config.h>
+#include <commons/string.h>
 #include <string.h>
 #include <stdlib.h>
 #include "configuracion.h"
