@@ -4,6 +4,8 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
     operacion operacion = get_operacion(pcb_io->solicitud->instruc_io_tokenizadas);
     log_info(logger, "Enviando operacion [%d] a IO [%s]", operacion, conexion_io->nombre_interfaz);
 
+    char *file_name;
+
     switch (operacion){
         case IO_GEN_SLEEP:
             enviar_cantidad(atoi(pcb_io->solicitud->instruc_io_tokenizadas[2]), EJECUTAR_INSTRUCCION_IO, conexion_io->socket);
@@ -18,8 +20,9 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
             break;
         case IO_FS_CREATE:
         case IO_FS_DELETE:
-            //char* file_name = instruc_io_tokenizadas[2];
-            //enviar_mensaje(EJECUTAR_INSTRUCCION_IO, file_name, conexion_io->socket);
+            file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
+            enviar_mensaje(CREAR_ARCHIVO_FS, file_name, conexion_io->socket);
+            
             break;
         case IO_FS_TRUNCATE:
         case IO_FS_READ:

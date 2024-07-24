@@ -25,9 +25,9 @@ bool crear_archivo(char* nombre){
     }
 
     // Contenido inicial del archivo
-    char* contenido_inicial[100];
-    sprintf(*contenido_inicial, "BLOQUE_INICIAL=%d\nTAMANIO_ARCHIVO=0\n", bloque);
-    ssize_t bytes_escritos = write(fd, contenido_inicial, strlen(*contenido_inicial));
+    char* contenido_inicial = malloc(sizeof(char) * 100); // Hay que hacer free de esta variable
+    sprintf(contenido_inicial, "BLOQUE_INICIAL=%d\nTAMANIO_ARCHIVO=0\n", bloque);
+    ssize_t bytes_escritos = write(fd, contenido_inicial, string_length(contenido_inicial));
 
     if (bytes_escritos == -1) {
         log_error(logger, "Error al escribir en el archivo: [%s]", nombre);
