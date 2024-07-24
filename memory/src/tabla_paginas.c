@@ -1,12 +1,15 @@
 #include "../include/tabla_paginas.h"
 
 static t_tabla_paginas* get_table_by_PID(bool tiene_PID (void*)){
-    if(!list_any_satisfy(procesos_en_memoria, tiene_PID)){
-        log_error(logger, "No se encontró el PID solicitado");
-        abort();
-    }
+    pthread_mutex_lock(&mutex_procesos_en_memoria);
+        if(!list_any_satisfy(procesos_en_memoria, tiene_PID)){
+            log_error(logger, "No se encontró el PID solicitado");
+            abort();
+        }
 
-    t_proceso_en_memoria* proceso_buscado = list_find(procesos_en_memoria, tiene_PID);
+        t_proceso_en_memoria* proceso_buscado = list_find(procesos_en_memoria, tiene_PID);
+    pthread_mutex_unlock(&mutex_procesos_en_memoria);
+
     return proceso_buscado->tabla_paginas;
 }
 
