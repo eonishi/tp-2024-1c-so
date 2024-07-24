@@ -169,8 +169,7 @@ void* gestionar_solicitudes_cpu(){
 
 			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
 
-			log_info(logger, "DATO LEIDO:...");
-			log_info(logger, "DATO LEIDO: [%s]", ptr_base_del_dato);
+			log_info(logger, "DATO LEIDO: [%.*s]",solicitud_lectura->tam_dato, ptr_base_del_dato);
 
 			esperar_retardo();
 			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, socket_cpu);
@@ -225,7 +224,7 @@ void* gestionar_solicitudes_io(void* pthread_arg){
 
 			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
 
-			log_info(logger, "DATO LEIDO: [%s]", ptr_base_del_dato);
+			log_info(logger, "DATO LEIDO: [%.*s]",solicitud_lectura->tam_dato, ptr_base_del_dato);
 
 			esperar_retardo();
 			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, io_socket);

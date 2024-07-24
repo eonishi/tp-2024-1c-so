@@ -1,6 +1,7 @@
 #include "../include/proceso_mem.h"
 
 t_list *procesos_en_memoria;
+pthread_mutex_t mutex_procesos_en_memoria = PTHREAD_MUTEX_INITIALIZER;
 
 void inicializar_procesos_en_memoria(){
     procesos_en_memoria = list_create();
@@ -49,8 +50,9 @@ void cargar_proceso_en_memoria(char* path, unsigned PID){
     nuevo_set_instruc->instrucciones = leer_archivo_instrucciones(path);
     nuevo_set_instruc->tabla_paginas = list_create();
 
-    //Guardo en una lista los procesos en memoria (Temporal hasta definir como se guardan)
-    list_add(procesos_en_memoria, nuevo_set_instruc);
+    pthread_mutex_lock(&mutex_procesos_en_memoria);
+        list_add(procesos_en_memoria, nuevo_set_instruc);
+    pthread_mutex_unlock(&mutex_procesos_en_memoria);
     log_info(logger, "Instrucciones del proceso PID:%u cargadas en memoria", PID);
 } 
 
@@ -70,7 +72,12 @@ static bool memoria_tiene_pid_a_liberar(void* set_instrucciones){
 
 t_proceso_en_memoria* get_proceso_by_PID(unsigned PID, unsigned* PID_ptr, bool memoria_tiene_pid(void*)){
     *PID_ptr = PID;
-    return list_find(procesos_en_memoria, memoria_tiene_pid);
+
+    pthread_mutex_lock(&mutex_procesos_en_memoria);   
+        t_proceso_en_memoria* proceso = list_find(procesos_en_memoria, memoria_tiene_pid);
+    pthread_mutex_unlock(&mutex_procesos_en_memoria);
+
+    return proceso;
 }
 
 // ----Liberador de memoria----
@@ -91,5 +98,7 @@ static void proceso_mem_destroyer(void* set_instrucciones){
 
 void liberar_proceso_en_memoria(unsigned PID){
     PID_a_liberar=PID;
-    list_remove_and_destroy_by_condition(procesos_en_memoria, memoria_tiene_pid_a_liberar, proceso_mem_destroyer);
+    pthread_mutex_lock(&mutex_procesos_en_memoria);
+        list_remove_and_destroy_by_condition(procesos_en_memoria, memoria_tiene_pid_a_liberar, proceso_mem_destroyer);
+    pthread_mutex_unlock(&mutex_procesos_en_memoria);
 }//--------
