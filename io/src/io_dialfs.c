@@ -1,5 +1,8 @@
 #include "../include/io_dialfs.h"
 
+static void exec_io_write_fs(char **tokens_instr, t_list *peticiones_memoria);
+static void exec_io_read_fs(char **tokens_instr, t_list *peticiones_memoria);
+
 void io_dialfs() {
     log_info(logger, "IO DIALSFS iniciada");
 
@@ -53,10 +56,10 @@ void io_dialfs() {
                     log_peticiones(peticiones_memoria);
 
                     if(strcmp(tokens_instr[0], "IO_FS_WRITE") == 0){
-                        exec_io_write(tokens_instr, peticiones_memoria);
+                        exec_io_write_fs(tokens_instr, peticiones_memoria);
                     }
                     else{
-                        exec_io_read(tokens_instr, peticiones_memoria);
+                        exec_io_read_fs(tokens_instr, peticiones_memoria);
                     }
                 break;
             case -1:
@@ -70,7 +73,7 @@ void io_dialfs() {
     }
 }
 
-void exec_io_write(char** tokens_instr, t_list *peticiones_memoria){   
+static void exec_io_write_fs(char** tokens_instr, t_list *peticiones_memoria){   
     // [] Enviar peticiones a memoria y guardar el resultado
     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
     log_info(logger, "Tam total de las peticiones [%d]", tam_total);
@@ -101,7 +104,7 @@ void exec_io_write(char** tokens_instr, t_list *peticiones_memoria){
     enviar_status(FIN_EJECUCION_IO, kernel_socket);  
 }
 
-void exec_io_read(char** tokens_instr, t_list *peticiones_memoria){
+static void exec_io_read_fs(char** tokens_instr, t_list *peticiones_memoria){
     char* nombre_archivo = tokens_instr[2];
     char* puntero_archivo = tokens_instr[4];
     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
@@ -114,7 +117,7 @@ void exec_io_read(char** tokens_instr, t_list *peticiones_memoria){
 
     memset(datos_leidos, 0, tam_total);
 
-    if(!leer_archivo(nombre_archivo,atoi(puntero_archivo), tam_total, &datos_leidos)){
+    if(!leer_archivo(nombre_archivo,atoi(puntero_archivo), tam_total, (void*)&datos_leidos)){
         log_error(logger, "No se pudo leer el archivo");
         // TODO: Enviar respuesta de error?
     }

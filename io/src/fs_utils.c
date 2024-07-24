@@ -1,6 +1,6 @@
 #include "../include/fs_utils.h"
 
-char* fs_fullpath(char* filename) {
+char* fs_fullpath(const char* filename) {
     char* fs_path = config.path_base_dialfs;
     size_t len1 = strlen(fs_path);
     size_t len2 = strlen(filename);
@@ -42,13 +42,14 @@ int fs_open(const char* filename, int flags, mode_t mode) {
     free(path);
     return fd;
 }
+
 DIR* fs_opendir (){
     // TODO: config.path_base_dialfs
     DIR* dir = opendir(config.path_base_dialfs);
 
     if (dir == NULL) {
         perror("No se puede abrir el directorio");
-        return;
+        return NULL;
     }
 
     return dir;

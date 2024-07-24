@@ -20,7 +20,7 @@ typedef struct
 
 
 void inicializar_lista_fcb();
-
+void recuperar_archivos_existentes();
 int cantidad_de_fcbs();
 void crear_fcb(char* nombre, t_config* config_loader);
 void insertar_fcb(fcb* fcb);
