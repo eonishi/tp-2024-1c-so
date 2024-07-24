@@ -6,7 +6,8 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
 
     switch (operacion){
         case IO_GEN_SLEEP:
-            enviar_cantidad(atoi(pcb_io->solicitud->instruc_io_tokenizadas[2]), EJECUTAR_INSTRUCCION_IO, conexion_io->socket);
+            // TODO enviar_io_sleep(tiempo, processId, socket);
+            enviar_io_sleep(atoi(pcb_io->solicitud->instruc_io_tokenizadas[2]), pcb_io->pid, conexion_io->socket);
             break;
         case IO_STDIN_READ:
         case IO_STDOUT_WRITE:

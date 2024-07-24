@@ -148,3 +148,39 @@ solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket){
 
     return solicitud;
 }
+
+
+void enviar_io_sleep(int retraso, int pid, int socket){
+    t_paquete* paquete = crear_paquete(EJECUTAR_INSTRUCCION_IO);
+
+    void* stream_retraso = serializar_int(retraso);
+    agregar_a_paquete(paquete, stream_retraso, sizeof(int));
+
+    void* stream_pid = serializar_int(pid);
+    agregar_a_paquete(paquete, stream_pid, sizeof(int));
+
+    enviar_paquete(paquete, socket);
+
+    free(stream_retraso);
+    free(stream_pid);
+
+    eliminar_paquete(paquete);
+}
+
+solicitud_io_sleep recibir_io_sleep(int socket){
+    t_list* lista_bytes = recibir_paquete(socket);
+
+    void* retraso_bytes = list_get(lista_bytes, 0);
+    void* pid_bytes = list_get(lista_bytes, 1);
+
+    int retraso = deserializar_int(retraso_bytes);
+    int pid = deserializar_int(pid_bytes);
+
+    free(lista_bytes);
+    free(retraso_bytes);
+    free(pid_bytes);
+
+    solicitud_io_sleep solicitud = {retraso, pid};
+
+    return solicitud;
+}

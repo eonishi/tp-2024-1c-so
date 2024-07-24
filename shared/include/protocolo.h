@@ -47,4 +47,12 @@ typedef struct{
 void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, int socket);
 solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket);
 
+typedef struct{
+    int retraso;
+    int pid;
+} solicitud_io_sleep;
+
+void enviar_io_sleep(int retraso, int pid, int socket);
+solicitud_io_sleep recibir_io_sleep(int socket);
+
 #endif

@@ -73,6 +73,7 @@ unsigned recibir_cantidad(int socket_cliente){
 	};
 }
 
+
 int esperar_respuesta(int socket, op_code codigo_esperado){
 	int codigo_recibido = recibir_operacion(socket);
 	log_info(logger, "Esperar_respuesta: Codigo: [%d]", codigo_recibido);
