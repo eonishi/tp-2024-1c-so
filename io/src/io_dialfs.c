@@ -114,6 +114,8 @@ void exec_io_read(char** tokens_instr, t_list *peticiones_memoria){
 
     memset(datos_leidos, 0, tam_total);
 
+    log_info(logger, "Por leer archivo: [%s] tam: [%d]", nombre_archivo, tam_total);
+    
     if(!leer_archivo(nombre_archivo,atoi(puntero_archivo), tam_total, &datos_leidos)){
         log_error(logger, "No se pudo leer el archivo");
         // TODO: Enviar respuesta de error?

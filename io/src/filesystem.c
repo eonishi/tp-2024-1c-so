@@ -80,14 +80,13 @@ bool truncar_archivo(char* nombre, int new_size){
         exit(EXIT_FAILURE);
     }
 
-    int bloques_a_ocupar = calcular_bloques_a_ocupar(new_size); 
+    int bloques_a_ocupar = calcular_bloques_necesarios(new_size); 
     int bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
     int tam_archivo = config_get_int_value(config_loader, "TAMANIO_ARCHIVO");
-    
-    if(new_size > tam_archivo){
-        int bloques_actuales_ocupados = (tam_archivo == 0) ? 1 : tam_archivo/8;
-        int bloques_necesarios = bloques_a_ocupar - bloques_actuales_ocupados;
+    int bloques_actuales_ocupados = (tam_archivo == 0) ? 1 : calcular_bloques_necesarios(tam_archivo);
+    int bloques_necesarios = bloques_a_ocupar - bloques_actuales_ocupados;
 
+    if(new_size > tam_archivo){        
         if(!hay_bloques_contiguos_para_extender(bloque_inicial, bloques_actuales_ocupados, bloques_necesarios)){
             log_info(logger, "No hay bloques contiguos suficientes.");
 
@@ -99,22 +98,30 @@ bool truncar_archivo(char* nombre, int new_size){
             }
 
             eliminar_fcb_por_nombre(nombre);
-            
-            compactar();
-
-            reubicar_archivo_desde_fcb(file_control_block);
             insertar_fcb(file_control_block);
 
+            compactar();        
 
             bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
         }
+    }
+    else{
+        // [1,1,1,1,1,1,1] -> Va del 0 al 6 y tiene 7 bloques ocupados
+        // anterior_ultimo_bloque = 0 + 7 - 1 = 6 es el último bloque
+        int anterior_ultimo_bloque = (bloque_inicial + bloques_actuales_ocupados) - 1;
+        // [1,1,1,1,1,0,0] -> Va del 0 al 4 y tiene 5 bloques ocupados
+        // 0 + 5 - 1
+        int nuevo_ultimo_bloque = bloque_inicial + bloques_a_ocupar - 1;  
+
+        // Se libera del bloque 5 al 6      
+        liberar_bloques_bitmap_por_rango(nuevo_ultimo_bloque + 1, anterior_ultimo_bloque);
     }
 
     // Actualizamos properties del archivo
     set_campo_de_archivo("TAMANIO_ARCHIVO", new_size, config_loader);
     set_campo_de_archivo("BLOQUE_INICIAL", bloque_inicial, config_loader);
     // Actualizamos bitmap
-    asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
+    asignar_bloques_bitmap_por_rango(bloque_inicial, bloque_inicial + bloques_a_ocupar);
 
     close(fd);
 
@@ -147,20 +154,6 @@ bool hay_bloques_libres_suficientes(int bloques_necesarios){
     return false;
 }
 
-void compactar(){
-    liberar_bitmap_de_bloques();
-    // TODO: Sera necesario Liberar bloques??
-    // Volvemos a insertar secuencialmente los archivos
-    for(int i = 0; i < cantidad_de_fcbs(); i++){
-        fcb* fcb = obtener_fcb(i);
-
-        reubicar_archivo_desde_fcb(fcb);
-    }
-
-    // ejecutar instruccion
-    usleep(config.retraso_compatacion * 1000);
-    // TODO: Sera necesario reorganizar bloques también??
-}
 
 
 bool escribir_archivo(char*nombre, void* datos, int tam_total, int puntero_archivo){
@@ -182,12 +175,11 @@ bool escribir_archivo(char*nombre, void* datos, int tam_total, int puntero_archi
 }
 
 bool leer_archivo(char*nombre, int puntero_archivo, int tam_a_leer, void** datos_leidos){
-        fcb* fcb = obtener_fcb_por_nombre(nombre);
+    fcb* fcb = obtener_fcb_por_nombre(nombre);
 
     int bloque_inicial = config_get_int_value(fcb->config, "BLOQUE_INICIAL");
 
     int byte_inicial = calcular_byte_inicial_de_bloque(bloque_inicial);
-
     int posicion_inicial = byte_inicial + puntero_archivo;
 
     if(!leer_datos_en_bloques(posicion_inicial, tam_a_leer, datos_leidos)){
