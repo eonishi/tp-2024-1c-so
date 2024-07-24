@@ -8,29 +8,33 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
 
     switch (operacion){
         case IO_GEN_SLEEP:
-            enviar_cantidad(atoi(pcb_io->solicitud->instruc_io_tokenizadas[2]), EJECUTAR_INSTRUCCION_IO, conexion_io->socket);
+            // TODO enviar_io_sleep(tiempo, processId, socket);
+            enviar_io_sleep(atoi(pcb_io->solicitud->instruc_io_tokenizadas[2]), pcb_io->pid, conexion_io->socket);
             break;
         case IO_STDIN_READ:
         case IO_STDOUT_WRITE:
             enviar_instruccion_io(
                 pcb_io->solicitud->instruc_io_tokenizadas,
                 pcb_io->solicitud->peticiones_memoria,
+                pcb_io->pid,
                 conexion_io->socket
             );
             break;
         case IO_FS_CREATE:
             file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
-            enviar_mensaje(CREAR_ARCHIVO_FS, file_name, conexion_io->socket);
+
+            enviar_solicitud_accion_archivo_fs(CREAR_ARCHIVO_FS, file_name, pcb_io->pid, conexion_io->socket);
             break;
         case IO_FS_DELETE:
             file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
-            enviar_mensaje(ELIMINAR_ARCHIVO_FS, file_name, conexion_io->socket);
+
+            enviar_solicitud_accion_archivo_fs(ELIMINAR_ARCHIVO_FS, file_name, pcb_io->pid, conexion_io->socket);
             break;
         case IO_FS_TRUNCATE:
             file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
             char* size = pcb_io->solicitud->instruc_io_tokenizadas[3];
             
-            solicitud_truncar_archivo solicitud = {file_name, atoi(size)};
+            solicitud_truncar_archivo solicitud = {file_name, atoi(size), pcb_io->pid};
             enviar_solicitud_truncar_archivo_fs(solicitud, conexion_io->socket);
 
             break;
@@ -38,6 +42,7 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
         case IO_FS_WRITE:
             enviar_instruccion_io(pcb_io->solicitud->instruc_io_tokenizadas, 
              pcb_io->solicitud->peticiones_memoria,
+             pcb_io->pid,
              conexion_io->socket);
         default:
             log_error(logger, "Operacion no reconocida");

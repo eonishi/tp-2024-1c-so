@@ -88,11 +88,14 @@ solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_de_una_io
 }
 
 
-int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int socket_cliente){
+int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memoria, int pid, int socket_cliente){
     // TODO: teniendo en cuenta que la validación de la existencia de io y correspondencia de instruccion
     // la hace kernel, es redundante enviar toda la instruccion tokenizada. Se podría enviar lo necesario para la ejecucion.
 
     t_paquete* paquete = crear_paquete(EJECUTAR_INSTRUCCION_IO);
+
+    void* stream_pid = serializar_int(pid);
+    agregar_a_paquete(paquete, stream_pid, sizeof(int));
 
     serializar_lista_strings_y_agregar_a_paquete(instruccion_tokenizada, paquete);
 
@@ -105,14 +108,18 @@ int enviar_instruccion_io(char** instruccion_tokenizada, t_list* peticiones_memo
 }
 
 // Solucion temporal: recibo un puntero a una lista de peticiones de memoria
-char** recibir_instruccion_io(int socket_cliente, t_list** peticiones_memoria){
+solicitud_instruccion_io recibir_instruccion_io(int socket_cliente){
     t_list* bytes = recibir_paquete(socket_cliente);
 
-    char** tokens = deserializar_lista_strings(bytes, 0);
+    int pid = deserializar_int(list_get(bytes, 0));
 
-    *peticiones_memoria = peticiones_desempaquetar_segun_index(bytes, 1 + string_array_size(tokens));
+    char** tokens = deserializar_lista_strings(bytes, 1);
 
-    return tokens;
+    t_list* peticiones_memoria = peticiones_desempaquetar_segun_index(bytes, 2 + string_array_size(tokens));
+
+    solicitud_instruccion_io result = {pid, tokens, peticiones_memoria};
+
+    return result;
 }
 
 void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, int socket){
@@ -125,10 +132,14 @@ void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, in
     void* stream_tamanio_archivo = serializar_int(solicitud.tamanio_archivo);
     agregar_a_paquete(paquete, stream_tamanio_archivo, sizeof(int));
 
+    void* stream_pid = serializar_int(solicitud.pid);
+    agregar_a_paquete(paquete, stream_pid, sizeof(int));
+
     enviar_paquete(paquete, socket);
 
     free(stream_nombre_archivo);
     free(stream_tamanio_archivo);
+    free(stream_pid);
 
     eliminar_paquete(paquete);
 }
@@ -138,13 +149,87 @@ solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket){
 
     char* nombre_archivo = list_get(lista_bytes, 0);
     void* tam_archivo_bytes = list_get(lista_bytes, 1);
+    void* pid_bytes = list_get(lista_bytes, 2);
 
     int tam_archivo = deserializar_int(tam_archivo_bytes);
+    int pid = deserializar_int(pid_bytes);
 
     free(lista_bytes);
     free(tam_archivo_bytes);
+    free(pid_bytes);
 
-    solicitud_truncar_archivo solicitud = {nombre_archivo, tam_archivo};
+    solicitud_truncar_archivo solicitud = {nombre_archivo, tam_archivo,pid};
+
+    return solicitud;
+}
+
+
+void enviar_solicitud_accion_archivo_fs(int accion,char* nombre, int pid, int socket){
+    size_t size_nombre = strlen(nombre) + 1;
+    t_paquete* paquete = crear_paquete(accion);
+
+    void* stream_nombre_archivo = serializar_char(nombre);
+    agregar_a_paquete(paquete, stream_nombre_archivo, size_nombre);
+
+    void* stream_pid = serializar_int(pid);
+    agregar_a_paquete(paquete, stream_pid, sizeof(int));
+
+    enviar_paquete(paquete, socket);
+
+    free(stream_nombre_archivo);
+    free(stream_pid);
+
+    eliminar_paquete(paquete);
+}
+
+solicitud_accion_archivo recibir_solicitud_accion_archivo_fs(int socket){
+    t_list* lista_bytes = recibir_paquete(socket);
+
+    char* nombre_archivo = list_get(lista_bytes, 0);
+    void* pid_bytes = list_get(lista_bytes, 1);
+
+    int pid = deserializar_int(pid_bytes);
+
+    free(lista_bytes);
+    free(pid_bytes);
+
+    solicitud_accion_archivo solicitud = {nombre_archivo,pid};
+
+    return solicitud;
+}
+
+
+void enviar_io_sleep(int retraso, int pid, int socket){
+    t_paquete* paquete = crear_paquete(EJECUTAR_INSTRUCCION_IO);
+
+    void* stream_retraso = serializar_int(retraso);
+    agregar_a_paquete(paquete, stream_retraso, sizeof(int));
+
+    void* stream_pid = serializar_int(pid);
+    agregar_a_paquete(paquete, stream_pid, sizeof(int));
+
+    enviar_paquete(paquete, socket);
+
+    free(stream_retraso);
+    free(stream_pid);
+
+    eliminar_paquete(paquete);
+}
+
+solicitud_io_sleep recibir_io_sleep(int socket){
+    t_list* lista_bytes = recibir_paquete(socket);
+
+    void* retraso_bytes = list_get(lista_bytes, 0);
+    void* pid_bytes = list_get(lista_bytes, 1);
+
+    int retraso = deserializar_int(retraso_bytes);
+    int pid = deserializar_int(pid_bytes);
+
+    free(lista_bytes);
+    free(retraso_bytes);
+    free(pid_bytes);
+
+    solicitud_io_sleep solicitud = {retraso, pid};
 
     return solicitud;
 }

@@ -17,9 +17,11 @@ void io_dialfs() {
             case CREAR_ARCHIVO_FS:
                 log_info(logger, "Solicitud IO_FS_CREATE recibida");
 
-                char* nombre_archivo = recibir_mensaje(kernel_socket);
+                solicitud_accion_archivo solicitud_create = recibir_solicitud_accion_archivo_fs(kernel_socket);
 
-                if(!crear_archivo(nombre_archivo)){
+                log_info(logger, "PID: [%d]", solicitud_create.pid);
+
+                if(!crear_archivo(solicitud_create.nombre_archivo)){
                     log_error(logger, "No se pudo crear el archivo");
                     // TODO: Enviar respuesta de error?
                 }
@@ -31,6 +33,8 @@ void io_dialfs() {
                 
                 solicitud_truncar_archivo solicitud_recibida = recibir_solicitud_truncar_archivo_fs(kernel_socket);
 
+                log_info(logger,"PID: [%d]", solicitud_recibida.pid);
+
                 if(!truncar_archivo(solicitud_recibida.nombre_archivo, solicitud_recibida.tamanio_archivo)){
                     log_error(logger, "No se pudo truncar el archivo");
                 }
@@ -40,18 +44,25 @@ void io_dialfs() {
             case ELIMINAR_ARCHIVO_FS:
                 log_info(logger, "Solicitud IO_FS_DELETE recibida");
 
-                char* nombre_archivo_a_eliminar = recibir_mensaje(kernel_socket);
+                solicitud_accion_archivo solicitud_delete = recibir_solicitud_accion_archivo_fs(kernel_socket);
 
-                if(!eliminar_archivo(nombre_archivo_a_eliminar)){
+                log_info(logger, "PID: [%d]", solicitud_delete.pid);
+
+                if(!eliminar_archivo(solicitud_delete.nombre_archivo)){
                     log_error(logger, "No se pudo crear el archivo");
                     // TODO: Enviar respuesta de error?
                 }
 
                 enviar_status(FIN_EJECUCION_IO, kernel_socket);
             break;
-            case EJECUTAR_INSTRUCCION_IO:
-                    t_list *peticiones_memoria;
-                    char** tokens_instr = recibir_instruccion_io(kernel_socket, &peticiones_memoria);
+            case EJECUTAR_INSTRUCCION_IO:                    
+                    solicitud_instruccion_io solicitud_instruccion = recibir_instruccion_io(kernel_socket);
+                    int pid = solicitud_instruccion.pid;
+                    t_list *peticiones_memoria = solicitud_instruccion.peticiones_memoria;
+                    char** tokens_instr = solicitud_instruccion.tokens;
+
+                    log_info(logger,"RECIBIDO EJECUTAR_INSTRUCCION_IO, pid: [%d]", pid);
+
                     log_info(logger, "Instruccion recibida de Kernel [%s]", tokens_instr[0]);
                     log_peticiones(peticiones_memoria);
 
