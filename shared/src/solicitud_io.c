@@ -1,7 +1,7 @@
 #include "../include/solicitud_io.h"
 
 int enviar_bloqueo_por_io(solicitud_bloqueo_por_io solicitud, int socket_cliente){
-    t_paquete* paquete = crear_paquete(PROCESO_BLOQUEADO);
+    t_paquete* paquete = crear_paquete(PROCESO_BLOQUEADO_IO);
 
     serializar_lista_strings_y_agregar_a_paquete(solicitud.instruc_io_tokenizadas, paquete);
 
@@ -37,6 +37,8 @@ solicitud_bloqueo_por_io* crear_solicitud_io(char** instruc_io_tokenizadas, t_li
 }
 
 void liberar_solicitud_io(solicitud_bloqueo_por_io* solicitud){
+    if(solicitud == NULL) return;
+    
     liberar_lista_strings(solicitud->instruc_io_tokenizadas);
     liberar_peticiones(solicitud->peticiones_memoria);
     free(solicitud);

@@ -11,6 +11,7 @@
 #include "conexion.h"
 #include "gestor_io.h"
 #include "interrupcion.h"
+#include "recurso.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 #include "../../shared/include/direccion.h"

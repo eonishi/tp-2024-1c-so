@@ -1,18 +1,18 @@
 #include "../include/gestor_io.h"
 
 static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io){
-    operacion operacion = get_operacion(pcb_io->solicitud_io->instruc_io_tokenizadas);
+    operacion operacion = get_operacion(pcb_io->solicitud->instruc_io_tokenizadas);
     log_info(logger, "Enviando operacion [%d] a IO [%s]", operacion, conexion_io->nombre_interfaz);
 
     switch (operacion){
         case IO_GEN_SLEEP:
-            enviar_cantidad(atoi(pcb_io->solicitud_io->instruc_io_tokenizadas[2]), EJECUTAR_INSTRUCCION_IO, conexion_io->socket);
+            enviar_cantidad(atoi(pcb_io->solicitud->instruc_io_tokenizadas[2]), EJECUTAR_INSTRUCCION_IO, conexion_io->socket);
             break;
         case IO_STDIN_READ:
         case IO_STDOUT_WRITE:
             enviar_instruccion_io(
-                pcb_io->solicitud_io->instruc_io_tokenizadas,
-                pcb_io->solicitud_io->peticiones_memoria,
+                pcb_io->solicitud->instruc_io_tokenizadas,
+                pcb_io->solicitud->peticiones_memoria,
                 conexion_io->socket
             );
             break;
@@ -53,8 +53,8 @@ void *escuchar_io(void *args){
 			log_info(logger, "Recibi FIN_EJECUCION_IO. CODIGO: %d", cod_op);
 
             // Limpio el buffer de solicitud_a_io del PCB
-            solicitud_bloqueo_por_io* solicitud_realizada = pcb_blocked->solicitud_io;
-            pcb_blocked->solicitud_io = NULL;
+            solicitud_bloqueo_por_io* solicitud_realizada = pcb_blocked->solicitud;
+            pcb_blocked->solicitud = NULL;
             liberar_solicitud_io(solicitud_realizada);
 
             pcb* pcb_to_ready = queue_pop(conexion->cola_espera);
@@ -67,7 +67,6 @@ void *escuchar_io(void *args){
 			    sem_post(&sem_proceso_en_ready);//chequear si hace falta otro semaforo por VRR, no deberia.
             }else {
 			    push_cola_ready(pcb_blocked);
-			    sem_post(&sem_proceso_en_ready);
             }
 
             //  io_libre post() // Semaforo que avisa que la io ya esta libre para nuevo uso
@@ -150,12 +149,9 @@ void cerrar_conexion_io(char* nombre_io){
 }
 
 void enviar_proceso_a_esperar_io(pcb* pcb_a_espera){
-    char* nombre_io = pcb_a_espera->solicitud_io->instruc_io_tokenizadas[1];
+    char* nombre_io = pcb_a_espera->solicitud->instruc_io_tokenizadas[1];
     log_warning(logger, "Nombre_io: [%s]", nombre_io);    
 
     conexion_io* conexion_io = obtener_conexion_io_por_nombre(nombre_io);
-    push_cola_blocked(pcb_a_espera, conexion_io->cola_espera);
-
-    log_warning(logger, "Posteando semaforo...");
-    sem_post(&conexion_io->sem_cliente);
+    push_cola_blocked(pcb_a_espera, conexion_io->cola_espera, &conexion_io->sem_cliente);
 }

@@ -6,10 +6,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "conexion.h"
+#include "recurso.h"
 #include "../../shared/include/pcb.h"
 
 extern t_log *logger;
 extern int socket_memoria;
+extern t_list *recursos_disponibles;
 
 typedef struct {
     pcb* pcbVRR;
@@ -18,6 +20,7 @@ typedef struct {
 
 extern elemVRR *elemento_VRR;
 extern t_list *lista_conexiones_io;
+extern sem_t sem_proceso_en_ready;
 
 void inicializar_colas_planificador();
 
@@ -27,13 +30,14 @@ pcb* pop_cola_new();
 void push_cola_ready(pcb* pcb);
 pcb* pop_cola_ready();
 
-void push_cola_blocked(pcb* pcb, t_queue* cola_blocked);
+void push_cola_blocked(pcb* pcb, t_queue* cola_blocked, sem_t* sem_blocked);
 
 void push_cola_exit(pcb* pcb);
 
 void imprimir_colas();
 void imprimir_cola(char* nombre, t_queue* cola);
 void imprimir_colas_io();
+void imprimir_colas_recurso();
 
 void push_cola_execute(pcb* pcb);
 pcb* pop_cola_execute();

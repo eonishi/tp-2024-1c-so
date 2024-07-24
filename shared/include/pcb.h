@@ -37,7 +37,7 @@ typedef struct
     unsigned quantum;
     registros_t* registros;
     state estado; //N=NEW, E=EXECUTE, X=EXIT, B=BLOCKED, R=READY
-    solicitud_bloqueo_por_io* solicitud_io;
+    solicitud_bloqueo_por_io* solicitud;
 } pcb;
 
 pcb* crear_pcb(unsigned id, unsigned quantum);
@@ -52,7 +52,6 @@ void* serializar_registros(registros_t* registros);
 pcb* deserializar_pcb(void* pcb_data_primitive, void* pcb_data_registers);
 registros_t *deserializar_registros(void *registros);
 void loggear_pcb(pcb *pcb);
-pcb* esperar_pcb(int socket, op_code codigo_esperado);
 void destruir_pcb(pcb* pcb);
 void siguiente_pc(pcb* pcb);
 

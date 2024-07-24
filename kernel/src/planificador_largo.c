@@ -10,11 +10,7 @@ void *iniciar_planificacion_largo(){
             
 
             pcb* newPcb = pop_cola_new();
-            newPcb->estado = READY;
-
             push_cola_ready(newPcb);
-
-            sem_post(&sem_proceso_en_ready);
         }
     }
 }

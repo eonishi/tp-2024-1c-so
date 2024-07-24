@@ -21,6 +21,8 @@ void inicializar_colas_planificador(){
     colas_estado[2] = cola_readyVRR;
     colas_estado[3] = cola_execute;
     colas_estado[4] = cola_exit;
+
+    log_info(logger, "Colas de planificacion inicializadas");
 }
 
 void imprimir_colas(){
@@ -30,6 +32,7 @@ void imprimir_colas(){
     imprimir_cola("Execute", cola_execute);
     imprimir_cola("Exit", cola_exit);
     imprimir_colas_io();
+    imprimir_colas_recurso();
 }
 
 void imprimir_cola(char* nombre, t_queue* cola){
@@ -49,6 +52,19 @@ void imprimir_colas_io(){
     }
 }
 
+void imprimir_colas_recurso(){
+    for (size_t i = 0; i < list_size(recursos_disponibles); i++){
+        t_recurso* recurso = list_get(recursos_disponibles, i);
+        log_info(logger, "=====================================");
+        log_info(logger, "Procesos en cola de recurso [%s]: ", recurso->nombre);
+        for(int index = 0; index < list_size(recurso->procesos_en_espera->elements); index++){
+            pcb* pcb = list_get(recurso->procesos_en_espera->elements, index);
+            log_info(logger, "--> PID: [%d] ESTADO: [%d]", pcb->pid, pcb->estado);
+        }
+    }
+
+}
+
 void push_cola_new(pcb* pcb){
     pcb->estado = NEW;
     queue_push(cola_new, pcb);
@@ -61,20 +77,25 @@ pcb* pop_cola_new(){
 void push_cola_ready(pcb* pcb){
     pcb->estado = READY;
     queue_push(cola_ready, pcb);
+    sem_post(&sem_proceso_en_ready);
 }
 
 pcb* pop_cola_ready(){
     return queue_pop(cola_ready);
 }
 
-void push_cola_blocked(pcb* pcb, t_queue* cola_blocked){
+void push_cola_blocked(pcb* pcb, t_queue* cola_blocked, sem_t* sem_blocked){
     pcb->estado = BLOCKED;
     queue_push(cola_blocked, pcb);
+    sem_post(sem_blocked);
 }
 
 void push_cola_exit(pcb* pcb){
     pcb->estado = EXIT;
     queue_push(cola_exit, pcb);
+
+    // Liberar recursos
+    liberar_recurso_del_proceso(pcb->pid);
 
     // Envio operacion de liberar el proceso en memoria
     enviar_cantidad(pcb->pid, LIBERAR_PROCESO_EN_MEMORIA, socket_memoria);
@@ -146,11 +167,12 @@ void finalizar_proceso(unsigned PID){
     PID_BUSQUEDA = PID;
     sacar_proceso_de_cola_estado(PID);
     sacar_proceso_de_cola_io(PID);
-        /* DISCLAIMER:
-        *  Si se quisiera finalizar el proceso en ejecucion, hay condicion de carrera
-        *  entre el checkeo de la condicion entre todas las colas y la "devolucion" del
-        *  proceso en ejecucion. 
-        *  TODO: Implementar semaforo para evitar la condicion de carrera
-        */
+    liberar_recurso_del_proceso(PID);
+    /* DISCLAIMER:
+     *  Si se quisiera finalizar el proceso en ejecucion, hay condicion de carrera
+     *  entre el checkeo de la condicion entre todas las colas y la "devolucion" del
+     *  proceso en ejecucion.
+     *  TODO: Implementar semaforo para evitar la condicion de carrera
+     */
 }
 

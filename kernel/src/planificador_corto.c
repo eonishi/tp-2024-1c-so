@@ -54,7 +54,10 @@ void gestionar_respuesta_cpu(){
 			log_info(logger, "Recibi PROCESO_TERMINADO. CODIGO: %d", cod_op);
 			pcb = recibir_pcb(socket_cpu_dispatch);
 			loggear_pcb(pcb);
+
+            log_warning(logger, "Estoy por hacer pop&destroy");
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            log_warning(logger, "Estoy por hacer push_cola_exit");
             push_cola_exit(pcb);
 
 			sem_post(&sem_cpu_libre);
@@ -62,7 +65,7 @@ void gestionar_respuesta_cpu(){
             		
 			break;		
 
-		case PROCESO_BLOQUEADO:
+		case PROCESO_BLOQUEADO_IO:
             cancelar_hilo_quantum();
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
 
@@ -73,12 +76,12 @@ void gestionar_respuesta_cpu(){
 
                 loggear_pcb(pcb);
                 log_warning(logger, "Instrucciones del proceso: [%s], [%s], [%s]", 
-                    pcb->solicitud_io->instruc_io_tokenizadas[0], 
-                    pcb->solicitud_io->instruc_io_tokenizadas[1], 
-                    pcb->solicitud_io->instruc_io_tokenizadas[2]
+                    pcb->solicitud->instruc_io_tokenizadas[0], 
+                    pcb->solicitud->instruc_io_tokenizadas[1], 
+                    pcb->solicitud->instruc_io_tokenizadas[2]
                 );
 
-                if(!validar_instruccion_a_io(pcb->solicitud_io->instruc_io_tokenizadas, pcb)){
+                if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
                     log_error(logger, "Error de validación de instrucción a IO");
                     log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
                     push_cola_exit(pcb);
@@ -122,6 +125,75 @@ void gestionar_respuesta_cpu(){
             sem_post(&sem_cpu_libre);
             sem_post(&sem_proceso_en_ready);		
             break;
+            
+        case ERROR_DE_PROCESAMIENTO:
+            log_error(logger, "Recibi ERROR_DE_PROCESAMIENTO. CODIGO: %d", cod_op);
+            pcb = recibir_pcb(socket_cpu_dispatch);
+            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            push_cola_exit(pcb);
+            sem_post(&sem_cpu_libre);
+            sem_post(&sem_grado_multiprog);
+            break;
+
+        case PROCESO_SOLICITA_RECURSO:
+            log_info(logger, "Recibi PROCESO_BLOQUEADO_RECURSO. CODIGO: %d", cod_op);
+
+            pcb = recibir_pcb(socket_cpu_dispatch);
+            char* nombre_recurso_solicitado = pcb->solicitud->instruc_io_tokenizadas[1];
+            log_info(logger, "Proceso [%d] solicita recurso [%s]", pcb->pid, nombre_recurso_solicitado);
+
+            // Chequeo la existencia del recurso
+            if(!recurso_existe(nombre_recurso_solicitado)){
+                log_error(logger, "El recurso [%s] no existe", nombre_recurso_solicitado);
+                pop_and_destroy(cola_execute, (void*) destruir_pcb);
+                push_cola_exit(pcb);
+                sem_post(&sem_cpu_libre);
+                break;
+            }
+
+            // Obtengo el recurso
+            t_recurso* recurso_solicitado = get_recurso(nombre_recurso_solicitado);
+
+            // Dependiendo si existen intancias disponibles, bloqueo o vuelvo a CPU
+            if(recurso_disponible(recurso_solicitado)){
+                wait_recurso(recurso_solicitado, pcb->pid);
+                enviar_pcb(pcb, socket_cpu_dispatch, DISPATCH_PROCESO);
+
+                // Lo hago recursivo porque sino tendria que separar la gestion de respuesta en un hilo
+                // y la admicion de proceso a execute en otro hilo
+                // TODO: probar si esto anda en condiciones
+                gestionar_respuesta_cpu(); 
+            }
+            else {
+                esperar_recurso(recurso_solicitado, pcb);
+                sem_post(&sem_cpu_libre);
+            }
+
+            break;
+
+        case PROCESO_LIBERA_RECURSO:
+            log_info(logger, "Recibi PROCESO_LIBERA_RECURSO. CODIGO: %d", cod_op);
+
+            pcb = recibir_pcb(socket_cpu_dispatch);
+            char* nombre_recurso_liberar = pcb->solicitud->instruc_io_tokenizadas[1];
+            log_info(logger, "Proceso [%d] libera recurso [%s]", pcb->pid, nombre_recurso_liberar);
+
+            // Chequeo la existencia del recurso
+            if(!recurso_existe(nombre_recurso_liberar)){
+                log_error(logger, "El recurso [%s] no existe", nombre_recurso_liberar);
+                pop_and_destroy(cola_execute, (void*) destruir_pcb);
+                push_cola_exit(pcb);
+                sem_post(&sem_cpu_libre);
+                break;
+            }
+
+            // Obtengo el recurso, lo libero y vuelvo a CPU
+            t_recurso* recurso_liberar = get_recurso(nombre_recurso_liberar);
+            signal_recurso(recurso_liberar, pcb->pid);
+            enviar_pcb(pcb, socket_cpu_dispatch, DISPATCH_PROCESO);
+            gestionar_respuesta_cpu();
+            break;
+            
 		case -1:
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
 		default:
