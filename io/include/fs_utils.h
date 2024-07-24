@@ -19,6 +19,6 @@ extern io_config config;
 int fs_open(const char* path, int flags, mode_t mode);
 DIR* fs_opendir ();
 
-char* fs_fullpath(char* filename);
+char* fs_fullpath(const char* filename);
 
 #endif

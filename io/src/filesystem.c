@@ -26,8 +26,8 @@ bool crear_archivo(char* nombre){
 
     // Contenido inicial del archivo
     char* contenido_inicial[100];
-    sprintf(contenido_inicial, "BLOQUE_INICIAL=%d\nTAMANIO_ARCHIVO=0\n", bloque);
-    ssize_t bytes_escritos = write(fd, contenido_inicial, strlen(contenido_inicial));
+    sprintf(*contenido_inicial, "BLOQUE_INICIAL=%d\nTAMANIO_ARCHIVO=0\n", bloque);
+    ssize_t bytes_escritos = write(fd, contenido_inicial, strlen(*contenido_inicial));
 
     if (bytes_escritos == -1) {
         log_error(logger, "Error al escribir en el archivo: [%s]", nombre);
@@ -118,8 +118,10 @@ bool truncar_archivo(char* nombre, int new_size){
     }
 
     // Actualizamos properties del archivo
+
     set_campo_de_archivo("TAMANIO_ARCHIVO", new_size, config_loader);
     set_campo_de_archivo("BLOQUE_INICIAL", bloque_inicial, config_loader);
+  
     // Actualizamos bitmap
     asignar_bloques_bitmap_por_rango(bloque_inicial, bloque_inicial + bloques_a_ocupar);
 

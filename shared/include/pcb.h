@@ -1,11 +1,12 @@
 #ifndef PCB_H_
 #define PCB_H_
 
+#include <stdint.h>
 #include "comunicacion.h"
 #include "paquete.h"
 #include "codigos_operacion.h"
-#include <stdint.h>
-
+#include "solicitud_io.h"
+#include "serializar.h"
 typedef struct 
 {
     uint8_t ax;
@@ -29,19 +30,19 @@ typedef enum
     EXIT='X'
 } state;
 
-typedef struct 
+typedef struct
 {
     unsigned pid;
     unsigned pc; 
     unsigned quantum;
     registros_t* registros;
     state estado; //N=NEW, E=EXECUTE, X=EXIT, B=BLOCKED, R=READY
-    //list_t ios //lista de IOs que usa (es util y vale la pena para el contexto del proyecto? el libro lo recomienda)
-}pcb; 
+    solicitud_bloqueo_por_io* solicitud;
+} pcb;
 
 pcb* crear_pcb(unsigned id, unsigned quantum);
 registros_t* crear_registros();
-int enviar_pcb(pcb* pcb, int socket_cliente, op_code code);
+void enviar_pcb(pcb* pcb, int socket_cliente, op_code code);
 pcb *recibir_pcb(int socket_cliente);
 pcb* deserializar_pcb_new(void* pcb_bytes);
 int pcb_size();
@@ -51,7 +52,7 @@ void* serializar_registros(registros_t* registros);
 pcb* deserializar_pcb(void* pcb_data_primitive, void* pcb_data_registers);
 registros_t *deserializar_registros(void *registros);
 void loggear_pcb(pcb *pcb);
-pcb* esperar_pcb(int socket, op_code codigo_esperado);
 void destruir_pcb(pcb* pcb);
 void siguiente_pc(pcb* pcb);
+
 #endif

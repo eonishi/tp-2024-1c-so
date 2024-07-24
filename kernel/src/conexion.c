@@ -76,6 +76,8 @@ conexion_io* crear_conexion_io(int socket, char* nombre_interfaz, io_tipo tipo, 
     conexion_io->nombre_interfaz = nombre_interfaz;
     conexion_io->tipo = tipo;
     conexion_io->operaciones = operaciones;
+    conexion_io->cola_espera = queue_create();
+    sem_init(&conexion_io->sem_cliente, 0, 0);
 
     return conexion_io;
 }
