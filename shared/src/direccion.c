@@ -9,8 +9,14 @@ t_peticion_memoria *peticion_crear(uint32_t direccion_fisica, void *dato, size_t
 }
 
 void peticion_destruir(t_peticion_memoria *direccion){
+    if(direccion == NULL) return;
     free(direccion->dato);
     free(direccion);
+}
+
+void liberar_peticiones(t_list* peticiones){
+    if(peticiones == NULL) return;
+    list_destroy_and_destroy_elements(peticiones, (void*)peticion_destruir);
 }
 
 void peticion_enviar(t_peticion_memoria *peticion_a_enviar, op_code CODE, int socket){

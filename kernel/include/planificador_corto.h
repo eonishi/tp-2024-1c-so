@@ -11,6 +11,7 @@
 #include "conexion.h"
 #include "gestor_io.h"
 #include "interrupcion.h"
+#include "recurso.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 #include "../../shared/include/direccion.h"
@@ -25,6 +26,7 @@ extern kernel_config* config;
 extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, q_usado, q_restante;
 extern t_list *lista_conexiones_io;
 extern t_temporal *q_transcurrido;
+extern t_queue *cola_readyVRR;
 
 extern int planificacion_activada;
 // Semaforos

@@ -57,8 +57,10 @@ void execute(char **instr_tokenizada)
     case IO_GEN_SLEEP:
     case IO_FS_CREATE:
     case IO_FS_DELETE:
-        tengo_pcb = 0;
-        siguiente_pc(pcb_actual);
+
+    case IO_FS_TRUNCATE:
+    case IO_FS_WRITE:
+    case IO_FS_READ:
         exec_operacion_io(instr_tokenizada);                
         break;
     case IO_STDIN_READ:
@@ -73,6 +75,15 @@ void execute(char **instr_tokenizada)
         
         exec_io_stdout_write(instr_tokenizada);
         break;
+        
+    case SIGNAL:
+        desalojar_pcb(instr_tokenizada, PROCESO_LIBERA_RECURSO);
+        break;
+
+    case WAIT:
+        desalojar_pcb(instr_tokenizada, PROCESO_SOLICITA_RECURSO);
+        break;
+
     case EXIT_OP:
         tengo_pcb = 0;
         enviar_pcb(pcb_actual, socket_kernel, PROCESO_TERMINADO);
@@ -171,13 +182,15 @@ void exec_jnz(char** instr_tokenizada){
     }
 }
 
-void exec_operacion_io(char** instr_tokenizada){
-    solicitud_bloqueo_por_io solicitud;
-    solicitud.instruc_io_tokenizadas = instr_tokenizada;
-    solicitud.pcb = pcb_actual;
-    solicitud.peticiones_memoria = list_create();
+void desalojar_pcb(char** instr_tokenizada, op_code codigo){
+    tengo_pcb = 0;
+    siguiente_pc(pcb_actual);
+    pcb_actual->solicitud = crear_solicitud_io(instr_tokenizada, NULL);
+    enviar_pcb(pcb_actual, socket_kernel, codigo);
+}
 
-    enviar_bloqueo_por_io(solicitud, socket_kernel);
+void exec_operacion_io(char** instr_tokenizada){
+    desalojar_pcb(instr_tokenizada, PROCESO_BLOQUEADO_IO);
 }
 
 void controlar_peticion_a_memoria(){
@@ -300,14 +313,11 @@ void exec_io_stdin_read(char** instr_tokenizada){
 
     t_list *peticiones_lectura = mmu(direccion_logica, tamanio, NULL);
 
-    solicitud_bloqueo_por_io solicitud;
-    solicitud.instruc_io_tokenizadas = instr_tokenizada;
-    solicitud.pcb = pcb_actual;
-    solicitud.peticiones_memoria = peticiones_lectura;
+    solicitud_bloqueo_por_io* solicitud = crear_solicitud_io(instr_tokenizada, peticiones_lectura);
+    pcb_actual->solicitud = solicitud;
 
-    enviar_bloqueo_por_io(solicitud, socket_kernel);
+    enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO_IO);
 }
-
 
 void exec_io_stdout_write(char** instr_tokenizada){
     // IO_STDOUT_WRITE, Interfaz, Registro Direccion, Registro Tamaño
@@ -352,10 +362,8 @@ void exec_io_fs_read_write(char** instr_tokenizada){
 
     t_list *peticiones_lectura = mmu(direccion_logica, tamanio, NULL);    
 
-    solicitud_bloqueo_por_io solicitud;
-    solicitud.instruc_io_tokenizadas = instr_tokenizada;
-    solicitud.pcb = pcb_actual;
-    solicitud.peticiones_memoria = peticiones_lectura;
+    solicitud_bloqueo_por_io* solicitud = crear_solicitud_io(instr_tokenizada, peticiones_lectura);
+    pcb_actual->solicitud = solicitud;
 
-    enviar_bloqueo_por_io(solicitud, socket_kernel);
+    enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO_IO);
 }

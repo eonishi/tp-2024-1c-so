@@ -17,6 +17,7 @@
 #include "planificador_corto.h"
 #include "gestor_io.h"
 #include "consola.h"
+#include "recurso.h"
 
 #include "../../shared/include/logger.h"
 #include "../../shared/include/client.h"
@@ -24,6 +25,7 @@
 #include "../../shared/include/comunicacion.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
+#include "../../shared/include/hilo.h"
 
 t_log *logger;
 t_log *aux_log;
@@ -31,26 +33,14 @@ kernel_config* config;
 int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, socket_server_kernel;
 t_list *lista_conexiones_io;
 
-pthread_t hilo_servidor_kernel;
-pthread_t hilo_escucha_cpu;
-
 // Variables Planificador
-int planificacion_activada = 0;
+int planificacion_activada = 1;
 
-// -- Colas
-extern t_queue *cola_new, *cola_exit, *cola_ready, *cola_blocked, *cola_execute, *cola_readyVRR;
 // -- Semaforos
 sem_t sem_nuevo_proceso;
 sem_t sem_grado_multiprog;
 sem_t sem_proceso_en_ready;
 sem_t sem_cpu_libre;
-// -- Hilos
-pthread_t hilo_planificador_largo;
-pthread_t hilo_conexiones_io;
-pthread_t hilo_conexiones_io2;
-pthread_t hilo_planificador_corto;
-pthread_t hilo_planificador_corto_RR;
-pthread_t hilo_planificador_corto_VRR;
 
 // Fin variables planificador
 
@@ -65,11 +55,8 @@ void terminar_programa();
 void iniciar_semaforos();
 void iniciar_servidor_en_hilo();
 void dispatch_proceso();
-void iniciar_hilo(void *func, pthread_t thread);
 void *esperar_y_escuchar_conexiones_io();
-void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void *args);
-//void crear_hilo_planificador_corto();
-//void cancelar_hilo_planificador();
-//void cambiar_algoritmo_planificadorCorto(algoritmo_planificador);
+void crear_hilo_planificador_corto();
+void cancelar_hilo_planificador();
 
 #endif
