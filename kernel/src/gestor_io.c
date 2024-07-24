@@ -22,17 +22,19 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
             break;
         case IO_FS_CREATE:
             file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
-            enviar_mensaje(CREAR_ARCHIVO_FS, file_name, conexion_io->socket);
+
+            enviar_solicitud_accion_archivo_fs(CREAR_ARCHIVO_FS, file_name, pcb_io->pid, conexion_io->socket);
             break;
         case IO_FS_DELETE:
             file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
-            enviar_mensaje(ELIMINAR_ARCHIVO_FS, file_name, conexion_io->socket);
+
+            enviar_solicitud_accion_archivo_fs(ELIMINAR_ARCHIVO_FS, file_name, pcb_io->pid, conexion_io->socket);
             break;
         case IO_FS_TRUNCATE:
             file_name = pcb_io->solicitud->instruc_io_tokenizadas[2];
             char* size = pcb_io->solicitud->instruc_io_tokenizadas[3];
             
-            solicitud_truncar_archivo solicitud = {file_name, atoi(size)};
+            solicitud_truncar_archivo solicitud = {file_name, atoi(size), pcb_io->pid};
             enviar_solicitud_truncar_archivo_fs(solicitud, conexion_io->socket);
 
             break;

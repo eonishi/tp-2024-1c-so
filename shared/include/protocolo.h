@@ -50,11 +50,20 @@ solicitud_instruccion_io recibir_instruccion_io(int socket_cliente);
 typedef struct{
     char *nombre_archivo;
     int tamanio_archivo;
+    int pid;
 } solicitud_truncar_archivo;
 
 void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, int socket);
 solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket);
 
+
+typedef struct{
+    char *nombre_archivo;
+    int pid;
+} solicitud_accion_archivo;
+
+void enviar_solicitud_accion_archivo_fs(int accion, char* nombre, int pid, int socket);
+solicitud_accion_archivo recibir_solicitud_accion_archivo_fs(int socket);
 typedef struct{
     int retraso;
     int pid;

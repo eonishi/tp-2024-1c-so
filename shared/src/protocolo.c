@@ -132,10 +132,14 @@ void enviar_solicitud_truncar_archivo_fs(solicitud_truncar_archivo solicitud, in
     void* stream_tamanio_archivo = serializar_int(solicitud.tamanio_archivo);
     agregar_a_paquete(paquete, stream_tamanio_archivo, sizeof(int));
 
+    void* stream_pid = serializar_int(solicitud.pid);
+    agregar_a_paquete(paquete, stream_pid, sizeof(int));
+
     enviar_paquete(paquete, socket);
 
     free(stream_nombre_archivo);
     free(stream_tamanio_archivo);
+    free(stream_pid);
 
     eliminar_paquete(paquete);
 }
@@ -145,13 +149,51 @@ solicitud_truncar_archivo recibir_solicitud_truncar_archivo_fs(int socket){
 
     char* nombre_archivo = list_get(lista_bytes, 0);
     void* tam_archivo_bytes = list_get(lista_bytes, 1);
+    void* pid_bytes = list_get(lista_bytes, 2);
 
     int tam_archivo = deserializar_int(tam_archivo_bytes);
+    int pid = deserializar_int(pid_bytes);
 
     free(lista_bytes);
     free(tam_archivo_bytes);
+    free(pid_bytes);
 
-    solicitud_truncar_archivo solicitud = {nombre_archivo, tam_archivo};
+    solicitud_truncar_archivo solicitud = {nombre_archivo, tam_archivo,pid};
+
+    return solicitud;
+}
+
+
+void enviar_solicitud_accion_archivo_fs(int accion,char* nombre, int pid, int socket){
+    size_t size_nombre = strlen(nombre) + 1;
+    t_paquete* paquete = crear_paquete(accion);
+
+    void* stream_nombre_archivo = serializar_char(nombre);
+    agregar_a_paquete(paquete, stream_nombre_archivo, size_nombre);
+
+    void* stream_pid = serializar_int(pid);
+    agregar_a_paquete(paquete, stream_pid, sizeof(int));
+
+    enviar_paquete(paquete, socket);
+
+    free(stream_nombre_archivo);
+    free(stream_pid);
+
+    eliminar_paquete(paquete);
+}
+
+solicitud_accion_archivo recibir_solicitud_accion_archivo_fs(int socket){
+    t_list* lista_bytes = recibir_paquete(socket);
+
+    char* nombre_archivo = list_get(lista_bytes, 0);
+    void* pid_bytes = list_get(lista_bytes, 1);
+
+    int pid = deserializar_int(pid_bytes);
+
+    free(lista_bytes);
+    free(pid_bytes);
+
+    solicitud_accion_archivo solicitud = {nombre_archivo,pid};
 
     return solicitud;
 }
