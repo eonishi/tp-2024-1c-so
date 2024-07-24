@@ -214,7 +214,7 @@ void eliminar_bloques_ocupados_por_archivo(char* nombre){
     fcb* fcb = obtener_fcb_por_nombre(nombre);
     int bloque_inicial = config_get_int_value(fcb->config, "BLOQUE_INICIAL");
     int tam_archivo = config_get_int_value(fcb->config, "TAMANIO_ARCHIVO");
-    int bloques_ocupados = calcular_bloques_a_ocupar(tam_archivo);
+    int bloques_ocupados = calcular_bloques_necesarios(tam_archivo);
 
     if(bloques_ocupados == 1){
         bitarray_clean_bit(BLOQ_BITMAP, bloque_inicial);
@@ -236,7 +236,7 @@ bool esta_bloque_ocupado(int index){
     return bitarray_test_bit(BLOQ_BITMAP, index);
 }
 
-int calcular_bloques_a_ocupar(int size){
+int calcular_bloques_necesarios(int size){
     if(size == 0)
         return 1;
 
@@ -247,11 +247,70 @@ int calcular_bloques_a_ocupar(int size){
 void reubicar_archivo_desde_fcb(fcb* fcb){
     int bloque_inicial = asignar_bloque();
     int tamanio_archivo = config_get_int_value(fcb->config, "TAMANIO_ARCHIVO");
-    int bloques_a_ocupar = calcular_bloques_a_ocupar(tamanio_archivo);
+    int bloques_a_ocupar = calcular_bloques_necesarios(tamanio_archivo);
 
     asignar_bloques_bitmap_por_rango(bloque_inicial, bloques_a_ocupar);
     set_campo_de_archivo("BLOQUE_INICIAL", bloque_inicial, fcb->config);
     config_save(fcb->config);
+}
+
+void compactar() {
+    log_info(logger, "======== Se ejecuta compactación =========");
+    // Crear un espacio temporal para almacenar datos mientras se compactan
+    void *nuevo_espacio = calloc(tam_filesystem, 1);
+    if (nuevo_espacio == NULL) {
+        log_error(logger, "Error al asignar memoria para la compactación.");
+        exit(EXIT_FAILURE);
+    }
+
+    // Liberar el bitmap de bloques y los bloques antiguos
+    liberar_bitmap_de_bloques();
+
+    // Recorrer los FCBs y copiar los datos a las nuevas ubicaciones
+    for (int i = 0; i < cantidad_de_fcbs(); i++) {
+        fcb* fcb = obtener_fcb(i);
+        int bloque_inicial = config_get_int_value(fcb->config, "BLOQUE_INICIAL");
+        int tamanio_archivo = config_get_int_value(fcb->config, "TAMANIO_ARCHIVO");
+
+        // Calcular los bloques necesarios para el archivo
+        int bloques_a_ocupar = calcular_bloques_necesarios(tamanio_archivo);
+
+        // Leer los datos desde los bloques antiguos
+        int byte_inicial = calcular_byte_inicial_de_bloque(bloque_inicial);
+        void *datos_leidos = malloc(tamanio_archivo);
+        if (datos_leidos == NULL) {
+            log_error(logger, "Error al asignar memoria para leer datos del archivo.");
+            free(nuevo_espacio);
+            exit(EXIT_FAILURE);
+        }
+
+        memcpy(datos_leidos, (char*)BLOQUES + byte_inicial, tamanio_archivo);
+
+        // Encontrar nuevos bloques para los datos
+        int nuevo_bloque_inicial = asignar_bloque();
+        int nuevo_byte_inicial = calcular_byte_inicial_de_bloque(nuevo_bloque_inicial);
+
+        // Escribir los datos en los nuevos bloques
+        memcpy((char*)nuevo_espacio + nuevo_byte_inicial, datos_leidos, tamanio_archivo);
+
+        // Liberar los bloques antiguos
+        asignar_bloques_bitmap_por_rango(nuevo_bloque_inicial, nuevo_bloque_inicial + bloques_a_ocupar - 1);
+
+        // Actualizar el FCB con los nuevos bloques
+        set_campo_de_archivo("BLOQUE_INICIAL", nuevo_bloque_inicial, fcb->config);
+        config_save(fcb->config);
+
+        free(datos_leidos);
+    }
+
+    // Guardar los datos compactados en el nuevo espacio
+    memcpy(BLOQUES, nuevo_espacio, tam_filesystem);
+
+    // Liberar el espacio temporal
+    free(nuevo_espacio);
+
+    // Esperar el retraso de compactación
+    usleep(config.retraso_compatacion * 1000);
 }
 
 

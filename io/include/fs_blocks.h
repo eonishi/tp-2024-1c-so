@@ -33,7 +33,7 @@ void asignar_bloques_bitmap_por_rango(int desde, int hasta);
 void eliminar_bloques_ocupados_por_archivo(char* nombre);
 
 bool esta_bloque_ocupado(int index);
-int calcular_bloques_a_ocupar(int size);
+int calcular_bloques_necesarios(int size);
 
 void liberar_bitmap_de_bloques();
 void liberar_bloques_bitmap_por_rango(int desde, int hasta);
@@ -45,6 +45,7 @@ int calcular_byte_inicial_de_bloque(int bloque_inicial);
 //
 bool archivo_esta_vacio(int fd);
 void *enlazar_archivo(int fd, int tam_archivo);
+void compactar();
 
 
 
