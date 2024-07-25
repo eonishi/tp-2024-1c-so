@@ -28,20 +28,12 @@ static void gestionar_comando_leido(char** linea_leida){
             imprimir_colas();
             break;
 
-        //case INICIAR_PLANIFICADOR:
-        //    crear_hilo_planificador_corto();//permite crear un nuevo hilo de planificador luego de detenerlo
-		//	//agregar un flag de control para no crear dos hilos de estos
-        //    break;
-
         case INICIAR_PLANIFICACION:
-            planificacion_activada = 1;
-			//log_info(logger,"planificacion valor: %d",planificacion_activada);
+            reanudar_planificacion();
             break;
 
         case DETENER_PLANIFICACION:
-            planificacion_activada = 0;
-			interrumpir_proceso_ejecutando();
-			//cancelar_hilo_planificador(); //DETIENE EL HILO DEL PLANIFICADOR CORTO
+            detener_planificacion();
             break;
 
         case INICIAR_PROCESO:
@@ -62,7 +54,6 @@ static void gestionar_comando_leido(char** linea_leida){
             }
 
 			push_cola_new(nuevo_pcb);
-			sem_post(&sem_nuevo_proceso);
 
 			log_info(logger, "==============================================");
             break;
@@ -101,26 +92,24 @@ static void gestionar_comando_leido(char** linea_leida){
 			char *string_pid = linea_leida[1];
 			unsigned pid_a_finalizar = atol(string_pid);
 			log_info(logger, "Finaliza el proceso <%d> - Motivo: INTERRUPTED_BY_USER", pid_a_finalizar); //validar log minimo
-			//log_info(logger, "Inicio de ejecución de FINALIZAR_PROCESO con PID: [%d]", pid_a_finalizar);
+
 			// Detener la planificación si está activada
-			bool reanudar_planificacion = 0;
+			bool deberia_reanudar_plani = false;
 			if(planificacion_activada){
 				log_info(logger, "Deteniendo la planificación para buscar el proceso a finalizar");
+				detener_planificacion();
 
-				char *string_detener_planificacion = "DETENER_PLANIFICACION";
-				gestionar_comando_leido(&string_detener_planificacion);
-
-				reanudar_planificacion = 1;
+				// Flag para determinar si se finaliza un proceso con la planificación activada y es necesario reanudarla
+				deberia_reanudar_plani = true;
 			}
 
-			log_info(logger, "Buscando el proceso a finalizar");
+			log_info(logger, "Buscando el proceso [%d]...", pid_a_finalizar);
 			finalizar_proceso(pid_a_finalizar);
 
 			// Reanudar la planificación si se finalizó un proceso con la planificación activada
-			if(reanudar_planificacion){
-				log_info(logger, "Reanudando la planificación");
-				char *string_iniciar_planificacion = "INICIAR_PLANIFICACION";
-				gestionar_comando_leido(&string_iniciar_planificacion);
+			if(deberia_reanudar_plani){
+				log_info(logger, "Reanudando la planificación...");
+				reanudar_planificacion();
 			}
 
 			break;

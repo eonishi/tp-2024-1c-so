@@ -69,6 +69,7 @@ void push_cola_new(pcb* pcb){
     log_info(logger,"PID: %d - Estado Anterior:' ' - Estado Actual: NEW", pcb->pid);
     pcb->estado = NEW;
     queue_push(cola_new, pcb);
+    sem_post(&sem_nuevo_proceso);
 }
 
 pcb* pop_cola_new(){

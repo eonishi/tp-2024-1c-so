@@ -14,10 +14,8 @@ void reanudar_planificacion() {
     // Si la planificación ya está activada, no hago nada
     if(planificacion_activada) return;
 
-    pthread_mutex_lock(&mutex_planificacion_activa);
-        planificacion_activada = true;
-        sem_post(&sem_planificacion_activa);
-    pthread_mutex_unlock(&mutex_planificacion_activa);
+    planificacion_activada = true;
+    sem_post(&sem_planificacion_activa);
 }
 
 void esperar_planificacion() {
