@@ -7,6 +7,7 @@
 #include "codigos_operacion.h"
 #include "solicitud_io.h"
 #include "serializar.h"
+#include "estado.h"
 typedef struct 
 {
     uint8_t ax;
@@ -20,15 +21,6 @@ typedef struct
     uint32_t si; // Source Index de un string
     uint32_t di; // Destination Index de un string
 } registros_t;
-
-typedef enum
-{
-    NEW='N',
-    READY='R',
-    EXECUTE='E',
-    BLOCKED='B',
-    EXIT='X'
-} state;
 
 typedef struct
 {
