@@ -23,7 +23,7 @@ void io_stdout() {
 
                     // [] Enviar peticiones a memoria y guardar el resultado
                     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
-                    log_info(logger, "Tam total de las peticiones [%d]", tam_total);
+                    log_info(logger, "Tam total de las peticiones [%ld]", tam_total);
                     void* string_a_imprimir = malloc(tam_total);
                     memset(string_a_imprimir, 0, tam_total);
                     void* ptr_string = string_a_imprimir;
@@ -35,7 +35,7 @@ void io_stdout() {
                          controlar_peticion();
                     }
                     // [] Imprimir resultado          
-                    printf("%s\n", string_a_imprimir);
+                    printf("%s\n", (char*)string_a_imprimir);
 
                     // [] Enviar status a Kernel
                     enviar_status(FIN_EJECUCION_IO, kernel_socket);

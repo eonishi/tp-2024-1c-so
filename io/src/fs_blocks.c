@@ -121,10 +121,6 @@ bool inicializar_bitmap_en_archivo(int fd) {
     t_bitarray *bloq_bitmap = malloc(sizeof(t_bitarray));
     bloq_bitmap = bitarray_create_with_mode(bitmap, cantidad_bits_en_bytes, MSB_FIRST);
     BLOQ_BITMAP = bloq_bitmap;
-    imprimir_bitmap();
-    log_info(logger, "Accediendo a BLOQ_BITMAP->size: [%d]", BLOQ_BITMAP->size);
-    log_info(logger, "Accediendo a BLOQ_BITMAP->mode: [%d]", BLOQ_BITMAP->mode);
-
     // Escribir la estructura completa en el archivo
     ssize_t written = write(fd, bloq_bitmap, sizeof(t_bitarray));
     if (written != sizeof(t_bitarray)) {
@@ -190,7 +186,6 @@ int asignar_bloque(){
 int buscar_bloque_libre(){
     for (size_t i = 0; i < config.block_count; i++){
         if (!bitarray_test_bit(BLOQ_BITMAP, i)){
-            log_info(logger, "Bloque disponible [%d]", i);
             return i;
         }
     }
