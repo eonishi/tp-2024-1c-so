@@ -133,21 +133,23 @@ void* gestionar_solicitudes_cpu(){
 
 			unsigned tamanio_en_bytes = recibir_cantidad(socket_cpu);
 			unsigned cantidad_de_paginas = calcular_cantidad_de_paginas_por_bytes(tamanio_en_bytes);
+		
+			esperar_retardo();
+
 			if(puedo_agregar_o_disminuir(cantidad_de_paginas)){
 				redimensionar_memoria_proceso(cantidad_de_paginas);
 				mostrar_tabla_paginas();
 
-				esperar_retardo();
 				enviar_status(SUCCESS, socket_cpu);
 				log_info(logger, "Se redimensionó la memoria correctamente, envio: [%d]", SUCCESS);
 				break;
 			}
 			else{
-				esperar_retardo();
 				enviar_status(OUT_OF_MEMORY, socket_cpu);
 				log_info(logger, "No se pudo redimensionar la memoria, envio: [%d]", OUT_OF_MEMORY);
 				break;
 			}
+			
 		case ESCRIBIR_DATO_EN_MEMORIA:
 			log_info(logger, "ESCRIBIR_DATO_EN_MEMORIA recibido.");
 

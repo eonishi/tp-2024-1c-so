@@ -70,6 +70,7 @@ void push_cola_new(pcb* pcb){
 
     pcb->estado = NEW;
     queue_push(cola_new, pcb);
+    sem_post(&sem_nuevo_proceso);
 }
 
 pcb* pop_cola_new(){

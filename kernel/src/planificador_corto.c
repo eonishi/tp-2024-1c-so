@@ -8,10 +8,10 @@ pthread_mutex_t mutex_quantum = PTHREAD_MUTEX_INITIALIZER;
 pthread_t hilo_quantum;
 
 void *iniciar_planificacion_corto(){
-    
-    while(1){// si se hace while(planificacion_activada) salta el while porque empieza en cero y luego no ejecuta
-        if(planificacion_activada){
-		log_info(logger, "Corto: Esperando otro proceso en ready");					
+    while(1){
+        esperar_planificacion();
+
+        log_info(logger, "Corto: Esperando otro proceso en ready");					
         sem_wait(&sem_proceso_en_ready);  			
 		log_info(logger, "Corto: Llegó proceso en ready");		
 		log_info(logger, "Corto: Esperando que el cpu este libre...");	
@@ -24,7 +24,7 @@ void *iniciar_planificacion_corto(){
         dispatch_proceso_planificador(pcb);
 
         gestionar_respuesta_cpu();
-        }
+        
     }
 }
 
@@ -52,6 +52,7 @@ void gestionar_respuesta_cpu(){
 			pcb = recibir_pcb(socket_cpu_dispatch);
 			loggear_pcb(pcb);
 
+            esperar_planificacion();
 
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
             log_info(logger, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); //validar log minimo
@@ -70,6 +71,8 @@ void gestionar_respuesta_cpu(){
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
             log_info(logger,"PID: %d - Bloqueado por: %s", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
+
+            esperar_planificacion();
 
             if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
@@ -118,7 +121,7 @@ void gestionar_respuesta_cpu(){
             log_info(logger, "FIn de Quantum: PID %d desalojado por fin de Quantum.", pcb->pid);
             pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
 
-
+            esperar_planificacion();
             // Gestion del proceso en las colas y su sincronizacion
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
             push_cola_ready(pcb);
@@ -128,9 +131,11 @@ void gestionar_respuesta_cpu(){
             
         case ERROR_DE_PROCESAMIENTO:
             log_error(logger, "Recibi ERROR_DE_PROCESAMIENTO. CODIGO: %d", cod_op);
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
 
             pcb = recibir_pcb(socket_cpu_dispatch);
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
+
+            esperar_planificacion();
 
             // Gestion del proceso en colas
             pop_and_destroy(cola_execute, (void*) destruir_pcb);
@@ -147,6 +152,8 @@ void gestionar_respuesta_cpu(){
             pcb = recibir_pcb(socket_cpu_dispatch);
             char* nombre_recurso_solicitado = pcb->solicitud->instruc_io_tokenizadas[1];
             log_info(logger, "Proceso [%d] solicita recurso [%s]", pcb->pid, nombre_recurso_solicitado);
+
+            esperar_planificacion();
 
             // Chequeo la existencia del recurso
             if(!recurso_existe(nombre_recurso_solicitado)){
@@ -184,6 +191,8 @@ void gestionar_respuesta_cpu(){
             char* nombre_recurso_liberar = pcb->solicitud->instruc_io_tokenizadas[1];
             log_info(logger, "Proceso [%d] libera recurso [%s]", pcb->pid, nombre_recurso_liberar);
 
+            esperar_planificacion();
+
             // Chequeo la existencia del recurso
             if(!recurso_existe(nombre_recurso_liberar)){
                 log_error(logger, "El recurso [%s] no existe", nombre_recurso_liberar);
@@ -201,9 +210,19 @@ void gestionar_respuesta_cpu(){
             break;
 
         case OUT_OF_MEMORY:
-        log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid); //validar log minimo
-        // TODO:
-        // [] Mandar a exit y sincronizar CPU
+
+        pcb = recibir_pcb(socket_cpu_dispatch);
+        log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid);
+
+        esperar_planificacion();
+
+            // Gestion del proceso en colas
+        pop_and_destroy(cola_execute, (void*) destruir_pcb);
+        push_cola_exit(pcb);
+
+            // Sincronizacion de ejecucion
+        sem_post(&sem_cpu_libre);
+
         break;
       
 		case -1:

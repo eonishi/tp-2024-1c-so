@@ -76,6 +76,8 @@ void *escuchar_io(void *args){
             pcb_blocked->solicitud = NULL;
             liberar_solicitud_io(solicitud_realizada);
 
+            // Si la planificacion está pausada, se frena acá. No puede enviar el proceso a ready
+            esperar_planificacion();
             pcb* pcb_to_ready = queue_pop(conexion->cola_espera);
             
             //aca se envia a ready luego de desbloquearse por I/O

@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include "conexion.h"
 #include "colas_planificador.h"
+#include "detener_planificacion.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
 #include "../../shared/include/direccion.h"
