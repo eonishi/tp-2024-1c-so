@@ -17,7 +17,7 @@ void io_dialfs() {
             case CREAR_ARCHIVO_FS:
                 solicitud_accion_archivo solicitud_create = recibir_solicitud_accion_archivo_fs(kernel_socket);
             
-                log_info(logger, "PID: <%d> - Crear Archivo: <%s>", solicitud_create.pid, solicitud_create.nombre_archivo);
+                log_info(logger_oblig, "PID: <%d> - Crear Archivo: <%s>", solicitud_create.pid, solicitud_create.nombre_archivo);
 
                 if(!crear_archivo(solicitud_create.nombre_archivo)){
                     log_error(logger, "No se pudo crear el archivo");
@@ -29,7 +29,7 @@ void io_dialfs() {
             case TRUNCAR_ARCHIVO_FS:
                 solicitud_truncar_archivo solicitud_recibida = recibir_solicitud_truncar_archivo_fs(kernel_socket);
             
-                log_info(logger, "PID: <%d> - Truncar Archivo: <%s> - Tamaño: <%d>", 
+                log_info(logger_oblig, "PID: <%d> - Truncar Archivo: <%s> - Tamaño: <%d>", 
                 solicitud_recibida.pid, solicitud_recibida.nombre_archivo, solicitud_recibida.tamanio_archivo);
 
                 if(!truncar_archivo(solicitud_recibida.pid, solicitud_recibida.nombre_archivo, solicitud_recibida.tamanio_archivo)){
@@ -43,7 +43,7 @@ void io_dialfs() {
 
                 solicitud_accion_archivo solicitud_delete = recibir_solicitud_accion_archivo_fs(kernel_socket);
 
-                log_info(logger, "PID: <%d> - Eliminar Archivo: <%s>", solicitud_delete.pid, solicitud_delete.nombre_archivo);
+                log_info(logger_oblig, "PID: <%d> - Eliminar Archivo: <%s>", solicitud_delete.pid, solicitud_delete.nombre_archivo);
 
                 if(!eliminar_archivo(solicitud_delete.nombre_archivo)){
                     log_error(logger, "No se pudo crear el archivo");
@@ -86,7 +86,7 @@ static void exec_io_write_fs(int pid, char** tokens_instr, t_list *peticiones_me
     char* puntero_archivo = tokens_instr[4];
     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
 
-    log_info(logger, "PID: <%d> - Escribir Archivo: <%s> - Tamaño a Leer: <%ld> - Puntero Archivo: <%s>", 
+    log_info(logger_oblig, "PID: <%d> - Escribir Archivo: <%s> - Tamaño a Leer: <%ld> - Puntero Archivo: <%s>", 
     pid, nombre_archivo, tam_total, puntero_archivo);
 
     void* datos = malloc(tam_total);
@@ -120,7 +120,7 @@ static void exec_io_read_fs(int pid, char** tokens_instr, t_list *peticiones_mem
     char* puntero_archivo = tokens_instr[4];
     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
 
-    log_info(logger, "PID: <%d> - Leer Archivo: <%s> - Tamaño a Leer: <%ld> - Puntero Archivo: <%s>", 
+    log_info(logger_oblig, "PID: <%d> - Leer Archivo: <%s> - Tamaño a Leer: <%ld> - Puntero Archivo: <%s>", 
     pid, nombre_archivo, tam_total, puntero_archivo);
     
     char* datos_leidos = malloc(tam_total);

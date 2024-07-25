@@ -1,7 +1,7 @@
 #include "include/memory.h"
 
 int main(){
-    logger = iniciar_logger("memory.log", "MEMORY");
+    logger = iniciar_logger("memory.log", "MEMORY", 1);
     log_info(logger, "Logger de MEMORY iniciado");
     
     inicializar_configuracion();

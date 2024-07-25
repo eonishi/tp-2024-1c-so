@@ -13,7 +13,7 @@ void io_generica() {
                 int retardo = parametros.retraso;
                 int pid = parametros.pid;
 
-                log_info(logger, "PID: <%d> - Operacion: <IO_GEN_SLEEP>", pid);
+                log_info(logger_oblig, "PID: <%d> - Operacion: <IO_GEN_SLEEP>", pid);
                 
                 // ejecutar instruccion
                 int tiempo_retardo = retardo * config.unidad_trabajo * 1000;

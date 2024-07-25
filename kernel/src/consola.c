@@ -145,7 +145,7 @@ void iniciar_consola()
 		log_info(logger, "Ingrese INICIAR_PROCESO:");
 
 		leido = readline("> ");
-		log_info(aux_log, "Linea ingresada: %s", leido);
+		log_info(logger_oblig, "Linea ingresada: %s", leido);
 
 		char** leido_split = string_n_split(leido, 2, " ");
 		char* comando_token = leido_split[0];

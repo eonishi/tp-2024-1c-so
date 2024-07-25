@@ -20,7 +20,7 @@
 #include "commons/temporal.h"
 
 extern t_log *logger;
-extern t_log *aux_log;
+extern t_log *logger_oblig;
 extern sem_t sem_proceso_en_ready;
 extern t_list *lista_conexiones_io;
 extern t_temporal *q_transcurrido;

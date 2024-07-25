@@ -1,6 +1,7 @@
 #include "../include/inicializar.h"
 
 t_log *logger;
+t_log *logger_oblig;
 
 // Estas funciones iniciadoras se pueden refactorizar en una sola, 
 // pero nose si vaya a necesitar ajusten especificos para cada tipo de interfaz
@@ -43,7 +44,9 @@ static void iniciar_io_dialfs(char* nombre_interfaz){
 void inicializar_io(char* nombre_interfaz, char* path_config){
     // Inicializacion comun entre todas los tipos de interfaces
     char* logger_name = string_from_format("IO_%s", nombre_interfaz);
-    logger = iniciar_logger("io.log", logger_name);
+    logger = iniciar_logger("io.log", logger_name, 1);
+    logger_oblig = iniciar_logger("logs_obligatorios.log", "logger_name", 1);
+
     inicializar_configuracion(path_config);
     crear_conexion_kernel();
 
