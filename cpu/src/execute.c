@@ -189,13 +189,23 @@ void exec_operacion_io(char** instr_tokenizada){
 
 void controlar_peticion_a_memoria(){
     op_code status = recibir_operacion(socket_memoria);
-    if(status == SUCCESS){
-        log_info(logger, "La operacion en memoria fue exitosa");
-    }
-    else{
-        log_error(logger, "Hubo un problema con la operacion en memoria");
-        tengo_pcb = 0;
-        enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO); // o OUT_OF_MEMORY?
+    switch (status)
+    {
+        case SUCCESS:
+            log_info(logger, "La operacion en memoria fue exitosa");
+            break;
+    
+        case OUT_OF_MEMORY:
+            log_error(logger, "No hay suficiente memoria para realizar la operacion");
+            tengo_pcb = 0;
+            enviar_pcb(pcb_actual, socket_kernel, OUT_OF_MEMORY);
+            break;
+            
+        default:
+            break;
+            log_error(logger, "Hubo un problema con la operacion en memoria");
+            tengo_pcb = 0;
+            enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO);
     }
 }
 
