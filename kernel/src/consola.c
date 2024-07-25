@@ -62,6 +62,7 @@ static void gestionar_comando_leido(char** linea_leida){
             }
 
 			push_cola_new(nuevo_pcb);
+			
 			sem_post(&sem_nuevo_proceso);
 
 			log_info(logger, "==============================================");
