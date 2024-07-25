@@ -9,7 +9,6 @@ pthread_t hilo_quantum;
 
 void *iniciar_planificacion_corto(){
     while(1){
-        esperar_planificacion();
 
         log_info(logger, "Corto: Esperando otro proceso en ready");					
         sem_wait(&sem_proceso_en_ready);  			
@@ -17,6 +16,8 @@ void *iniciar_planificacion_corto(){
 		log_info(logger, "Corto: Esperando que el cpu este libre...");	
 		sem_wait(&sem_cpu_libre);
 		log_info(logger, "Corto: Cpu libre! pasando proximo proceso a execute..");	
+
+        esperar_planificacion();
 
         pcb* pcb = pop_cola_ready();
         push_cola_execute(pcb); 
@@ -76,7 +77,7 @@ void gestionar_respuesta_cpu(){
 
             if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
-                    log_error(logger, "Error de validación de instrucción a IO");
+                    log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
                     log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
                     push_cola_exit(pcb);
                     sem_post(&sem_cpu_libre);
@@ -93,12 +94,11 @@ void gestionar_respuesta_cpu(){
                 temporal_stop(q_transcurrido); //detengo el contador de quantum usado
                 q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
                 
-                //solicitud.pcb->estado = BLOCKED; //lo hace la funcion push
                 pcb->quantum -= q_usado;
                 loggear_pcb(pcb);
 
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
-                    log_error(logger, "Error de validación de instrucción a IO");
+                    log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
                     log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
                     push_cola_exit(pcb);
                     sem_post(&sem_cpu_libre);
@@ -111,14 +111,23 @@ void gestionar_respuesta_cpu(){
                 break;
             }
       
-        case INTERRUPCION:
+        case INTERRUPCION_USUARIO:
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
 
-            // Existen interrupcion que no son por quantum
-            // TODO: Gestionar casos donde la interrupcion no es por Q
+            esperar_planificacion();
+            // Gestion del proceso en las colas y su sincronizacion
+            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            push_cola_exit(pcb);
+            sem_post(&sem_cpu_libre);
 
-            log_info(logger, "FIn de Quantum: PID %d desalojado por fin de Quantum.", pcb->pid);
+            break;
+
+        case INTERRUPCION_QUANTUM:
+            pcb = recibir_pcb(socket_cpu_dispatch);
+            loggear_pcb(pcb);
+            
+            log_info(logger, "Fin de Quantum: PID %d desalojado por fin de Quantum.", pcb->pid);
             pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
 
             esperar_planificacion();
@@ -128,7 +137,7 @@ void gestionar_respuesta_cpu(){
             sem_post(&sem_cpu_libre);
 
             break;
-            
+
         case ERROR_DE_PROCESAMIENTO:
             log_error(logger, "Recibi ERROR_DE_PROCESAMIENTO. CODIGO: %d", cod_op);
 
@@ -211,24 +220,23 @@ void gestionar_respuesta_cpu(){
 
         case OUT_OF_MEMORY:
 
-        pcb = recibir_pcb(socket_cpu_dispatch);
-        log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid);
+            pcb = recibir_pcb(socket_cpu_dispatch);
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid);
 
-        esperar_planificacion();
+            esperar_planificacion();
 
-            // Gestion del proceso en colas
-        pop_and_destroy(cola_execute, (void*) destruir_pcb);
-        push_cola_exit(pcb);
+                // Gestion del proceso en colas
+            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            push_cola_exit(pcb);
 
-            // Sincronizacion de ejecucion
-        sem_post(&sem_cpu_libre);
+                // Sincronizacion de ejecucion
+            sem_post(&sem_cpu_libre);
 
-        break;
+            break;
       
 		case -1:
             pcb = recibir_pcb(socket_cpu_dispatch);
 			log_error(logger, "el cliente se desconecto. Terminando servidor");
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
 		default:
 			log_warning(logger,"Operacion desconocida. No quieras meter la pata");
 			break;
@@ -238,20 +246,22 @@ void gestionar_respuesta_cpu(){
 void *iniciar_planificacion_corto_RR(){
     q_usado = 0;
     while(1){
-        if(planificacion_activada){   
-			log_info(logger, "CortoRR: Esperando otro proceso en ready");					
-            sem_wait(&sem_proceso_en_ready);  			
-			log_info(logger, "CortoRR: Llegó proceso en ready");		
-			log_info(logger, "CortoRR: Esperando que el cpu este libre");	
-            sem_wait(&sem_cpu_libre);
-            log_info(logger, "CortoRR: Cpu libre! pasando proximo proceso a execute..");	
-            pcb* pcb = pop_cola_ready();
-            push_cola_execute(pcb);
-            //pcb->estado = EXECUTE; //// REVISAR SI HACE FALTA, LOS CAMBIOS DE ESTADO DEBEN MANEJARSE CON LOS PUSH
-            dispatch_proceso_planificador(pcb);
-            crear_hilo_quantum();
-            gestionar_respuesta_cpu();
-        }
+		log_info(logger, "CortoRR: Esperando otro proceso en ready");					
+        sem_wait(&sem_proceso_en_ready);  			
+		log_info(logger, "CortoRR: Llegó proceso en ready");		
+		log_info(logger, "CortoRR: Esperando que el cpu este libre");	
+        sem_wait(&sem_cpu_libre);
+        log_info(logger, "CortoRR: Cpu libre! pasando proximo proceso a execute..");	
+
+        esperar_planificacion();   
+
+        pcb* pcb = pop_cola_ready();
+        push_cola_execute(pcb);
+
+        dispatch_proceso_planificador(pcb);
+        crear_hilo_quantum();
+        gestionar_respuesta_cpu();
+        
     }
 }
 
@@ -260,30 +270,34 @@ void *iniciar_planificacion_corto_VRR(){
     pcb* pcb = NULL;
     
     while(1){
-        if(planificacion_activada){   
-			log_info(logger, "Corto VRR: Esperando otro proceso en ready");					
-            sem_wait(&sem_proceso_en_ready);  			
-			log_info(logger, "Corto VRR: Llegó proceso en ready");		
-			log_info(logger, "Corto VRR: Esperando que el cpu este libre");	
-            sem_wait(&sem_cpu_libre);
-            log_info(logger, "Corto VRR: Cpu libre! pasando proximo proceso a execute..");	
-            if(!queue_is_empty(cola_readyVRR)){
-                //dar paso a readyVRR prioritario
-                log_info(logger, "La cola prioritaria NO esta vacia.");
-                 elemVRR* auxVRR = queue_pop(cola_readyVRR);
-                 pcb = auxVRR->pcbVRR;
-                 q_usado = auxVRR->quantum_usado; //aca defino el quantum que va a usar el proceso en la cola ready prioridad
-            }else{
-                //dar paso a la cola ready normal
-                q_usado = 0; //por que si hubo ejecucion de cola prioritaria queda seteado el valor de ese proceso
-                log_info(logger, "La cola prioritaria está vacia.");
-                pcb = pop_cola_ready();
-            } 
-            pcb->estado = EXECUTE;
-            dispatch_proceso_planificador(pcb);
-            crear_hilo_quantum();
-            gestionar_respuesta_cpu();
+
+		log_info(logger, "Corto VRR: Esperando otro proceso en ready");					
+        sem_wait(&sem_proceso_en_ready);  			
+		log_info(logger, "Corto VRR: Llegó proceso en ready");		
+		log_info(logger, "Corto VRR: Esperando que el cpu este libre");	
+        sem_wait(&sem_cpu_libre);
+        log_info(logger, "Corto VRR: Cpu libre! pasando proximo proceso a execute..");
+
+        esperar_planificacion();  
+
+        if(!queue_is_empty(cola_readyVRR)){
+            //dar paso a readyVRR prioritario
+            log_info(logger, "La cola prioritaria NO esta vacia.");
+             elemVRR* auxVRR = queue_pop(cola_readyVRR);
+             pcb = auxVRR->pcbVRR;
+             q_usado = auxVRR->quantum_usado; //aca defino el quantum que va a usar el proceso en la cola ready prioridad
         }
+        else{
+            //dar paso a la cola ready normal
+            q_usado = 0; //por que si hubo ejecucion de cola prioritaria queda seteado el valor de ese proceso
+            log_info(logger, "La cola prioritaria está vacia.");
+            pcb = pop_cola_ready();
+        } 
+        
+        dispatch_proceso_planificador(pcb);
+        crear_hilo_quantum();
+        gestionar_respuesta_cpu();
+        
     }
 }
 
@@ -299,7 +313,7 @@ void *monitoreo_quantum(){
     q_restante = config->quantum - q_usado; // Si es FIFO no se trabaja con quantum.
     log_info(logger, "Inicio quantum de %d", q_restante);
     usleep((q_restante)*1000);
-    interrumpir_proceso_ejecutando();
+    interrumpir_proceso_ejecutando(INTERRUPCION_QUANTUM);
 }
 
 void cancelar_hilo_quantum(){
@@ -324,7 +338,8 @@ const char* traduce_cod_op(op_code code) {
         case DATO_LEIDO_DE_MEMORIA: return "DATO_LEIDO_DE_MEMORIA";
         case CONSULTAR_TABLA_DE_PAGINAS: return "CONSULTAR_TABLA_DE_PAGINAS";
         case RESPUESTA: return "RESPUESTA";
-        case INTERRUPCION: return "INTERRUPCION";
+        case INTERRUPCION_USUARIO: return "INTERRUPCION_USUARIO";
+        case INTERRUPCION_QUANTUM: return "INTERRUPCION_QUANTUM";
         case PROCESO_TERMINADO: return "PROCESO_TERMINADO";
         case PROCESO_BLOQUEADO_IO: return "PROCESO_BLOQUEADO";
         case PROCESO_SOLICITA_RECURSO: return "PROCESO_SOLICITA_RECURSO";

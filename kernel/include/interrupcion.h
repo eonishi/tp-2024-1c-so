@@ -7,7 +7,7 @@
 extern int socket_cpu_interrupt;
 extern t_queue *cola_execute;
 
-void send_interrupt(unsigned PID, int socket_interrupt);
-void interrumpir_proceso_ejecutando();
+void send_interrupt(unsigned PID, op_code motivo_interrupt, int socket_interrupt);
+void interrumpir_proceso_ejecutando(op_code motivo_interrupt);
 
 #endif

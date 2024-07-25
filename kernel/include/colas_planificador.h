@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "conexion.h"
 #include "recurso.h"
+#include "interrupcion.h"
 #include "../../shared/include/pcb.h"
 
 extern t_log *logger;

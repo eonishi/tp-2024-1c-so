@@ -2,7 +2,7 @@
 
 int socket_memoria, socket_kernel;
 int INTERRUPTION_FLAG = 0;
-
+op_code MOTIVO_INTERRUPCION;
 
 static void terminar_programa()
 {
@@ -114,17 +114,33 @@ void server_interrupt()
 			op_code cod_op = recibir_operacion(cliente_fd);
 			log_info(logger, "Codigo de operacion recibido: [%d]", cod_op);
 
-			switch (cod_op){
-				case INTERRUPCION:
-					unsigned PID_interrumpido = recibir_cantidad(cliente_fd);
-					log_warning(logger, "Recibi interrupcion a PID: [%d]", PID_interrumpido);
+			unsigned PID_interrumpido = recibir_cantidad(cliente_fd);
+			log_info(logger, "PID interrumpido: [%d]", PID_interrumpido);
 
-					if(PID_interrumpido == pcb_actual->pid)
+			switch (cod_op){
+				case INTERRUPCION_USUARIO:
+					log_warning(logger, "Recibi interrupcion por USUARIO");
+
+					if(PID_interrumpido == pcb_actual->pid){
 						INTERRUPTION_FLAG = 1;
+						MOTIVO_INTERRUPCION = INTERRUPCION_USUARIO;
+					}
 					else
 						log_info(logger, "INTERRUPCION recibida. PID: [%d]. No corresponde al PID actual", PID_interrumpido);
 
 					break;
+				
+				case INTERRUPCION_QUANTUM:
+					log_warning(logger, "Recibi interrupcion por QUANTUM");
+					
+					if(PID_interrumpido == pcb_actual->pid){
+						INTERRUPTION_FLAG = 1;
+						MOTIVO_INTERRUPCION = INTERRUPCION_QUANTUM;
+					}
+					else
+						log_info(logger, "INTERRUPCION recibida. PID: [%d]. No corresponde al PID actual", PID_interrumpido);
+					break;
+
 				case -1:
 					log_error(logger, "el cliente se desconecto. Terminando servidor");
 					close(cliente_fd);

@@ -158,32 +158,77 @@ pcb* pop_proceso(t_queue* queue, unsigned PID){
     return list_remove_by_condition(queue->elements, es_pid_buscado);
 }
 
-void sacar_proceso_de_cola_estado(unsigned PID){
+bool sacar_proceso_de_cola_estado(unsigned PID){
     for (size_t i = 0; i < CANTIDAD_COLAS_ESTADO; i++){
         if(proceso_esta_en_cola(colas_estado[i], PID)){
             pcb* pcb_encontrado = pop_proceso(colas_estado[i], PID);
             push_cola_exit(pcb_encontrado);
-            break;
+            return true;
         }
     }
+    return false;
 }
 
-void sacar_proceso_de_cola_io(unsigned PID){
+bool sacar_proceso_de_cola_io(unsigned PID){
     for (size_t i = 0; i < list_size(lista_conexiones_io); i++){
         conexion_io* conexion = list_get(lista_conexiones_io, i);
         if(proceso_esta_en_cola(conexion->cola_espera, PID)){
             pcb* pcb_encontrado = pop_proceso(conexion->cola_espera, PID);
             push_cola_exit(pcb_encontrado);
-            break;
+            return true;
         }
     }
+    return false;
 }
+
+bool sacar_proceso_de_cola_execute(unsigned PID){
+    if(proceso_esta_en_cola(cola_execute, PID)){
+        interrumpir_proceso_ejecutando(INTERRUPCION_USUARIO);
+        return true;
+    }
+    return false;
+}
+
+bool sacar_proceso_de_cola_recurso(unsigned PID){
+    for (size_t i = 0; i < list_size(recursos_disponibles); i++){
+        t_recurso* recurso = list_get(recursos_disponibles, i);
+        if(proceso_esta_en_cola(recurso->procesos_en_espera, PID)){
+            pcb* pcb_encontrado = pop_proceso(recurso->procesos_en_espera, PID);
+            push_cola_exit(pcb_encontrado);
+            return true;
+        }
+    }
+    return false;
+}
+
+typedef bool (*sacar_proceso_func)(unsigned PID);
 
 void finalizar_proceso(unsigned PID){
     PID_BUSQUEDA = PID;
-    sacar_proceso_de_cola_estado(PID);
-    sacar_proceso_de_cola_io(PID);
-    liberar_recurso_del_proceso(PID);
+
+    sacar_proceso_func funciones[] = {
+        sacar_proceso_de_cola_execute,
+        sacar_proceso_de_cola_estado,
+        sacar_proceso_de_cola_io,
+        sacar_proceso_de_cola_recurso
+    };
+
+    for (size_t i = 0;  i < sizeof(funciones) / sizeof(funciones[0]); i++) {
+        if (funciones[i](PID)) {
+            liberar_recurso_del_proceso(PID);
+            return;
+        }
+    }
+
+    log_warning(logger, "Proceso [%d] no encontrado, intente nuevamente", PID);    
+
+    // Si el PID se encuentra en una cola de estado/IO/recurso, se lo saca y se lo manda a EXIT
+    // sino no hace nada
+    //sacar_proceso_de_cola_execute(PID);
+    //sacar_proceso_de_cola_estado(PID);
+    //sacar_proceso_de_cola_io(PID);
+    // [] sacar_proceso_de_cola_io(PID);
+    //liberar_recurso_del_proceso(PID);
     /* DISCLAIMER:
      *  Si se quisiera finalizar el proceso en ejecucion, hay condicion de carrera
      *  entre el checkeo de la condicion entre todas las colas y la "devolucion" del
