@@ -15,8 +15,6 @@ bool crear_archivo(char* nombre){
         return false;
     }
 
-    log_info(logger, "Pre ASignar bloque");
-
     int bloque = asignar_bloque();
 
     if (bloque == -1){
@@ -41,8 +39,6 @@ bool crear_archivo(char* nombre){
 
     close(fd);
 
-    log_info(logger, "Archivo cerrado");
-
     t_config* config_loader = config_create(fs_fullpath(nombre));
 
     if(config_loader == NULL) {
@@ -50,11 +46,7 @@ bool crear_archivo(char* nombre){
         exit(EXIT_FAILURE);
     }
 
-    log_info(logger, "config_loader creado");
-
     crear_fcb(nombre, config_loader);
-
-    log_info(logger, "fcb creado");
 
     return true;
 }
