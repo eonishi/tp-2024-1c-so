@@ -23,7 +23,6 @@ extern t_log *aux_log;
 extern sem_t sem_proceso_en_ready;
 extern t_list *lista_conexiones_io;
 extern t_temporal *q_transcurrido;
-extern pthread_mutex_t mutex_interfaz_buscada;
 
 void *escuchar_io(void *socket);
 
