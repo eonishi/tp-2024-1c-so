@@ -32,7 +32,7 @@ void io_dialfs() {
                 log_info(logger, "PID: <%d> - Truncar Archivo: <%s> - Tamaño: <%d>", 
                 solicitud_recibida.pid, solicitud_recibida.nombre_archivo, solicitud_recibida.tamanio_archivo);
 
-                if(!truncar_archivo(solicitud_recibida.nombre_archivo, solicitud_recibida.tamanio_archivo)){
+                if(!truncar_archivo(solicitud_recibida.pid, solicitud_recibida.nombre_archivo, solicitud_recibida.tamanio_archivo)){
                     log_error(logger, "No se pudo truncar el archivo");
                 }
 

@@ -16,9 +16,8 @@ void io_stdout() {
                     t_list *peticiones_memoria = solicitud.peticiones_memoria;
                     char** tokens_instr = solicitud.tokens;
 
-                    log_info(logger,"RECIBIDO EJECUTAR_INSTRUCCION_IO, pid: [%d]", pid);
+                    log_info(logger, "PID: <%d> - Operacion: <%s>", pid, tokens_instr[0]);
 
-                    log_info(logger, "Instruccion recibida de Kernel [%s]", tokens_instr[0]);
                     log_peticiones(peticiones_memoria);
 
                     // [] Enviar peticiones a memoria y guardar el resultado

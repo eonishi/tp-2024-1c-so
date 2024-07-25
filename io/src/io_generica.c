@@ -8,15 +8,12 @@ void io_generica() {
         log_info(logger, "Codigo de operacion: [%d]", cod_op);
 
         switch (cod_op){
-            case EJECUTAR_INSTRUCCION_IO:
-                log_info(logger, "Ejecutar instruccion IO");
-                
+            case EJECUTAR_INSTRUCCION_IO:                                
                 solicitud_io_sleep parametros = recibir_io_sleep(kernel_socket);
                 int retardo = parametros.retraso;
                 int pid = parametros.pid;
 
-                log_info(logger, "Se ejecuta IO_SLEEP par el proceos pid:[%d]", pid);
-                // int retardo = recibir_cantidad(kernel_socket);
+                log_info(logger, "PID: <%d> - Operacion: <IO_GEN_SLEEP>", pid);
                 
                 // ejecutar instruccion
                 int tiempo_retardo = retardo * config.unidad_trabajo * 1000;
