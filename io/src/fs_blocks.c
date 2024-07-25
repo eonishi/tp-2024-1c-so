@@ -186,7 +186,6 @@ int asignar_bloque(){
 int buscar_bloque_libre(){
     for (size_t i = 0; i < config.block_count; i++){
         if (!bitarray_test_bit(BLOQ_BITMAP, i)){
-            log_info(logger, "Bloque disponible [%d]", i);
             return i;
         }
     }

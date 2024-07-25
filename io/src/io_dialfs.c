@@ -86,7 +86,7 @@ static void exec_io_write_fs(int pid, char** tokens_instr, t_list *peticiones_me
     char* puntero_archivo = tokens_instr[4];
     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
 
-    log_info(logger, "PID: <%d> - Escribir Archivo: <%s> - Tamaño a Leer: <%d> - Puntero Archivo: <%s>", 
+    log_info(logger, "PID: <%d> - Escribir Archivo: <%s> - Tamaño a Leer: <%ld> - Puntero Archivo: <%s>", 
     pid, nombre_archivo, tam_total, puntero_archivo);
 
     void* datos = malloc(tam_total);
@@ -98,10 +98,10 @@ static void exec_io_write_fs(int pid, char** tokens_instr, t_list *peticiones_me
             log_info(logger, "Peticion [%d] de [%d]", i+1, list_size(peticiones_memoria));
             peticion_lectura_enviar(peticion, &ptr_string, memory_socket);
             controlar_peticion();
-            log_info(logger, "Peticion [%d] Recibido: [%s]", i+1, datos);
+            log_info(logger, "Peticion [%d] Recibido: [%s]", i+1, (char*)datos);
     }
 
-    log_info(logger, "Leido desde memoria: [%s]", datos);
+    log_info(logger, "Leido desde memoria: [%s]", (char*) datos);
 
     
 
@@ -120,7 +120,7 @@ static void exec_io_read_fs(int pid, char** tokens_instr, t_list *peticiones_mem
     char* puntero_archivo = tokens_instr[4];
     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
 
-    log_info(logger, "PID: <%d> - Leer Archivo: <%s> - Tamaño a Leer: <%d> - Puntero Archivo: <%s>", 
+    log_info(logger, "PID: <%d> - Leer Archivo: <%s> - Tamaño a Leer: <%ld> - Puntero Archivo: <%s>", 
     pid, nombre_archivo, tam_total, puntero_archivo);
     
     char* datos_leidos = malloc(tam_total);

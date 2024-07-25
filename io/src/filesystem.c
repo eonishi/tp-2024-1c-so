@@ -192,19 +192,13 @@ bool leer_archivo(char*nombre, int puntero_archivo, int tam_a_leer, void** datos
         return false;
     };
 
-    log_info(logger, "resultado leer_datos_en_bloques: [%s]", *datos_leidos);
+    log_info(logger, "resultado leer_datos_en_bloques: [%s]", (char*)*datos_leidos);
 
     return true;
 }
 
 
 // -----------------------------------------------//
-
-// Sincronizar los cambios al archivo // 
-//if (msync(map, tam_archivo, MS_SYNC) == -1) {
-    //  log_info(logger, "Error al sincronizar el archivo");
-    //return NULL;
-//}
 
 // TODO: agregar desmapear...
 // Desmapear el archivo
