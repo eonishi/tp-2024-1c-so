@@ -57,7 +57,7 @@ void* gestionar_solicitudes_kernel(){
             log_info(logger, "CREAR_PROCESO_EN_MEMORIA recibido.");
 
             solicitud_crear_proceso solicitud = recibir_solicitud_crear_proceso(socket_kernel);
-
+			esperar_retardo();
 			cargar_proceso_en_memoria(solicitud.filePath, solicitud.PID);
 			enviar_status(SUCCESS, socket_kernel);
 			break;
@@ -69,7 +69,7 @@ void* gestionar_solicitudes_kernel(){
 
 			// Elimino el proceso de la lista de procesos en memoria
 			liberar_proceso_en_memoria(pid);
-
+			esperar_retardo();
 			// Envio respuesta al kernel	
 			enviar_status(SUCCESS, socket_kernel);
 			break;
