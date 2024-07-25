@@ -249,8 +249,8 @@ void reubicar_archivo_desde_fcb(fcb* fcb){
     config_save(fcb->config);
 }
 
-void compactar() {
-    log_info(logger, "======== Se ejecuta compactación =========");
+void compactar(int pid) {
+    log_info(logger, "PID: <%d> - Inicio Compactación.", pid);    
     // Crear un espacio temporal para almacenar datos mientras se compactan
     void *nuevo_espacio = calloc(tam_filesystem, 1);
     if (nuevo_espacio == NULL) {
@@ -306,6 +306,7 @@ void compactar() {
 
     // Esperar el retraso de compactación
     usleep(config.retraso_compatacion * 1000);
+    log_info(logger, "PID: <%d> - Fin Compactación.", pid);
 }
 
 

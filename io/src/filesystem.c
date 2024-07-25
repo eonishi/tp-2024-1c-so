@@ -65,7 +65,7 @@ bool eliminar_archivo(char* nombre) {
     }
 }
 
-bool truncar_archivo(char* nombre, int new_size){
+bool truncar_archivo(int pid, char* nombre, int new_size){
     int fd = fs_open(nombre, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
 
     if (fd == -1) {
@@ -99,10 +99,11 @@ bool truncar_archivo(char* nombre, int new_size){
                 return false;
             }
 
+            // Eliminamos y volvemos a insertar para que quede en última posición
             eliminar_fcb_por_nombre(nombre);
             insertar_fcb(file_control_block);
-
-            compactar();        
+            
+            compactar(pid);      
 
             bloque_inicial = config_get_int_value(config_loader, "BLOQUE_INICIAL");
         }
