@@ -33,23 +33,12 @@ kernel_config* config;
 int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, socket_server_kernel;
 t_list *lista_conexiones_io;
 
-// Variables Planificador
-int planificacion_activada = 1;
-
 // -- Semaforos
 sem_t sem_nuevo_proceso;
 sem_t sem_grado_multiprog;
 sem_t sem_proceso_en_ready;
 sem_t sem_cpu_libre;
-
-// Fin variables planificador
-
-typedef enum
-{
-	CPU,
-	MEMORIA,
-} cod_mensaje;
-
+extern sem_t sem_planificacion_activa;
 
 void terminar_programa();
 void iniciar_semaforos();
