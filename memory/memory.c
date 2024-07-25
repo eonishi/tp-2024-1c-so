@@ -2,6 +2,8 @@
 
 int main(){
     logger = iniciar_logger("memory.log", "MEMORY", 1);
+    logger_oblig = iniciar_logger("logs_obligatorios.log", "MEMORY", 1);
+
     log_info(logger, "Logger de MEMORY iniciado");
     
     inicializar_configuracion();

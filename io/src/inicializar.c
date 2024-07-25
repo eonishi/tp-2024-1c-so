@@ -45,7 +45,7 @@ void inicializar_io(char* nombre_interfaz, char* path_config){
     // Inicializacion comun entre todas los tipos de interfaces
     char* logger_name = string_from_format("IO_%s", nombre_interfaz);
     logger = iniciar_logger("io.log", logger_name, 1);
-    logger_oblig = iniciar_logger("logs_obligatorios.log", "logger_name", 1);
+    logger_oblig = iniciar_logger("logs_obligatorios.log", logger_name, 1);
 
     inicializar_configuracion(path_config);
     crear_conexion_kernel();

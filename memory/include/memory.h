@@ -14,6 +14,7 @@
 #include "../../shared/include/direccion.h"
 
 t_log* logger;
+t_log* logger_oblig;
 extern memory_config config;
 
 extern int socket_cpu, socket_kernel;

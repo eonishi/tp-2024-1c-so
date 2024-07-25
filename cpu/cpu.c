@@ -3,6 +3,7 @@
 int main()
 {
 	logger = iniciar_logger("cpu.log", "CPU", 1);
+	logger_oblig = iniciar_logger("logs_obligatorios.log", "CPU", 1);
 	log_info(logger, "Logger CPU Iniciado");
 
 	inicializar_configuracion();  
