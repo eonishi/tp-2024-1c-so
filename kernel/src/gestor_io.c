@@ -129,17 +129,16 @@ bool validar_instruccion_a_io(char** instruc_io_tokenizadas, pcb* pcb){
 }
 
 static char *interfaz_buscada;
-pthread_mutex_t mutex_interfaz_buscada = PTHREAD_MUTEX_INITIALIZER;
 static bool interfaz_es_la_buscada(void *conexion_buscada){
     conexion_io* conexion = (conexion_io*) conexion_buscada;
     return string_equals_ignore_case(conexion->nombre_interfaz, interfaz_buscada);
 }
 
 conexion_io* obtener_conexion_io_por_nombre(char* nombre_io){
-    pthread_mutex_lock(&mutex_interfaz_buscada);
+    pthread_mutex_lock(&mutex_conexiones_io);
         interfaz_buscada = nombre_io;
         conexion_io* result = list_find(lista_conexiones_io, interfaz_es_la_buscada);
-    pthread_mutex_unlock(&mutex_interfaz_buscada);
+    pthread_mutex_unlock(&mutex_conexiones_io);
     return result;
 }
 
@@ -147,10 +146,10 @@ conexion_io* obtener_conexion_io_por_nombre(char* nombre_io){
 bool existe_io_conectada(char* nombre_io){
     log_info(logger, "Validando si existe IO [%s]", nombre_io);
 
-    pthread_mutex_lock(&mutex_interfaz_buscada);
+    pthread_mutex_lock(&mutex_conexiones_io);
         interfaz_buscada = nombre_io;
         bool result = list_any_satisfy(lista_conexiones_io, interfaz_es_la_buscada);
-    pthread_mutex_unlock(&mutex_interfaz_buscada);
+    pthread_mutex_unlock(&mutex_conexiones_io);
     return result;
 }
 
@@ -159,10 +158,10 @@ bool io_acepta_operacion(conexion_io conexion_io, char* operacion_io){
 }
 
 void cerrar_conexion_io(char* nombre_io){
-    pthread_mutex_lock(&mutex_interfaz_buscada);
+    pthread_mutex_lock(&mutex_conexiones_io);
         interfaz_buscada = nombre_io;
         conexion_io* conexion_eliminada = list_remove_by_condition(lista_conexiones_io, interfaz_es_la_buscada);
-    pthread_mutex_unlock(&mutex_interfaz_buscada);
+    pthread_mutex_unlock(&mutex_conexiones_io);
 
     log_info(logger, "Conexion eliminada: [%s]", conexion_eliminada->nombre_interfaz);
     liberar_conexion_io(conexion_eliminada);
@@ -173,5 +172,5 @@ void enviar_proceso_a_esperar_io(pcb* pcb_a_espera){
     log_warning(logger, "Nombre_io: [%s]", nombre_io);    
 
     conexion_io* conexion_io = obtener_conexion_io_por_nombre(nombre_io);
-    push_cola_blocked(pcb_a_espera, conexion_io->cola_espera, &conexion_io->sem_cliente);
+    push_cola_blocked(pcb_a_espera, conexion_io->cola_espera, &conexion_io->sem_cliente, conexion_io->mutex);
 }

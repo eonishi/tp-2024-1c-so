@@ -1,11 +1,8 @@
 #include "../include/colas_planificador.h"
 #define CANTIDAD_COLAS_ESTADO 5
 
-t_queue *cola_new;
-t_queue *cola_exit;
-t_queue *cola_ready;
-t_queue *cola_execute;
-t_queue *cola_readyVRR;
+t_queue *cola_new, *cola_exit, *cola_ready, *cola_execute, *cola_readyVRR;
+pthread_mutex_t mutex_new, mutex_exit, mutex_ready, mutex_execute, mutex_readyVRR = PTHREAD_MUTEX_INITIALIZER;
 
 t_queue* colas_estado[CANTIDAD_COLAS_ESTADO]; 
 
@@ -26,41 +23,39 @@ void inicializar_colas_planificador(){
 }
 
 void imprimir_colas(){
-    imprimir_cola("New", cola_new);
-    imprimir_cola("Ready", cola_ready);
-    imprimir_cola("ReadyVRR", cola_readyVRR);
-    imprimir_cola("Execute", cola_execute);
-    imprimir_cola("Exit", cola_exit);
+    imprimir_cola("New", cola_new, mutex_new);
+    imprimir_cola("Ready", cola_ready, mutex_ready);
+    imprimir_cola("ReadyVRR", cola_readyVRR, mutex_readyVRR);
+    imprimir_cola("Execute", cola_execute, mutex_execute);
+    imprimir_cola("Exit", cola_exit, mutex_exit);
     imprimir_colas_io();
     imprimir_colas_recurso();
 }
 
-void imprimir_cola(char* nombre, t_queue* cola){
+void imprimir_cola(char* nombre, t_queue* cola, pthread_mutex_t mutex){
     log_info(logger, "=====================================");
     log_info(logger, "Procesos en cola [%s]: ", nombre);
+
+    pthread_mutex_lock(&mutex);
     for(int index = 0; index < cola->elements->elements_count; index++){
         pcb* pcb = list_get(cola->elements, index);
 
         log_info(logger, "--> PID: [%d] ESTADO: [%d]", pcb->pid, pcb->estado);
     }
+    pthread_mutex_unlock(&mutex);
 }
 
 void imprimir_colas_io(){
     for (size_t i = 0; i < list_size(lista_conexiones_io); i++){
-        conexion_io* conexion_a_imprmir = list_get(lista_conexiones_io, i);
-        imprimir_cola(conexion_a_imprmir->nombre_interfaz, conexion_a_imprmir->cola_espera);
+        conexion_io* conexion_a_imprimir = list_get(lista_conexiones_io, i);
+        imprimir_cola(conexion_a_imprimir->nombre_interfaz, conexion_a_imprimir->cola_espera, conexion_a_imprimir->mutex);
     }
 }
 
 void imprimir_colas_recurso(){
     for (size_t i = 0; i < list_size(recursos_disponibles); i++){
         t_recurso* recurso = list_get(recursos_disponibles, i);
-        log_info(logger, "=====================================");
-        log_info(logger, "Procesos en cola de recurso [%s]: ", recurso->nombre);
-        for(int index = 0; index < list_size(recurso->procesos_en_espera->elements); index++){
-            pcb* pcb = list_get(recurso->procesos_en_espera->elements, index);
-            log_info(logger, "--> PID: [%d] ESTADO: [%d]", pcb->pid, pcb->estado);
-        }
+        imprimir_cola(recurso->nombre, recurso->procesos_en_espera, recurso->mutex);
     }
 
 }
@@ -69,39 +64,60 @@ void push_cola_new(pcb* pcb){
     log_info(logger, "Se crea el proceso <%d> en NEW", pcb->pid);
 
     pcb->estado = NEW;
-    queue_push(cola_new, pcb);
+
+    pthread_mutex_lock(&mutex_new);
+        queue_push(cola_new, pcb);
+    pthread_mutex_unlock(&mutex_new);
+
     sem_post(&sem_nuevo_proceso);
 }
 
 pcb* pop_cola_new(){
-    return queue_pop(cola_new);
+    pthread_mutex_lock(&mutex_new);
+        pcb* pcb = queue_pop(cola_new);
+    pthread_mutex_unlock(&mutex_new);
+    return pcb;
 }
 
 void push_cola_ready(pcb* pcb){
     log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: READY", pcb->pid, pcb->estado);
     pcb->estado = READY;
-    queue_push(cola_ready, pcb);
+
+    pthread_mutex_lock(&mutex_ready);
+        queue_push(cola_ready, pcb);
+    pthread_mutex_unlock(&mutex_ready);
+
     sem_post(&sem_proceso_en_ready);
-    imprimir_cola("READY:",cola_ready);
+    imprimir_cola("READY:",cola_ready, mutex_ready);
 
 }
 
 pcb* pop_cola_ready(){
-    return queue_pop(cola_ready);
+    pthread_mutex_lock(&mutex_ready);
+        pcb* pcb = queue_pop(cola_ready);
+    pthread_mutex_unlock(&mutex_ready);
+    return pcb;
 }
 
-void push_cola_blocked(pcb* pcb, t_queue* cola_blocked, sem_t* sem_blocked){
+void push_cola_blocked(pcb* pcb, t_queue* cola_blocked, sem_t* sem_blocked, pthread_mutex_t mutex_blocked){
 
     log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: BLOCKED", pcb->pid, pcb->estado);
     pcb->estado = BLOCKED;
-    queue_push(cola_blocked, pcb);
+
+    pthread_mutex_lock(&mutex_blocked);
+        queue_push(cola_blocked, pcb);
+    pthread_mutex_unlock(&mutex_blocked);
+
     sem_post(sem_blocked);
 }
 
 void push_cola_exit(pcb* pcb){
     log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: EXIT", pcb->pid, pcb->estado);
     pcb->estado = EXIT;
-    queue_push(cola_exit, pcb);
+
+    pthread_mutex_lock(&mutex_exit);
+        queue_push(cola_exit, pcb);
+    pthread_mutex_unlock(&mutex_exit);
 
     // Liberar recursos
     liberar_recurso_del_proceso(pcb->pid);
@@ -120,72 +136,122 @@ void push_cola_exit(pcb* pcb){
 void push_cola_execute(pcb* pcb){
     log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: EXECUTE", pcb->pid, pcb->estado);
     pcb->estado = EXECUTE;
-    queue_push(cola_execute, pcb);
+    pthread_mutex_lock(&mutex_execute);
+        queue_push(cola_execute, pcb);
+    pthread_mutex_unlock(&mutex_execute);
 }
 
 pcb* pop_cola_execute(){
-    return queue_pop(cola_execute);
+    pthread_mutex_lock(&mutex_execute);
+        pcb* pcb = queue_pop(cola_execute);
+    pthread_mutex_unlock(&mutex_execute);
+    return pcb;
 }
 
 void push_cola_ready_priority(pcb* pcb, int quantum_pendiente){
     log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: READY PRIORIDAD", pcb->pid, pcb->estado);
     pcb->estado = READY;
     elemVRR element = {.pcbVRR = pcb, .quantum_usado = quantum_pendiente};
-    queue_push(cola_readyVRR, &element);
-    imprimir_cola("READY PRIORIDAD:",cola_readyVRR);
+
+    pthread_mutex_lock(&mutex_readyVRR);
+        queue_push(cola_readyVRR, &element);
+    pthread_mutex_unlock(&mutex_readyVRR);
+    imprimir_cola("READY PRIORIDAD:",cola_readyVRR, mutex_readyVRR);
 }
 
 elemVRR* pop_cola_ready_priority(){
-    return queue_pop(cola_readyVRR);
+    pthread_mutex_lock(&mutex_readyVRR);
+        elemVRR* elem = queue_pop(cola_readyVRR);
+    pthread_mutex_unlock(&mutex_readyVRR);
+    return elem;
 }
 
-void pop_and_destroy(t_queue* queue, void (*destroyer)(void*)){
-    destroyer(queue_pop(queue));
+void pop_and_destroy(t_queue* queue, void (*destroyer)(void*), pthread_mutex_t mutex){
+    pthread_mutex_lock(&mutex);
+        destroyer(queue_pop(queue));
+    pthread_mutex_unlock(&mutex);
 }
 
-static unsigned PID_BUSQUEDA;
-static bool es_pid_buscado(void* pcb_buscado){
+void pop_and_destroy_execute(){
+    pop_and_destroy(cola_execute, (void (*)(void*))destruir_pcb, mutex_execute);
+}
+
+static pthread_mutex_t mutex_busqueda = PTHREAD_MUTEX_INITIALIZER;
+static bool es_pid_buscado(void* pcb_buscado, unsigned PID_BUSQUEDA){
     pcb *pcb = pcb_buscado;
     return pcb->pid == PID_BUSQUEDA;
 }
 
-bool proceso_esta_en_cola(t_queue* queue, unsigned PID){
-    PID_BUSQUEDA = PID;
-    return list_any_satisfy(queue->elements, es_pid_buscado);
+bool proceso_esta_en_cola(t_queue* queue, unsigned PID, pthread_mutex_t mutex){
+
+    // Esto SOLO se puede hacer porque compilamos con GCC, es normal que el intellisense lo marque como error
+    bool _wrap_es_pid(void* pcb_buscado){
+        return es_pid_buscado(pcb_buscado, PID);
+    }
+
+    pthread_mutex_lock(&mutex);
+        bool result = list_any_satisfy(queue->elements, _wrap_es_pid);
+    pthread_mutex_unlock(&mutex);
+
+    return result;
 }
 
-pcb* pop_proceso(t_queue* queue, unsigned PID){
-    PID_BUSQUEDA = PID;
-    return list_remove_by_condition(queue->elements, es_pid_buscado);
+pcb* pop_proceso(t_queue* queue, unsigned PID, pthread_mutex_t mutex){
+
+    // Esto SOLO se puede hacer porque compilamos con GCC, es normal que el intellisense lo marque como error
+    bool _wrap_es_pid(void* pcb_buscado){
+        return es_pid_buscado(pcb_buscado, PID);
+    }
+
+    pthread_mutex_lock(&mutex);
+        pcb* pcb = list_remove_by_condition(queue->elements, _wrap_es_pid);
+    pthread_mutex_unlock(&mutex);
+
+    return pcb;
 }
 
 bool sacar_proceso_de_cola_estado(unsigned PID){
-    for (size_t i = 0; i < CANTIDAD_COLAS_ESTADO; i++){
-        if(proceso_esta_en_cola(colas_estado[i], PID)){
-            pcb* pcb_encontrado = pop_proceso(colas_estado[i], PID);
-            push_cola_exit(pcb_encontrado);
-            return true;
-        }
+    // 😭😭 voy a tener que ir uno por uno (ya no me copa el mutex)
+  
+    if(proceso_esta_en_cola(cola_execute, PID, mutex_execute)){
+        interrumpir_proceso_ejecutando(INTERRUPCION_USUARIO);
+        return true;
     }
+
+    if(proceso_esta_en_cola(cola_new, PID, mutex_new)){
+        pcb* pcb_encontrado = pop_proceso(cola_new, PID, mutex_new);
+        push_cola_exit(pcb_encontrado);
+        return true;
+    }
+
+    if(proceso_esta_en_cola(cola_ready, PID, mutex_ready)){
+        pcb* pcb_encontrado = pop_proceso(cola_ready, PID, mutex_ready);
+        push_cola_exit(pcb_encontrado);
+        return true;
+    }
+
+    //if(proceso_esta_en_cola(cola_readyVRR, PID, mutex_readyVRR)){
+    //    elemVRR* elem = pop_proceso(cola_readyVRR, PID, mutex_readyVRR);
+    //    push_cola_exit(elem->pcbVRR);
+    //    return true;
+    //}
+
+    if(proceso_esta_en_cola(cola_exit, PID, mutex_exit)){
+        log_warning(logger, "Proceso [%d] ya se encuentra en EXIT", PID);
+        return true;
+    }
+
     return false;
 }
 
 bool sacar_proceso_de_cola_io(unsigned PID){
     for (size_t i = 0; i < list_size(lista_conexiones_io); i++){
         conexion_io* conexion = list_get(lista_conexiones_io, i);
-        if(proceso_esta_en_cola(conexion->cola_espera, PID)){
-            pcb* pcb_encontrado = pop_proceso(conexion->cola_espera, PID);
+        if(proceso_esta_en_cola(conexion->cola_espera, PID, conexion->mutex)){
+            pcb* pcb_encontrado = pop_proceso(conexion->cola_espera, PID, conexion->mutex);
             push_cola_exit(pcb_encontrado);
             return true;
         }
-    }
-    return false;
-}
-
-bool sacar_proceso_de_cola_execute(unsigned PID){
-    if(proceso_esta_en_cola(cola_execute, PID)){
-        interrumpir_proceso_ejecutando(INTERRUPCION_USUARIO);
-        return true;
     }
     return false;
 }
@@ -193,8 +259,8 @@ bool sacar_proceso_de_cola_execute(unsigned PID){
 bool sacar_proceso_de_cola_recurso(unsigned PID){
     for (size_t i = 0; i < list_size(recursos_disponibles); i++){
         t_recurso* recurso = list_get(recursos_disponibles, i);
-        if(proceso_esta_en_cola(recurso->procesos_en_espera, PID)){
-            pcb* pcb_encontrado = pop_proceso(recurso->procesos_en_espera, PID);
+        if(proceso_esta_en_cola(recurso->procesos_en_espera, PID, recurso->mutex)){
+            pcb* pcb_encontrado = pop_proceso(recurso->procesos_en_espera, PID, recurso->mutex);
             push_cola_exit(pcb_encontrado);
             return true;
         }
@@ -205,10 +271,8 @@ bool sacar_proceso_de_cola_recurso(unsigned PID){
 typedef bool (*sacar_proceso_func)(unsigned PID);
 
 void finalizar_proceso(unsigned PID){
-    PID_BUSQUEDA = PID;
 
     sacar_proceso_func funciones[] = {
-        sacar_proceso_de_cola_execute,
         sacar_proceso_de_cola_estado,
         sacar_proceso_de_cola_io,
         sacar_proceso_de_cola_recurso

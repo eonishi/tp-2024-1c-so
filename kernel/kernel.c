@@ -38,7 +38,11 @@ void* esperar_y_escuchar_conexiones_io(){
 
     while(1){
         conexion_io* conexion_io = recibir_conexion_io(socket_server_kernel);
-		list_add(lista_conexiones_io, conexion_io);
+
+		pthread_mutex_lock(&mutex_conexiones_io);
+			list_add(lista_conexiones_io, conexion_io);
+		pthread_mutex_unlock(&mutex_conexiones_io);
+		
 		iniciar_hilo_con_args(escuchar_io, conexion_io);
     }
 }

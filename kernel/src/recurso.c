@@ -1,6 +1,7 @@
 #include "../include/recurso.h"
 
 t_list* recursos_disponibles;
+pthread_mutex_t mutex_recursos_disponibles = PTHREAD_MUTEX_INITIALIZER;
 
 static void* esperar_recurso_thread_handler(void* args){
     // recibir el recurso por arg;
@@ -29,6 +30,7 @@ void inicializar_recursos(){
         sem_init(&(nuevo_recurso->procesos_en_cola), 0, 0);
         nuevo_recurso->procesos_en_espera = queue_create();
         nuevo_recurso->PIDs = list_create(); 
+        pthread_mutex_init(&(nuevo_recurso->mutex), NULL);
 
         list_add(recursos_disponibles, nuevo_recurso);
 
@@ -39,25 +41,36 @@ void inicializar_recursos(){
 }
 
 t_recurso* get_recurso(char* nombre_recurso){
-    for (size_t i = 0; i < list_size(recursos_disponibles); i++){
-        t_recurso* recurso = list_get(recursos_disponibles, i);
-        if (string_equals_ignore_case(recurso->nombre, nombre_recurso)){
-            return recurso;
+    t_recurso* recurso_encontrado = NULL;
+
+    pthread_mutex_lock(&mutex_recursos_disponibles);
+        for (size_t i = 0; i < list_size(recursos_disponibles); i++){
+            t_recurso* recurso = list_get(recursos_disponibles, i);
+            if (string_equals_ignore_case(recurso->nombre, nombre_recurso)){
+                recurso_encontrado = recurso;
+            }
         }
-    }
-    return NULL;
+    pthread_mutex_unlock(&mutex_recursos_disponibles);
+    return recurso_encontrado;
 }
 
 bool recurso_existe(char* nombre_recurso){
     log_warning(logger, "Estoy buscando el recurso: %s", nombre_recurso);
-    for (size_t i = 0; i < list_size(recursos_disponibles); i++){
-        t_recurso* recurso = list_get(recursos_disponibles, i);
-        log_warning(logger, "Recurso: %s", recurso->nombre);
-        if (string_equals_ignore_case(recurso->nombre, nombre_recurso)){
-            return true;
+
+    bool recurso_encontrado = false;
+
+    pthread_mutex_lock(&mutex_recursos_disponibles);
+        for (size_t i = 0; i < list_size(recursos_disponibles); i++){
+            t_recurso* recurso = list_get(recursos_disponibles, i);
+            log_warning(logger, "Recurso: %s", recurso->nombre);
+            if (string_equals_ignore_case(recurso->nombre, nombre_recurso)){
+                recurso_encontrado = true;
+            }
         }
-    }
-    return false;
+    pthread_mutex_unlock(&mutex_recursos_disponibles);
+
+
+    return recurso_encontrado;
 }
 
 bool recurso_disponible(t_recurso* recurso){
@@ -75,32 +88,40 @@ void wait_recurso(t_recurso* recurso, unsigned PID){
     list_add(recurso->PIDs, PID_aux);
 }
 
-static unsigned PID_buscado;
-static bool es_PID(void* PID){
+static bool es_PID(void* PID, unsigned PID_buscado){
     return *(unsigned*)PID == PID_buscado;
 }
 
-void signal_recurso(t_recurso* recurso, unsigned PID){
+void signal_recurso(t_recurso* recurso, unsigned PID_buscado){
     sem_post(&(recurso->instancias));
 
-    PID_buscado = PID;
-    if(list_any_satisfy(recurso->PIDs, es_PID)){
-        list_remove_and_destroy_by_condition(recurso->PIDs, es_PID, free);
+    // Esto SOLO se puede hacer porque compilamos con GCC, es normal que el intellisense lo marque como error
+    bool _wrap_es_pid(void* PID){
+        return es_PID(PID, PID_buscado);
+    }
+
+    if(list_any_satisfy(recurso->PIDs, _wrap_es_pid)){
+        list_remove_and_destroy_by_condition(recurso->PIDs, _wrap_es_pid, free);
     }
 }
 
 void esperar_recurso(t_recurso* recurso, pcb* pcb){
-    pop_and_destroy(cola_execute, (void*) destruir_pcb);
-    push_cola_blocked(pcb, recurso->procesos_en_espera, &recurso->procesos_en_cola);
+    pop_and_destroy_execute();
+    push_cola_blocked(pcb, recurso->procesos_en_espera, &recurso->procesos_en_cola, recurso->mutex);
 }
 
-void liberar_recurso_del_proceso(unsigned PID){
-    PID_buscado = PID;
-    for (size_t i = 0; i < list_size(recursos_disponibles); i++)
-    {
-        t_recurso* recurso = list_get(recursos_disponibles, i);
-        if(list_any_satisfy(recurso->PIDs, es_PID)){
-            signal_recurso(recurso, PID);
-        }
+void liberar_recurso_del_proceso(unsigned PID_buscado){
+    // Esto SOLO se puede hacer porque compilamos con GCC, es normal que el intellisense lo marque como error
+    bool _wrap_es_pid(void* PID){
+        return es_PID(PID, PID_buscado);
     }
+
+    pthread_mutex_lock(&mutex_recursos_disponibles);
+        for (size_t i = 0; i < list_size(recursos_disponibles); i++) {
+            t_recurso* recurso = list_get(recursos_disponibles, i);
+            if(list_any_satisfy(recurso->PIDs, _wrap_es_pid)){
+                signal_recurso(recurso, PID_buscado);
+            }
+        }
+    pthread_mutex_unlock(&mutex_recursos_disponibles);
 }

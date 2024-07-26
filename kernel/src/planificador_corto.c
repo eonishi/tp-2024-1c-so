@@ -54,10 +54,9 @@ void gestionar_respuesta_cpu(){
 			loggear_pcb(pcb);
 
             esperar_planificacion();
+            pop_and_destroy_execute();
 
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); //validar log minimo
-
+            log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); // validar log minimo
             push_cola_exit(pcb);
 
 			sem_post(&sem_cpu_libre);
@@ -67,24 +66,27 @@ void gestionar_respuesta_cpu(){
             log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %s", traduce_cod_op(cod_op));
 
             cancelar_hilo_quantum();
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
 
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
             log_info(logger,"PID: %d - Bloqueado por: %s", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
 
             esperar_planificacion();
+            pop_and_destroy_execute();
 
             if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
-                    log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
-                    log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
+                    log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
+
                     push_cola_exit(pcb);
                     sem_post(&sem_cpu_libre);
                     break;
                 }
 
                 enviar_proceso_a_esperar_io(pcb);
+
+                log_info(logger_oblig, "PID: <%d> - Bloqueado por: <%s>", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
+
                 sem_post(&sem_cpu_libre);
 
                 break;
@@ -98,14 +100,17 @@ void gestionar_respuesta_cpu(){
                 loggear_pcb(pcb);
 
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
-                    log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
-                    log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
+                    log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
+
                     push_cola_exit(pcb);
                     sem_post(&sem_cpu_libre);
                     break;
                 }
 
                 enviar_proceso_a_esperar_io(pcb);
+
+                log_info(logger_oblig, "PID: <%d> - Bloqueado por: <%s>", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
+
                 sem_post(&sem_cpu_libre);
 
                 break;
@@ -114,10 +119,11 @@ void gestionar_respuesta_cpu(){
         case INTERRUPCION_USUARIO:
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
+            log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INTERRUPTED_BY_USER", pcb->pid);
 
             esperar_planificacion();
             // Gestion del proceso en las colas y su sincronizacion
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
             push_cola_exit(pcb);
             sem_post(&sem_cpu_libre);
 
@@ -127,12 +133,12 @@ void gestionar_respuesta_cpu(){
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
             
-            log_info(logger, "Fin de Quantum: PID %d desalojado por fin de Quantum.", pcb->pid);
+            log_info(logger_oblig, "PID <%d> - Desalojado por fin de Quantum.", pcb->pid);
             pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
 
             esperar_planificacion();
             // Gestion del proceso en las colas y su sincronizacion
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
             push_cola_ready(pcb);
             sem_post(&sem_cpu_libre);
 
@@ -142,12 +148,12 @@ void gestionar_respuesta_cpu(){
             log_error(logger, "Recibi ERROR_DE_PROCESAMIENTO. CODIGO: %d", cod_op);
 
             pcb = recibir_pcb(socket_cpu_dispatch);
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
+            log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INTERNAL_ERROR", pcb->pid); //validar log minimo
 
             esperar_planificacion();
 
             // Gestion del proceso en colas
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
             push_cola_exit(pcb);
 
             // Sincronizacion de ejecucion
@@ -167,7 +173,8 @@ void gestionar_respuesta_cpu(){
             // Chequeo la existencia del recurso
             if(!recurso_existe(nombre_recurso_solicitado)){
                 log_error(logger, "El recurso [%s] no existe", nombre_recurso_solicitado);
-                pop_and_destroy(cola_execute, (void*) destruir_pcb);
+                log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_RESOURCE", pcb->pid);
+                pop_and_destroy_execute();
                 push_cola_exit(pcb);
                 sem_post(&sem_cpu_libre);
                 break;
@@ -188,6 +195,7 @@ void gestionar_respuesta_cpu(){
             }
             else {
                 esperar_recurso(recurso_solicitado, pcb);
+                log_info(logger_oblig, "PID: <%d> - Bloqueado por: <%s>", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
                 sem_post(&sem_cpu_libre);
             }
 
@@ -205,7 +213,8 @@ void gestionar_respuesta_cpu(){
             // Chequeo la existencia del recurso
             if(!recurso_existe(nombre_recurso_liberar)){
                 log_error(logger, "El recurso [%s] no existe", nombre_recurso_liberar);
-                pop_and_destroy(cola_execute, (void*) destruir_pcb);
+                log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_RESOURCE", pcb->pid);
+                pop_and_destroy_execute();
                 push_cola_exit(pcb);
                 sem_post(&sem_cpu_libre);
                 break;
@@ -221,12 +230,12 @@ void gestionar_respuesta_cpu(){
         case OUT_OF_MEMORY:
 
             pcb = recibir_pcb(socket_cpu_dispatch);
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid);
+            log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid);
 
             esperar_planificacion();
 
                 // Gestion del proceso en colas
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
             push_cola_exit(pcb);
 
                 // Sincronizacion de ejecucion
@@ -321,35 +330,4 @@ void cancelar_hilo_quantum(){
                 pthread_cancel(hilo_quantum);
                 log_info(logger, "hilo quantum cancelado.");
             }
-}
-
-const char* traduce_cod_op(op_code code) {
-    switch (code) {
-        case MENSAJE: return "MENSAJE";
-        case PAQUETE: return "PAQUETE";
-        case HANDSHAKE: return "HANDSHAKE";
-        case CREAR_PROCESO_EN_MEMORIA: return "CREAR_PROCESO_EN_MEMORIA";
-        case LIBERAR_PROCESO_EN_MEMORIA: return "LIBERAR_PROCESO_EN_MEMORIA";
-        case DISPATCH_PROCESO: return "DISPATCH_PROCESO";
-        case FETCH_INSTRUCCION: return "FETCH_INSTRUCCION";
-        case REDIMENSIONAR_MEMORIA_PROCESO: return "REDIMENSIONAR_MEMORIA_PROCESO";
-        case ESCRIBIR_DATO_EN_MEMORIA: return "ESCRIBIR_DATO_EN_MEMORIA";
-        case LEER_DATO_DE_MEMORIA: return "LEER_DATO_DE_MEMORIA";
-        case DATO_LEIDO_DE_MEMORIA: return "DATO_LEIDO_DE_MEMORIA";
-        case CONSULTAR_TABLA_DE_PAGINAS: return "CONSULTAR_TABLA_DE_PAGINAS";
-        case RESPUESTA: return "RESPUESTA";
-        case INTERRUPCION_USUARIO: return "INTERRUPCION_USUARIO";
-        case INTERRUPCION_QUANTUM: return "INTERRUPCION_QUANTUM";
-        case PROCESO_TERMINADO: return "PROCESO_TERMINADO";
-        case PROCESO_BLOQUEADO_IO: return "PROCESO_BLOQUEADO";
-        case PROCESO_SOLICITA_RECURSO: return "PROCESO_SOLICITA_RECURSO";
-        case PROCESO_LIBERA_RECURSO: return "PROCESO_LIBERA_RECURSO";
-        case PROCESO_DESALOJADO: return "PROCESO_DESALOJADO";
-        case ERROR_DE_PROCESAMIENTO: return "ERROR_DE_PROCESAMIENTO";
-        case EJECUTAR_INSTRUCCION_IO: return "EJECUTAR_INSTRUCCION_IO";
-        case FIN_EJECUCION_IO: return "FIN_EJECUCION_IO";
-        case SUCCESS: return "SUCCESS";
-        case OUT_OF_MEMORY: return "OUT_OF_MEMORY";
-        default: return "UNKNOWN";
-    }
 }

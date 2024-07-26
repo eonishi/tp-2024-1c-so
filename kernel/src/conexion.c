@@ -1,5 +1,8 @@
 #include "../include/conexion.h"
 
+t_list *lista_conexiones_io;
+pthread_mutex_t mutex_conexiones_io = PTHREAD_MUTEX_INITIALIZER;
+
 bool generar_conexiones(){
     log_info(logger, "Creando conexión con CPU dispatch...");
 
@@ -78,6 +81,7 @@ conexion_io* crear_conexion_io(int socket, char* nombre_interfaz, io_tipo tipo, 
     conexion_io->operaciones = operaciones;
     conexion_io->cola_espera = queue_create();
     sem_init(&conexion_io->sem_cliente, 0, 0);
+    pthread_mutex_init(&conexion_io->mutex, NULL);
 
     return conexion_io;
 }
