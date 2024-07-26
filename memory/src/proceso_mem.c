@@ -51,8 +51,9 @@ void cargar_proceso_en_memoria(char* path, unsigned PID){
     nuevo_set_instruc->tabla_paginas = list_create();
 
     pthread_mutex_lock(&mutex_procesos_en_memoria);
-        list_add(procesos_en_memoria, nuevo_set_instruc);
+    list_add(procesos_en_memoria, nuevo_set_instruc);
     pthread_mutex_unlock(&mutex_procesos_en_memoria);
+
     log_info(logger, "Instrucciones del proceso PID:%u cargadas en memoria", PID);
 } 
 

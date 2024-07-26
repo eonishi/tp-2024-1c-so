@@ -22,5 +22,7 @@ void mostrar_tabla_paginas();
 bool puedo_agregar_o_disminuir(int cantidad_paginas);
 unsigned calcular_cantidad_de_paginas_por_bytes(unsigned bytes);
 void quitar_paginas(size_t cantidad_de_paginas, t_proceso_en_memoria *proceso);
+unsigned obtener_tamanio_actual_proceso();
+size_t cantidad_de_paginas();
 
 #endif

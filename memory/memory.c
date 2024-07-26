@@ -61,6 +61,9 @@ void* gestionar_solicitudes_kernel(){
             solicitud_crear_proceso solicitud = recibir_solicitud_crear_proceso(socket_kernel);
 
 			cargar_proceso_en_memoria(solicitud.filePath, solicitud.PID);
+
+			log_info(logger_oblig, "PID: <%d> - Tamaño: <%d>", PID_solicitado, 0);
+
 			enviar_status(SUCCESS, socket_kernel);
 			break;
 			
@@ -69,6 +72,7 @@ void* gestionar_solicitudes_kernel(){
 			unsigned pid = recibir_cantidad(socket_kernel);
 			log_info(logger, "Proceso PID:[%d] a liberar", pid);
 
+			log_info(logger_oblig, "PID: <%d> - Tamaño: <%ld>", PID_solicitado, cantidad_de_paginas());
 			// Elimino el proceso de la lista de procesos en memoria
 			liberar_proceso_en_memoria(pid);
 
@@ -133,9 +137,18 @@ void* gestionar_solicitudes_cpu(){
 		case REDIMENSIONAR_MEMORIA_PROCESO:
 			log_info(logger, "REDIMENSIONAR_MEMORIA_PROCESO recibido.");
 
-			unsigned tamanio_en_bytes = recibir_cantidad(socket_cpu);
-			unsigned cantidad_de_paginas = calcular_cantidad_de_paginas_por_bytes(tamanio_en_bytes);
+			unsigned nuevo_tamanio_en_bytes = recibir_cantidad(socket_cpu);
+			unsigned tamanio_actual_en_bytes = obtener_tamanio_actual_proceso();
+			unsigned cantidad_de_paginas = calcular_cantidad_de_paginas_por_bytes(nuevo_tamanio_en_bytes);
 		
+			if(nuevo_tamanio_en_bytes > tamanio_actual_en_bytes)
+				log_info(logger_oblig, "PID: <%d> - Tamaño Actual: <%d> - Tamaño a Ampliar: <%d>",
+				PID_solicitado, tamanio_actual_en_bytes, nuevo_tamanio_en_bytes);
+			else{
+				log_info(logger_oblig, "PID: <%d> - Tamaño Actual: <%d> - Tamaño a Reducir: <%d>",
+				PID_solicitado, tamanio_actual_en_bytes, nuevo_tamanio_en_bytes);
+			}
+
 			esperar_retardo();
 
 			if(puedo_agregar_o_disminuir(cantidad_de_paginas)){
@@ -158,6 +171,9 @@ void* gestionar_solicitudes_cpu(){
 			t_peticion_memoria* solicitud = peticion_recibir(socket_cpu, ESCRIBIR_DATO_EN_MEMORIA);
 			log_info(logger, "Recibido. Dirección_fisica: [%d], Tam_Dato: [%zu]", solicitud->direccion_fisica, solicitud->tam_dato);
 
+			log_info(logger_oblig, "PID: <%d> - Accion: <%s> - Direccion fisica: <%d> - Tamaño <%ld>",
+				PID_solicitado, "ESCRIBIR",solicitud->direccion_fisica, solicitud->tam_dato);
+
 			set_memoria(solicitud->direccion_fisica, solicitud->dato, solicitud->tam_dato);
 
 			esperar_retardo();
@@ -169,11 +185,13 @@ void* gestionar_solicitudes_cpu(){
 			log_info(logger, "LEER_DATO_DE_MEMORIA recibido.");
 
 			t_peticion_memoria* solicitud_lectura = peticion_recibir(socket_cpu, LEER_DATO_DE_MEMORIA);
-			log_info(logger, "Recibido. Dirección_fisica: [%d], tam_dato: [%zu]", solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
+
+			log_info(logger_oblig, "PID: <%d> - Accion: <%s> - Direccion fisica: <%d> - Tamaño <%ld>",
+				PID_solicitado, "LEER",solicitud_lectura->direccion_fisica, solicitud_lectura->tam_dato);
 
 			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
 
-			log_info(logger, "DATO LEIDO: [%.*s]",solicitud_lectura->tam_dato, ptr_base_del_dato);
+			log_info(logger, "DATO LEIDO: [%.*s]",(int)solicitud_lectura->tam_dato, (char*)ptr_base_del_dato);
 
 			esperar_retardo();
 			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, socket_cpu);
@@ -189,6 +207,9 @@ void* gestionar_solicitudes_cpu(){
 
 			unsigned numero_frame_consultado = get_frame_number_by_pagina(numero_pagina);
 			esperar_retardo();
+			
+			log_info(logger_oblig, "PID: <%d> - Pagina: <%d> - Marco: <%d>", PID_solicitado, numero_pagina, numero_frame_consultado);
+
 			enviar_cantidad(numero_frame_consultado, CONSULTAR_TABLA_DE_PAGINAS, socket_cpu);
 
 			log_info(logger, "Se consultó la tabla de páginas y se envió al CPU");
@@ -228,7 +249,7 @@ void* gestionar_solicitudes_io(void* pthread_arg){
 
 			void* ptr_base_del_dato = get_memoria(solicitud_lectura->direccion_fisica);
 
-			log_info(logger, "DATO LEIDO: [%.*s]",solicitud_lectura->tam_dato, ptr_base_del_dato);
+			log_info(logger, "DATO LEIDO: [%.*s]", (int)solicitud_lectura->tam_dato, (char*)ptr_base_del_dato);
 
 			esperar_retardo();
 			enviar_buffer(ptr_base_del_dato, solicitud_lectura->tam_dato, io_socket);

@@ -50,11 +50,12 @@ size_t cantidad_de_paginas(){
 void redimensionar_memoria_proceso(size_t cantidad_paginas){
     size_t cantidad_actual_de_paginas = cantidad_de_paginas();
     if(cantidad_paginas >= cantidad_actual_de_paginas){
-        log_info(logger, "Aumentando memoria del proceso a [%d] paginas totales", cantidad_paginas);
-        agregar_paginas(cantidad_paginas - cantidad_actual_de_paginas);
+        log_info(logger, "Aumentando memoria del proceso a [%ld] paginas totales", cantidad_paginas);
+
+        agregar_paginas(cantidad_paginas - cantidad_actual_de_paginas);        
     }
     else{
-        log_info(logger, "Disminuyendo memoria del proceso a [%d] paginas totales", cantidad_paginas);
+        log_info(logger, "Disminuyendo memoria del proceso a [%ld] paginas totales", cantidad_paginas);
         t_proceso_en_memoria* proceso_a_redimencionar = get_proceso_by_PID(PID_a_liberar, &PID_solicitado, memoria_tiene_pid_solicitado);
         quitar_paginas(cantidad_actual_de_paginas - cantidad_paginas, proceso_a_redimencionar);
     }
@@ -80,4 +81,8 @@ bool puedo_agregar_o_disminuir(int cantidad_paginas){
 
 unsigned calcular_cantidad_de_paginas_por_bytes(unsigned bytes){
     return (bytes + config.tam_pagina - 1) / config.tam_pagina; // división entera con redondeo hacia arriba
+}
+
+unsigned obtener_tamanio_actual_proceso(){
+    return cantidad_de_paginas() * config.tam_pagina;
 }
