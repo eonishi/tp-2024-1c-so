@@ -55,8 +55,8 @@ void gestionar_respuesta_cpu(){
 
             esperar_planificacion();
 
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); //validar log minimo
+            pop_and_destroy_execute();
+            log_info(logger, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); // validar log minimo
 
             push_cola_exit(pcb);
 
@@ -67,7 +67,7 @@ void gestionar_respuesta_cpu(){
             log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %s", traduce_cod_op(cod_op));
 
             cancelar_hilo_quantum();
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
 
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
@@ -117,7 +117,7 @@ void gestionar_respuesta_cpu(){
 
             esperar_planificacion();
             // Gestion del proceso en las colas y su sincronizacion
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
             push_cola_exit(pcb);
             sem_post(&sem_cpu_libre);
 
@@ -132,7 +132,7 @@ void gestionar_respuesta_cpu(){
 
             esperar_planificacion();
             // Gestion del proceso en las colas y su sincronizacion
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
             push_cola_ready(pcb);
             sem_post(&sem_cpu_libre);
 
@@ -147,7 +147,7 @@ void gestionar_respuesta_cpu(){
             esperar_planificacion();
 
             // Gestion del proceso en colas
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
             push_cola_exit(pcb);
 
             // Sincronizacion de ejecucion
@@ -167,7 +167,7 @@ void gestionar_respuesta_cpu(){
             // Chequeo la existencia del recurso
             if(!recurso_existe(nombre_recurso_solicitado)){
                 log_error(logger, "El recurso [%s] no existe", nombre_recurso_solicitado);
-                pop_and_destroy(cola_execute, (void*) destruir_pcb);
+                pop_and_destroy_execute();
                 push_cola_exit(pcb);
                 sem_post(&sem_cpu_libre);
                 break;
@@ -205,7 +205,7 @@ void gestionar_respuesta_cpu(){
             // Chequeo la existencia del recurso
             if(!recurso_existe(nombre_recurso_liberar)){
                 log_error(logger, "El recurso [%s] no existe", nombre_recurso_liberar);
-                pop_and_destroy(cola_execute, (void*) destruir_pcb);
+                pop_and_destroy_execute();
                 push_cola_exit(pcb);
                 sem_post(&sem_cpu_libre);
                 break;
@@ -226,7 +226,7 @@ void gestionar_respuesta_cpu(){
             esperar_planificacion();
 
                 // Gestion del proceso en colas
-            pop_and_destroy(cola_execute, (void*) destruir_pcb);
+            pop_and_destroy_execute();
             push_cola_exit(pcb);
 
                 // Sincronizacion de ejecucion

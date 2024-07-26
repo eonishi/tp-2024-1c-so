@@ -24,6 +24,7 @@ typedef struct{
     int* operaciones;
     t_queue* cola_espera;
     sem_t sem_cliente;
+    pthread_mutex_t mutex;
 } conexion_io;
 
 extern t_list* lista_conexiones_io;
@@ -36,5 +37,6 @@ bool generar_conexiones();
 int generar_conexion(char* ip, char* puerto);
 
 conexion_io* recibir_conexion_io(int server);
+void *esperar_y_escuchar_conexiones_io();
 
 #endif

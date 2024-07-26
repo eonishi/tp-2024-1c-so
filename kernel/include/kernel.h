@@ -31,7 +31,8 @@ t_log *logger;
 t_log *aux_log;
 kernel_config* config;
 int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, socket_server_kernel;
-t_list *lista_conexiones_io;
+extern t_list *lista_conexiones_io;
+extern pthread_mutex_t mutex_conexiones_io;
 
 // -- Semaforos
 sem_t sem_nuevo_proceso;

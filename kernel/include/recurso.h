@@ -16,6 +16,7 @@ typedef struct {
     sem_t procesos_en_cola;
     t_queue *procesos_en_espera;
     t_list *PIDs;
+    pthread_mutex_t mutex;
 } t_recurso;
 
 extern t_queue *cola_execute;
