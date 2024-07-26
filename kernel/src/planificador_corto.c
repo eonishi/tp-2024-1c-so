@@ -54,10 +54,9 @@ void gestionar_respuesta_cpu(){
 			loggear_pcb(pcb);
 
             esperar_planificacion();
-
             pop_and_destroy_execute();
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); // validar log minimo
 
+            log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: SUCCESS", pcb->pid); // validar log minimo
             push_cola_exit(pcb);
 
 			sem_post(&sem_cpu_libre);
@@ -67,24 +66,27 @@ void gestionar_respuesta_cpu(){
             log_info(logger, "Recibi PROCESO_BLOQUEADO. CODIGO: %s", traduce_cod_op(cod_op));
 
             cancelar_hilo_quantum();
-            pop_and_destroy_execute();
 
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
             log_info(logger,"PID: %d - Bloqueado por: %s", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
 
             esperar_planificacion();
+            pop_and_destroy_execute();
 
             if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
-                    log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
-                    log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
+                    log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
+
                     push_cola_exit(pcb);
                     sem_post(&sem_cpu_libre);
                     break;
                 }
 
                 enviar_proceso_a_esperar_io(pcb);
+
+                log_info(logger_oblig, "PID: <%d> - Bloqueado por: <%s>", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
+
                 sem_post(&sem_cpu_libre);
 
                 break;
@@ -98,14 +100,17 @@ void gestionar_respuesta_cpu(){
                 loggear_pcb(pcb);
 
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
-                    log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
-                    log_info(logger, "Fin de ejecución de proceso [%d]", pcb->pid);
+                    log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
+
                     push_cola_exit(pcb);
                     sem_post(&sem_cpu_libre);
                     break;
                 }
 
                 enviar_proceso_a_esperar_io(pcb);
+
+                log_info(logger_oblig, "PID: <%d> - Bloqueado por: <%s>", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
+
                 sem_post(&sem_cpu_libre);
 
                 break;
@@ -114,6 +119,7 @@ void gestionar_respuesta_cpu(){
         case INTERRUPCION_USUARIO:
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
+            log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INTERRUPTED_BY_USER", pcb->pid);
 
             esperar_planificacion();
             // Gestion del proceso en las colas y su sincronizacion
@@ -127,7 +133,7 @@ void gestionar_respuesta_cpu(){
             pcb = recibir_pcb(socket_cpu_dispatch);
             loggear_pcb(pcb);
             
-            log_info(logger, "Fin de Quantum: PID %d desalojado por fin de Quantum.", pcb->pid);
+            log_info(logger_oblig, "PID <%d> - Desalojado por fin de Quantum.", pcb->pid);
             pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
 
             esperar_planificacion();
@@ -142,7 +148,7 @@ void gestionar_respuesta_cpu(){
             log_error(logger, "Recibi ERROR_DE_PROCESAMIENTO. CODIGO: %d", cod_op);
 
             pcb = recibir_pcb(socket_cpu_dispatch);
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid); //validar log minimo
+            log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INTERNAL_ERROR", pcb->pid); //validar log minimo
 
             esperar_planificacion();
 
@@ -167,6 +173,7 @@ void gestionar_respuesta_cpu(){
             // Chequeo la existencia del recurso
             if(!recurso_existe(nombre_recurso_solicitado)){
                 log_error(logger, "El recurso [%s] no existe", nombre_recurso_solicitado);
+                log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_RESOURCE", pcb->pid);
                 pop_and_destroy_execute();
                 push_cola_exit(pcb);
                 sem_post(&sem_cpu_libre);
@@ -188,6 +195,7 @@ void gestionar_respuesta_cpu(){
             }
             else {
                 esperar_recurso(recurso_solicitado, pcb);
+                log_info(logger_oblig, "PID: <%d> - Bloqueado por: <%s>", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
                 sem_post(&sem_cpu_libre);
             }
 
@@ -205,6 +213,7 @@ void gestionar_respuesta_cpu(){
             // Chequeo la existencia del recurso
             if(!recurso_existe(nombre_recurso_liberar)){
                 log_error(logger, "El recurso [%s] no existe", nombre_recurso_liberar);
+                log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_RESOURCE", pcb->pid);
                 pop_and_destroy_execute();
                 push_cola_exit(pcb);
                 sem_post(&sem_cpu_libre);
@@ -221,7 +230,7 @@ void gestionar_respuesta_cpu(){
         case OUT_OF_MEMORY:
 
             pcb = recibir_pcb(socket_cpu_dispatch);
-            log_info(logger, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid);
+            log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: OUT_OF_MEMORY", pcb->pid);
 
             esperar_planificacion();
 
