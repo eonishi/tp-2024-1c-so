@@ -9,37 +9,63 @@ void execute(char **instr_tokenizada)
     switch (OP)
     {
     case SET:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
+
         exec_set(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
     case SUM:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
+
         exec_sum(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
     case SUB:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
+
         exec_sub(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
     case JNZ:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
+
         exec_jnz(instr_tokenizada);
         break;
     case RESIZE:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1]);
         exec_resize(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
     case MOV_OUT:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
+
         exec_mov_out(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
     case MOV_IN:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
+
         exec_mov_in(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
     case COPY_STRING:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1]);
+
         exec_cp_string(instr_tokenizada);
         siguiente_pc(pcb_actual);
         break;
     case IO_FS_TRUNCATE:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1],instr_tokenizada[2],instr_tokenizada[3]);
+
         uint32_t dato_registro = reg_to_uint32(get_registro(instr_tokenizada[3]), instr_tokenizada[3]);
 
         reemplazar_registro_por_dato(instr_tokenizada, 3, dato_registro);
@@ -47,23 +73,44 @@ void execute(char **instr_tokenizada)
         break;
     case IO_FS_READ:
     case IO_FS_WRITE:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s %s %s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1],instr_tokenizada[2],instr_tokenizada[3],instr_tokenizada[4], instr_tokenizada[5]);
+
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
         exec_io_fs_read_write(instr_tokenizada);         
         break;
     case IO_GEN_SLEEP:
-    case IO_FS_CREATE:
-    case IO_FS_DELETE:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
+
         exec_operacion_io(instr_tokenizada);                
         break;
+    case IO_FS_CREATE:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
 
+        exec_operacion_io(instr_tokenizada);                
+        break;
+    case IO_FS_DELETE:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1], instr_tokenizada[2]);
+
+        exec_operacion_io(instr_tokenizada);                
+        break;
     case IO_STDIN_READ:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1],instr_tokenizada[2],instr_tokenizada[3]);
+
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
         
         exec_io_stdin_read(instr_tokenizada);
         break;     
     case IO_STDOUT_WRITE:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s %s %s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1],instr_tokenizada[2],instr_tokenizada[3]);
+
         tengo_pcb = 0;
         siguiente_pc(pcb_actual);
         
@@ -71,10 +118,16 @@ void execute(char **instr_tokenizada)
         break;
         
     case SIGNAL:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1]);
+
         desalojar_pcb(instr_tokenizada, PROCESO_LIBERA_RECURSO);
         break;
 
     case WAIT:
+        log_info(logger_oblig, "PID: <%d> - Ejecutando: <%s> - <%s>", pcb_actual->pid, instr_tokenizada[0],
+        instr_tokenizada[1]);
+
         desalojar_pcb(instr_tokenizada, PROCESO_SOLICITA_RECURSO);
         break;
 
@@ -227,6 +280,9 @@ void enviar_peticiones_de_escribir(void* peticion){
     t_peticion_memoria* peticion_a_enviar = (t_peticion_memoria*) peticion;
     peticion_escritura_enviar(peticion_a_enviar, socket_memoria);
     controlar_peticion_a_memoria();
+
+    log_info(logger_oblig, "PID: <%d> - Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%s>",
+    pcb_actual->pid, peticion_a_enviar->direccion_fisica, (char*) peticion_a_enviar->dato);
 }
 
 void exec_mov_out(char** instr_tokenizada){
@@ -252,6 +308,9 @@ void exec_mov_out(char** instr_tokenizada){
 void leer_dato_memoria(t_peticion_memoria* peticion_a_enviar, void** ptr_donde_se_guarda_el_dato){
     peticion_lectura_enviar(peticion_a_enviar, ptr_donde_se_guarda_el_dato, socket_memoria);
     controlar_peticion_a_memoria();
+
+    log_info(logger_oblig, "PID: <%d> - Acción: <LEER> - Dirección Física: <%d> - Valor: <%d>",
+    pcb_actual->pid, peticion_a_enviar->direccion_fisica, (int*) *ptr_donde_se_guarda_el_dato);
 }
 
 void exec_mov_in(char** instr_tokenizada){

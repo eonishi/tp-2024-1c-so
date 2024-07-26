@@ -23,6 +23,10 @@ unsigned consultar_tabla_de_paginas(unsigned numero_pagina){
     }
 
     unsigned numero_frame_consultado = recibir_cantidad(socket_memoria);
+
+    log_info(logger_oblig, "PID: <%d> - OBTENER MARCO - Página: <%d> - Marco: <%d>", 
+    pcb_actual->pid, numero_pagina, numero_frame_consultado);
+    
     return numero_frame_consultado;
 }
 
@@ -43,23 +47,28 @@ t_list* mmu(unsigned direccion_logica, size_t tam_dato, void* dato){
         unsigned numero_pagina = numero_pagina_inicial + i;
         // Existe en la TLB?
         if(tlb_tiene_entrada(pcb_actual->pid, numero_pagina)){
-            log_info(logger, "HIT TLB!!! i: [%d], numero_pagina:[%d], ", i, numero_pagina);
-            if(i==0){
-                unsigned frame_number = obtener_frame_tlb(pcb_actual->pid, numero_pagina);
+            log_info(logger_oblig, "PID: <%d> - TLB HIT - Pagina: <%d>", pcb_actual->pid,numero_pagina);
+
+            unsigned frame_number = obtener_frame_tlb(pcb_actual->pid, numero_pagina);
+            t_peticion_memoria* nueva_peticion;
+            uint32_t direccion_fisica;
+
+            if(i==0){                
                 bytes_a_leer = min(tam_dato, TAM_PAGINA - offset);
-                t_peticion_memoria* nueva_peticion = peticion_crear(frame_number * TAM_PAGINA+offset, ptr_byte_dato, bytes_a_leer);
-                list_add(direcciones_fisica, nueva_peticion);
+                direccion_fisica = frame_number * TAM_PAGINA+offset;                
             }
             else{
-                unsigned frame_number = obtener_frame_tlb(pcb_actual->pid, numero_pagina);
                 bytes_a_leer = min(tam_dato, TAM_PAGINA);
-                t_peticion_memoria* nueva_peticion = peticion_crear(frame_number * TAM_PAGINA, ptr_byte_dato, bytes_a_leer);
-                list_add(direcciones_fisica, nueva_peticion);
+                direccion_fisica = frame_number * TAM_PAGINA;                
             }
+
+            nueva_peticion = peticion_crear(direccion_fisica, ptr_byte_dato, bytes_a_leer);                
+            list_add(direcciones_fisica, nueva_peticion);
         }
         // No existe en la TLB, Hacer consulta a la tabla de paginas:
         else{
-            log_info(logger, "MISS TLB!!! i: [%d], numero_pagina:[%d], ", i, numero_pagina);
+            log_info(logger_oblig, "PID: <%d> - TLB MISS - Pagina: <%d>", pcb_actual->pid,numero_pagina);
+
             unsigned frame_number = consultar_tabla_de_paginas(numero_pagina);
 
             if(config.cantidad_entradas_tlb > 0){
