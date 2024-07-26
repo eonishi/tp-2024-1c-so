@@ -1,8 +1,9 @@
 #include "include/kernel.h"
 
 int main(){
-    logger = iniciar_logger("kernel.log", "KERNEL");
-	aux_log = iniciar_logger("aux_kernel.log", "KERNEL");
+    logger = iniciar_logger("kernel.log", "KERNEL", 1);
+	logger_oblig = iniciar_logger("logs_obligatorios.log", "KERNEL", 1);
+
 	log_info(logger, "Logger de Kernel iniciado");
 
 	config = inicializar_config();

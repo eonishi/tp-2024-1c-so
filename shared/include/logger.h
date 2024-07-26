@@ -5,6 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-t_log* iniciar_logger(char* nombre_archivo, char* nombre_proceso);
+t_log* iniciar_logger(char* nombre_archivo, char* nombre_proceso, int mostrar_en_consola);
 
 #endif

@@ -22,7 +22,7 @@
 extern pthread_t hilo_quantum;
 
 extern t_log *logger;
-extern t_log *aux_log;
+extern t_log *logger_oblig;
 extern kernel_config* config;
 extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, q_usado, q_restante;
 extern t_list *lista_conexiones_io;

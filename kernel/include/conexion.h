@@ -13,7 +13,7 @@
 #include "../../shared/include/io_tipos.h"
 
 extern t_log *logger;
-extern t_log *aux_log;
+extern t_log *logger_oblig;
 extern kernel_config* config;
 extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, socket_server_kernel;
 
