@@ -271,6 +271,8 @@ void exec_resize(char** instr_tokenizada){
     controlar_peticion_a_memoria();
 }
 
+
+char* registro_escribir_leer;
 /**
  * MOV_OUT (Registro Dirección, Registro Datos): 
  * Lee el valor del Registro Datos y lo escribe en la dirección física de memoria 
@@ -281,8 +283,15 @@ void enviar_peticiones_de_escribir(void* peticion){
     peticion_escritura_enviar(peticion_a_enviar, socket_memoria);
     controlar_peticion_a_memoria();
 
-    log_info(logger_oblig, "PID: <%d> - Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%s>",
-    pcb_actual->pid, peticion_a_enviar->direccion_fisica, (char*) peticion_a_enviar->dato);
+    if(es8int(registro_escribir_leer)){
+        log_info(logger_oblig, "PID: <%d> - Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%u>",
+        pcb_actual->pid, peticion_a_enviar->direccion_fisica, *(uint8_t*) peticion_a_enviar->dato);
+        
+    }
+    else{
+        log_info(logger_oblig, "PID: <%d> - Acción: <ESCRIBIR> - Dirección Física: <%d> - Valor: <%u>",
+        pcb_actual->pid, peticion_a_enviar->direccion_fisica, *(uint32_t*) peticion_a_enviar->dato);
+    }
 }
 
 void exec_mov_out(char** instr_tokenizada){
@@ -297,6 +306,8 @@ void exec_mov_out(char** instr_tokenizada){
     log_info(logger, "Dirección logica: [%d], Dato a escribir: [%d]", direccion_logica, dato_a_escribir);
 
     t_list* direcciones_fisicas = mmu(direccion_logica, tam_registro(registro_datos), dato_a_escribir);
+
+    registro_escribir_leer = registro_datos;
     list_iterate(direcciones_fisicas, enviar_peticiones_de_escribir);
 }
 
@@ -309,8 +320,14 @@ void leer_dato_memoria(t_peticion_memoria* peticion_a_enviar, void** ptr_donde_s
     peticion_lectura_enviar(peticion_a_enviar, ptr_donde_se_guarda_el_dato, socket_memoria);
     controlar_peticion_a_memoria();
 
-    log_info(logger_oblig, "PID: <%d> - Acción: <LEER> - Dirección Física: <%d> - Valor: <%d>",
-    pcb_actual->pid, peticion_a_enviar->direccion_fisica, (int*) *ptr_donde_se_guarda_el_dato);
+    if(es8int(registro_escribir_leer)){
+        log_info(logger_oblig, "PID: <%d> - Acción: <LEER> - Dirección Física: <%d> - Valor: <%u>",
+        pcb_actual->pid, peticion_a_enviar->direccion_fisica, *(uint8_t*) *ptr_donde_se_guarda_el_dato);        
+    }
+    else{
+        log_info(logger_oblig, "PID: <%d> - Acción: <LEER> - Dirección Física: <%d> - Valor: <%u>",
+        pcb_actual->pid, peticion_a_enviar->direccion_fisica, *(uint32_t*) *ptr_donde_se_guarda_el_dato);
+    }
 }
 
 void exec_mov_in(char** instr_tokenizada){
@@ -325,14 +342,15 @@ void exec_mov_in(char** instr_tokenizada){
     void* registro_que_guarda_dato = get_registro(registro_datos);
 
     log_info(logger, "Dirección logica: [%d], Valor actual en registro de datos: [%d]", direccion_logica, registro_que_guarda_dato);
-
+    registro_escribir_leer = registro_datos;
     t_list *direcciones_fisicas = mmu(direccion_logica, tam_registro(registro_datos), NULL);
     for(int i=0; i<list_size(direcciones_fisicas); i++){
         t_peticion_memoria* peticion_a_enviar = list_get(direcciones_fisicas, i);
         leer_dato_memoria(peticion_a_enviar, &registro_que_guarda_dato);
     }
 
-    log_info(logger, "Dato guardado en el registro: [%d]", registro_que_guarda_dato);
+
+    log_info(logger, "Dato guardado en ,mel registro: [%d]", registro_que_guarda_dato);
 }
 
 void exec_cp_string(char** instr_tokenizada){
