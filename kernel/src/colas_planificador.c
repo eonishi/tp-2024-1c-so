@@ -80,7 +80,7 @@ pcb* pop_cola_new(){
 }
 
 void push_cola_ready(pcb* pcb){
-    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: READY", pcb->pid, pcb->estado);
+    log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: READY", pcb->pid, pcb->estado);
     pcb->estado = READY;
 
     pthread_mutex_lock(&mutex_ready);
@@ -101,7 +101,7 @@ pcb* pop_cola_ready(){
 
 void push_cola_blocked(pcb* pcb, t_queue* cola_blocked, sem_t* sem_blocked, pthread_mutex_t mutex_blocked){
 
-    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: BLOCKED", pcb->pid, pcb->estado);
+    log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: BLOCKED", pcb->pid, pcb->estado);
     pcb->estado = BLOCKED;
 
     pthread_mutex_lock(&mutex_blocked);
@@ -112,7 +112,7 @@ void push_cola_blocked(pcb* pcb, t_queue* cola_blocked, sem_t* sem_blocked, pthr
 }
 
 void push_cola_exit(pcb* pcb){
-    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: EXIT", pcb->pid, pcb->estado);
+    log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: EXIT", pcb->pid, pcb->estado);
     pcb->estado = EXIT;
 
     pthread_mutex_lock(&mutex_exit);
@@ -134,7 +134,7 @@ void push_cola_exit(pcb* pcb){
 }
 
 void push_cola_execute(pcb* pcb){
-    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: EXECUTE", pcb->pid, pcb->estado);
+    log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: EXECUTE", pcb->pid, pcb->estado);
     pcb->estado = EXECUTE;
     pthread_mutex_lock(&mutex_execute);
         queue_push(cola_execute, pcb);
@@ -149,7 +149,7 @@ pcb* pop_cola_execute(){
 }
 
 void push_cola_ready_priority(pcb* pcb, int quantum_pendiente){
-    log_info(logger,"PID: %d - Estado Anterior: %c - Estado Actual: READY PRIORIDAD", pcb->pid, pcb->estado);
+    log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: READY PRIORIDAD", pcb->pid, pcb->estado);
     pcb->estado = READY;
     elemVRR element = {.pcbVRR = pcb, .quantum_usado = quantum_pendiente};
 

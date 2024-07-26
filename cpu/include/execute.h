@@ -10,6 +10,7 @@
 #include "../../shared/include/protocolo.h"
 
 extern t_log* logger;
+extern t_log* logger_oblig;
 extern pcb* pcb_actual;
 extern int tengo_pcb;
 extern int socket_kernel, socket_memoria;

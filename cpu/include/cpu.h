@@ -11,6 +11,8 @@
 #include "tlb.h"
 
 t_log *logger;
+t_log *logger_oblig;
+
 extern int socket_memoria, socket_kernel;
 extern pcb *pcb_actual;
 

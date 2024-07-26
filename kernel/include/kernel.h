@@ -28,7 +28,7 @@
 #include "../../shared/include/hilo.h"
 
 t_log *logger;
-t_log *aux_log;
+t_log *logger_oblig;
 kernel_config* config;
 int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, socket_server_kernel;
 extern t_list *lista_conexiones_io;

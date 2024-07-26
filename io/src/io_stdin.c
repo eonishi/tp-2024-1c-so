@@ -45,7 +45,7 @@ void io_stdin() {
                 t_list *peticiones_memoria = solicitud.peticiones_memoria;
                 char** tokens_instr = solicitud.tokens;
 
-                log_info(logger, "PID: <%d> - Operacion: <%s>", pid, tokens_instr[0]);
+                log_info(logger_oblig, "PID: <%d> - Operacion: <%s>", pid, tokens_instr[0]);
                 
                 log_peticiones(peticiones_memoria);
 

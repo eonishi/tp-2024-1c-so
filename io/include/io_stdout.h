@@ -6,6 +6,7 @@
 #include "../../shared/include/direccion.h"
 
 extern t_log *logger;
+extern t_log *logger_oblig;
 extern io_config config;
 extern int kernel_socket, memory_socket;
 
