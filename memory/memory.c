@@ -152,7 +152,7 @@ void* gestionar_solicitudes_cpu(){
 			esperar_retardo();
 
 			if(puedo_agregar_o_disminuir(cantidad_de_paginas)){
-				redimensionar_memoria_proceso(cantidad_de_paginas);
+				redimensionar_memoria_proceso(cantidad_de_paginas, PID_solicitado);
 				mostrar_tabla_paginas();
 
 				enviar_status(SUCCESS, socket_cpu);

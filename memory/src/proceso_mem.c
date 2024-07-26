@@ -72,12 +72,13 @@ static bool memoria_tiene_pid_a_liberar(void* set_instrucciones){
 }//--------
 
 t_proceso_en_memoria* get_proceso_by_PID(unsigned PID, unsigned* PID_ptr, bool memoria_tiene_pid(void*)){
-    *PID_ptr = PID;
+    // TERRIBLE PARCHE
+    PID_solicitado = PID;
 
     pthread_mutex_lock(&mutex_procesos_en_memoria);   
-        t_proceso_en_memoria* proceso = list_find(procesos_en_memoria, memoria_tiene_pid);
+    t_proceso_en_memoria* proceso = list_find(procesos_en_memoria, memoria_tiene_pid);
     pthread_mutex_unlock(&mutex_procesos_en_memoria);
-
+        
     return proceso;
 }
 

@@ -43,10 +43,10 @@ void liberar_entrada_tlb(tlb_entry *entrada){
     free(entrada);
 }
 
-void tlb_reemplazar_por_fifo(tlb_entry* nueva_entrada){
+void tlb_reemplazar_por_fifo(tlb_entry* nueva_entrada){    
     tlb_entry *entrada = list_remove(tlb, 0);
     liberar_entrada_tlb(entrada);
-    list_add(tlb, &nueva_entrada);
+    list_add(tlb, nueva_entrada);
 }
 
 tlb_entry *tlb_entry_mayor_uso_tiempo(void *entrada1, void *entrada2){
@@ -67,7 +67,7 @@ void tlb_reemplazar_por_lru(tlb_entry* nueva_entrada){
             entrada_a_eliminar->frame, 
             entrada_a_eliminar->uso_tiempo);    
 
-    list_add(tlb, &nueva_entrada);
+    list_add(tlb, nueva_entrada);
 }
 
 void iterate_incrementar_uso_tiempo(void *entrada){

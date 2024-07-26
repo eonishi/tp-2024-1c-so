@@ -71,6 +71,7 @@ t_list* mmu(unsigned direccion_logica, size_t tam_dato, void* dato){
 
             unsigned frame_number = consultar_tabla_de_paginas(numero_pagina);
 
+            
             if(config.cantidad_entradas_tlb > 0){
                 agregar_entrada_tlb(pcb_actual->pid, numero_pagina, frame_number);
             }

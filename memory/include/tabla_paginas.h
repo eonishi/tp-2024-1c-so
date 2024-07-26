@@ -17,7 +17,7 @@ extern pthread_mutex_t mutex_procesos_en_memoria;
 
 t_tabla_paginas *crear_tabla_paginas();
 unsigned get_frame_number_by_pagina(unsigned nro_pagina);
-void redimensionar_memoria_proceso(size_t cantidad_paginas);
+void redimensionar_memoria_proceso(size_t cantidad_paginas, unsigned pid);
 void mostrar_tabla_paginas();
 bool puedo_agregar_o_disminuir(int cantidad_paginas);
 unsigned calcular_cantidad_de_paginas_por_bytes(unsigned bytes);

@@ -24,7 +24,6 @@ void agregar_paginas(unsigned cantidad_de_paginas){
 
 void quitar_paginas(size_t cantidad_de_paginas, t_proceso_en_memoria* proceso){
     t_list* tabla = proceso->tabla_paginas;
-
     for (size_t i = 0; i < cantidad_de_paginas; i++){
         size_t index_tabla = list_size(tabla)-1;
 
@@ -47,7 +46,7 @@ size_t cantidad_de_paginas(){
     return list_size(tabla);
 }
 
-void redimensionar_memoria_proceso(size_t cantidad_paginas){
+void redimensionar_memoria_proceso(size_t cantidad_paginas, unsigned pid){
     size_t cantidad_actual_de_paginas = cantidad_de_paginas();
     if(cantidad_paginas >= cantidad_actual_de_paginas){
         log_info(logger, "Aumentando memoria del proceso a [%ld] paginas totales", cantidad_paginas);
@@ -56,7 +55,8 @@ void redimensionar_memoria_proceso(size_t cantidad_paginas){
     }
     else{
         log_info(logger, "Disminuyendo memoria del proceso a [%ld] paginas totales", cantidad_paginas);
-        t_proceso_en_memoria* proceso_a_redimencionar = get_proceso_by_PID(PID_a_liberar, &PID_solicitado, memoria_tiene_pid_solicitado);
+        
+        t_proceso_en_memoria* proceso_a_redimencionar = get_proceso_by_PID(pid, &PID_solicitado, memoria_tiene_pid_solicitado);
         quitar_paginas(cantidad_actual_de_paginas - cantidad_paginas, proceso_a_redimencionar);
     }
 }
