@@ -62,7 +62,7 @@ void* gestionar_solicitudes_kernel(){
 
 			cargar_proceso_en_memoria(solicitud.filePath, solicitud.PID);
 
-			log_info(logger_oblig, "PID: <%d> - Tamaño: <%d>", PID_solicitado, 0);
+			log_info(logger_oblig, "PID: <%u> - Páginas: <%d>", solicitud.PID, 0);
 
 			enviar_status(SUCCESS, socket_kernel);
 			break;
@@ -72,7 +72,7 @@ void* gestionar_solicitudes_kernel(){
 			unsigned pid = recibir_cantidad(socket_kernel);
 			log_info(logger, "Proceso PID:[%d] a liberar", pid);
 
-			log_info(logger_oblig, "PID: <%d> - Tamaño: <%ld>", PID_solicitado, cantidad_de_paginas());
+			log_info(logger_oblig, "PID: <%d> - Páginas: <%ld>", PID_solicitado, cantidad_de_paginas());
 			// Elimino el proceso de la lista de procesos en memoria
 			liberar_proceso_en_memoria(pid);
 
