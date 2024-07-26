@@ -52,9 +52,9 @@ void enviar_pcb(pcb* pcb, int socket_cliente, op_code code){
     }
     else {
     // Tengo que enviar instrucciones?
-        bool envio_instrucciones = pcb->solicitud->instruc_io_tokenizadas != NULL;
+        int envio_instrucciones = pcb->solicitud->instruc_io_tokenizadas != NULL;
         void* stream_envio_instrucciones = serializar_int(envio_instrucciones);
-        agregar_a_paquete(paquete, stream_envio_instrucciones, sizeof(bool));
+        agregar_a_paquete(paquete, stream_envio_instrucciones, sizeof(int));
 
         log_warning(logger, "Enviando PCB con instrucciones: [%s]", envio_instrucciones? "true" : "false");
 
@@ -63,9 +63,9 @@ void enviar_pcb(pcb* pcb, int socket_cliente, op_code code){
         }
 
         // Tengo que enviar peticiones?
-        bool envio_peticiones = pcb->solicitud->peticiones_memoria != NULL;
+        int envio_peticiones = pcb->solicitud->peticiones_memoria != NULL;
         void* stream_envio_peticiones = serializar_int(envio_peticiones);
-        agregar_a_paquete(paquete, stream_envio_peticiones, sizeof(bool));
+        agregar_a_paquete(paquete, stream_envio_peticiones, sizeof(int));
 
         log_warning(logger, "Enviando PCB con peticiones: [%s]", envio_peticiones? "true" : "false");
         if(envio_peticiones){
@@ -94,7 +94,7 @@ pcb* recibir_pcb(int socket_cliente){
 
     // Recibo bool para saber si tengo que recibir instrucciones
     void * bytes_recibo_solicitud = list_get(lista_pcb_bytes, 2);
-    bool recibo_solititud = deserializar_int(bytes_recibo_solicitud);
+    int recibo_solititud = deserializar_int(bytes_recibo_solicitud);
     log_warning(logger, "Recibiendo PCB con solicitud de IO: [%s]", recibo_solititud? "true" : "false");
 
     if(!recibo_solititud){
@@ -110,8 +110,8 @@ pcb* recibir_pcb(int socket_cliente){
 
         // Recibo bool para saber si tengo que recibir peticiones
         void * bytes_recibo_peticiones = list_get(lista_pcb_bytes, 4 + string_array_size(tokens_instr));
-        bool recibo_peticiones = deserializar_int(bytes_recibo_peticiones);
-        log_warning(logger, "Recibiendo PCB con peticioens de IO: [%s]", recibo_peticiones? "true" : "false");
+        int recibo_peticiones = deserializar_int(bytes_recibo_peticiones);
+            log_warning(logger, "Recibiendo PCB con peticiones: [%s]", recibo_peticiones? "true" : "false");
 
         // Si no tengo que recibir peticiones, seteo las peticiones en NULL
         t_list* peticiones_memoria = NULL;

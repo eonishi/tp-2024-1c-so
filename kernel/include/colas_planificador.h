@@ -24,6 +24,7 @@ extern elemVRR *elemento_VRR;
 extern t_list *lista_conexiones_io;
 extern sem_t sem_proceso_en_ready, sem_grado_multiprog, sem_nuevo_proceso;
 extern int diferencia_grado_multiprog;
+extern pthread_mutex_t mutex_conexiones_io, mutex_recursos_disponibles;
 
 void inicializar_colas_planificador();
 

@@ -46,18 +46,22 @@ void imprimir_cola(char* nombre, t_queue* cola, pthread_mutex_t mutex){
 }
 
 void imprimir_colas_io(){
+    pthread_mutex_lock(&mutex_conexiones_io);
     for (size_t i = 0; i < list_size(lista_conexiones_io); i++){
         conexion_io* conexion_a_imprimir = list_get(lista_conexiones_io, i);
         imprimir_cola(conexion_a_imprimir->nombre_interfaz, conexion_a_imprimir->cola_espera, conexion_a_imprimir->mutex);
     }
+    pthread_mutex_unlock(&mutex_conexiones_io);
 }
 
 void imprimir_colas_recurso(){
-    for (size_t i = 0; i < list_size(recursos_disponibles); i++){
+    pthread_mutex_lock(&mutex_recursos_disponibles);
+    for (size_t i = 0; i < list_size(recursos_disponibles); i++)
+    {
         t_recurso* recurso = list_get(recursos_disponibles, i);
         imprimir_cola(recurso->nombre, recurso->procesos_en_espera, recurso->mutex);
     }
-
+    pthread_mutex_unlock(&mutex_recursos_disponibles);
 }
 
 void push_cola_new(pcb* pcb){

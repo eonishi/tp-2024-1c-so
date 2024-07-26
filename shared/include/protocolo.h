@@ -34,8 +34,8 @@ typedef struct{
 } solicitud_conexion_kernel;
 
 void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel, int socket_cliente);
-solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_cliente);
-
+solicitud_conexion_kernel* recibir_solicitud_conexion_kernel(int socket_cliente);
+void liberar_solicitud_conexion_kernel(solicitud_conexion_kernel *solicitud);
 
 typedef struct{
     int pid;

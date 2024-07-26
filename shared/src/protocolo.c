@@ -46,6 +46,20 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
     return respuesta;
 }
 
+solicitud_conexion_kernel* crear_solicitud_conexion_kernel(char* nombre_interfaz, io_tipo tipo, int* operaciones){
+    solicitud_conexion_kernel* solicitud = malloc(sizeof(solicitud_conexion_kernel));
+    solicitud->nombre_interfaz = nombre_interfaz;
+    solicitud->tipo = tipo;
+    solicitud->operaciones = operaciones;
+
+    return solicitud;
+}
+
+void liberar_solicitud_conexion_kernel(solicitud_conexion_kernel* solicitud){
+    free(solicitud->operaciones);
+    free(solicitud);
+}
+
 void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel solicitud, int kernel_skt){
     size_t size_nombre = strlen(solicitud.nombre_interfaz) + 1;
     t_paquete* paquete = crear_paquete(HANDSHAKE);
@@ -69,7 +83,7 @@ void enviar_solicitud_conexion_kernel(solicitud_conexion_kernel solicitud, int k
     eliminar_paquete(paquete);
 }
 
-solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_de_una_io){
+solicitud_conexion_kernel* recibir_solicitud_conexion_kernel(int socket_de_una_io){
     t_list* lista_bytes = recibir_paquete(socket_de_una_io);
 
     char* nombre_interfaz = list_get(lista_bytes, 0);
@@ -83,7 +97,7 @@ solicitud_conexion_kernel recibir_solicitud_conexion_kernel(int socket_de_una_io
     free(tipo);
     free(instrucciones);
 
-    solicitud_conexion_kernel solicitud = {nombre_interfaz, tipo_enum, op_disponibles};
+    solicitud_conexion_kernel* solicitud = crear_solicitud_conexion_kernel(nombre_interfaz, tipo_enum, op_disponibles);
     return solicitud;
 }
 
