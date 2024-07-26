@@ -43,7 +43,5 @@ void gestionar_respuesta_cpu();
 void *monitoreo_quantum();
 void crear_hilo_quantum();
 void cancelar_hilo_quantum();
-const char* traduce_cod_op(op_code code); //lo uso para cumplir con los logs minimos
-
 
 #endif

@@ -35,4 +35,6 @@ typedef enum
 
 #define ERROR -1
 
+const char *traduce_cod_op(op_code code);
+
 #endif
