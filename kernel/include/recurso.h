@@ -7,6 +7,7 @@
 #include <commons/string.h>
 #include <commons/collections/queue.h>
 #include "colas_planificador.h"
+#include "detener_planificacion.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/hilo.h"
 

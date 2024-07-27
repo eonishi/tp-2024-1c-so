@@ -2,18 +2,25 @@
 
 t_list* recursos_disponibles;
 pthread_mutex_t mutex_recursos_disponibles = PTHREAD_MUTEX_INITIALIZER;
+bool wait_recurso_de_espera(t_recurso *recurso, unsigned PID_buscado);
 
-static void* esperar_recurso_thread_handler(void* args){
+static void *esperar_recurso_thread_handler(void *args)
+{
     // recibir el recurso por arg;
     t_recurso* recurso = (t_recurso*)args;
 
     while (1){
+
         sem_wait(&recurso->procesos_en_cola);
+        esperar_planificacion();
+        
         pcb *proceso_espera = queue_peek(recurso->procesos_en_espera);
         log_warning(logger, "Proceso [%d] en espera de la cola [%s]", proceso_espera->pid, recurso->nombre);
-
-        wait_recurso(recurso, proceso_espera->pid);
+        if(!wait_recurso_de_espera(recurso, proceso_espera->pid)){
+            continue;
+        }
         proceso_espera = queue_pop(recurso->procesos_en_espera);
+
         push_cola_ready(proceso_espera);
     }
 }
@@ -80,16 +87,34 @@ bool recurso_disponible(t_recurso* recurso){
     return valor_semaforo > 0;
 }
 
-void wait_recurso(t_recurso* recurso, unsigned PID){
+static bool es_PID(void* PID, unsigned PID_buscado){
+    return *(unsigned*)PID == PID_buscado;
+}
+
+void wait_recurso(t_recurso* recurso, unsigned PID_buscado){
     sem_wait(&(recurso->instancias));
 
     unsigned* PID_aux = malloc(sizeof(unsigned));
-    *PID_aux = PID;
+    *PID_aux = PID_buscado;
     list_add(recurso->PIDs, PID_aux);
 }
 
-static bool es_PID(void* PID, unsigned PID_buscado){
-    return *(unsigned*)PID == PID_buscado;
+bool wait_recurso_de_espera(t_recurso* recurso, unsigned PID_buscado){
+    sem_wait(&(recurso->instancias));
+
+    bool _wrap_es_pid(void* PID){
+        return es_PID(PID, PID_buscado);
+    }
+
+    if(!list_any_satisfy(recurso->procesos_en_espera->elements, _wrap_es_pid)){
+        sem_post(&(recurso->instancias));
+        return false;
+    }
+
+    unsigned* PID_aux = malloc(sizeof(unsigned));
+    *PID_aux = PID_buscado;
+    list_add(recurso->PIDs, PID_aux);
+    return true;
 }
 
 void signal_recurso(t_recurso* recurso, unsigned PID_buscado){
@@ -101,7 +126,7 @@ void signal_recurso(t_recurso* recurso, unsigned PID_buscado){
     }
 
     if(list_any_satisfy(recurso->PIDs, _wrap_es_pid)){
-        list_remove_and_destroy_by_condition(recurso->PIDs, _wrap_es_pid, free);
+        list_remove_and_destroy_all_by_condition(recurso->PIDs, _wrap_es_pid, free);
     }
 }
 
