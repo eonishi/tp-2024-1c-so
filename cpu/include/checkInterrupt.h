@@ -8,8 +8,9 @@
 
 extern int socket_kernel;
 extern int INTERRUPTION_FLAG, tengo_pcb;
+extern op_code MOTIVO_INTERRUPCION;
 extern pcb *pcb_actual;
 
-int checkInterrupt();
+void checkInterrupt();
 
 #endif

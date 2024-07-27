@@ -15,9 +15,20 @@ void* get_registro(char* token_registro){
     else return NULL; 
 }
 
+uint32_t reg_to_uint32(void* valor, char* token){
+    if(string_equals_ignore_case(token, "AX") || string_equals_ignore_case(token, "BX") || string_equals_ignore_case(token, "CX") || string_equals_ignore_case(token, "DX") ) 
+        return *(uint8_t*) valor;
+    
+    return *(uint32_t*) valor;
+}
+
 bool es8int(char* token_registro){
     return string_equals_ignore_case(token_registro, "AX") 
     || string_equals_ignore_case(token_registro, "BX") 
     || string_equals_ignore_case(token_registro, "CX") 
     || string_equals_ignore_case(token_registro, "DX");
+}
+
+unsigned tam_registro(char* token_registro){
+    return es8int(token_registro) ? sizeof(uint8_t) : sizeof(uint32_t);
 }

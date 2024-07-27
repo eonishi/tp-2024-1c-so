@@ -25,6 +25,7 @@ typedef struct
 
 
 extern t_log *logger;
+extern t_log *logger_oblig;
 
 
 kernel_config* inicializar_config();

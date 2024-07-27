@@ -1,6 +1,8 @@
 #include "../include/fetch.h"
 
 char* fetch(){
+    log_info(logger_oblig, "PID: <%d> - FETCH - Program Counter: <%d>", pcb_actual->pid, pcb_actual->pc);
+
     pedir_intruccion_a_memoria(pcb_actual->pc);
     return recibir_instruccion_de_memoria(socket_memoria);
 }

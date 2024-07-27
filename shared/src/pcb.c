@@ -17,6 +17,7 @@ pcb* crear_pcb(unsigned id, unsigned quantum){
     nuevo_pcb->pc = 0;
     nuevo_pcb->registros = crear_registros();
     nuevo_pcb->estado = NEW;
+    nuevo_pcb->solicitud = NULL;
     return nuevo_pcb;
 }
 
@@ -35,7 +36,7 @@ registros_t* crear_registros(){
     return registros;
 }
 
-int enviar_pcb(pcb* pcb, int socket_cliente, op_code code){
+void enviar_pcb(pcb* pcb, int socket_cliente, op_code code){
     t_paquete* paquete = crear_paquete(code);
 
     void* data_primitive = serializar_pcb_data_primitive(pcb); // Datos con tipos de datos primitivos de C dentro del PCB
@@ -44,14 +45,41 @@ int enviar_pcb(pcb* pcb, int socket_cliente, op_code code){
     agregar_a_paquete(paquete, data_primitive, size_primitive_data);
     agregar_a_paquete(paquete, registros, size_registros);
 
+    if(pcb->solicitud == NULL){
+        log_warning(logger, "Enviando PCB sin soliciutd");
+        void* envio_una_solicitud = serializar_int(false);
+        agregar_a_paquete(paquete, envio_una_solicitud, sizeof(int));
+    }
+    else {
+    // Tengo que enviar instrucciones?
+        int envio_instrucciones = pcb->solicitud->instruc_io_tokenizadas != NULL;
+        void* stream_envio_instrucciones = serializar_int(envio_instrucciones);
+        agregar_a_paquete(paquete, stream_envio_instrucciones, sizeof(int));
+
+        log_warning(logger, "Enviando PCB con instrucciones: [%s]", envio_instrucciones? "true" : "false");
+
+        if(envio_instrucciones){
+            serializar_lista_strings_y_agregar_a_paquete(pcb->solicitud->instruc_io_tokenizadas, paquete);
+        }
+
+        // Tengo que enviar peticiones?
+        int envio_peticiones = pcb->solicitud->peticiones_memoria != NULL;
+        void* stream_envio_peticiones = serializar_int(envio_peticiones);
+        agregar_a_paquete(paquete, stream_envio_peticiones, sizeof(int));
+
+        log_warning(logger, "Enviando PCB con peticiones: [%s]", envio_peticiones? "true" : "false");
+        if(envio_peticiones){
+            peticiones_empaquetar(pcb->solicitud->peticiones_memoria, paquete);
+        }
+
+    }
+
     enviar_paquete(paquete, socket_cliente);
 
     free(data_primitive);
     free(registros);
     free(paquete->buffer);
     free(paquete);
-
-    return 0;
 }
 
 pcb* recibir_pcb(int socket_cliente){
@@ -62,7 +90,45 @@ pcb* recibir_pcb(int socket_cliente){
 
     pcb* recived_pcb = deserializar_pcb(pcb_bytes_primitive, pcb_bytes_registers);
 
+    log_warning(logger, "Recibiendo PCB con PID: %d", recived_pcb->pid);
+
+    // Recibo bool para saber si tengo que recibir instrucciones
+    void * bytes_recibo_solicitud = list_get(lista_pcb_bytes, 2);
+    int recibo_solititud = deserializar_int(bytes_recibo_solicitud);
+    log_warning(logger, "Recibiendo PCB con solicitud de IO: [%s]", recibo_solititud? "true" : "false");
+
+    if(!recibo_solititud){
+        recived_pcb->solicitud = NULL;
+
+        free(lista_pcb_bytes);
+        free(bytes_recibo_solicitud);
+
+        return recived_pcb;
+    }
+    else {
+        char** tokens_instr = deserializar_lista_strings(lista_pcb_bytes, 3);
+
+        // Recibo bool para saber si tengo que recibir peticiones
+        void * bytes_recibo_peticiones = list_get(lista_pcb_bytes, 4 + string_array_size(tokens_instr));
+        int recibo_peticiones = deserializar_int(bytes_recibo_peticiones);
+            log_warning(logger, "Recibiendo PCB con peticiones: [%s]", recibo_peticiones? "true" : "false");
+
+        // Si no tengo que recibir peticiones, seteo las peticiones en NULL
+        t_list* peticiones_memoria = NULL;
+        if(recibo_peticiones){
+            peticiones_memoria = peticiones_desempaquetar_segun_index(lista_pcb_bytes, 5 + string_array_size(tokens_instr));
+            log_warning(logger, "Desempaqueteando peticiones de memoria");
+        }
+
+        solicitud_bloqueo_por_io* solicitud_recibida = crear_solicitud_io(tokens_instr, peticiones_memoria);
+        recived_pcb->solicitud = solicitud_recibida;
+        free(bytes_recibo_peticiones);
+    }
+        
+    // Faltan frees
     free(lista_pcb_bytes);
+    free(bytes_recibo_solicitud);
+
     return recived_pcb;
 }
 
@@ -271,20 +337,9 @@ void loggear_pcb(pcb* pcb){
     log_info(logger, "====================");
 }
 
-pcb* esperar_pcb(int socket, op_code codigo_esperado){
-	int codigo_recibido = recibir_operacion(socket);
-	log_info(logger, "Esperar_respuesta: Codigo: [%d]", codigo_recibido);
-    if(codigo_recibido == codigo_esperado) {
-        return recibir_pcb(socket);
-    }
-
-    log_error(logger, "El código de respuesta no es el esperado. Esperado: [%d]. Recibido: [%d]", codigo_esperado, codigo_recibido);
-
-    return NULL;
-}
-
 void destruir_pcb(pcb* pcb){
     free(pcb->registros);
+    liberar_solicitud_io(pcb->solicitud);
     free(pcb);
 }
 

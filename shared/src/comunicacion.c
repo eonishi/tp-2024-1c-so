@@ -73,6 +73,7 @@ unsigned recibir_cantidad(int socket_cliente){
 	};
 }
 
+
 int esperar_respuesta(int socket, op_code codigo_esperado){
 	int codigo_recibido = recibir_operacion(socket);
 	log_info(logger, "Esperar_respuesta: Codigo: [%d]", codigo_recibido);
@@ -102,6 +103,15 @@ int recibir_operacion(int socket_cliente)
 	}
 }
 
+void enviar_buffer( void* buffer, int size, int socket_cliente){
+	int total_size = size + sizeof(int);
+	void* stream_buffer = malloc(total_size);
+	memcpy(stream_buffer, &size, sizeof(int));
+	memcpy(stream_buffer + sizeof(int), buffer, size);
+	send(socket_cliente, stream_buffer, total_size, 0);
+	free(stream_buffer);
+}
+
 void* recibir_buffer(int* size, int socket_cliente)
 {
 	void * buffer;
@@ -113,17 +123,12 @@ void* recibir_buffer(int* size, int socket_cliente)
 	return buffer;
 }
 
-void recibir_mensaje(int socket_cliente)
+char* recibir_mensaje(int socket_cliente)
 {
 	int size;
 	char* buffer = recibir_buffer(&size, socket_cliente);
 	log_info(logger, "Mensaje recibido: [%s]", buffer); // TODO  REVISAR
-	free(buffer);
-}
-
-char* recibir_respuesta(int socket){
-	int size;
-	char* buffer = recibir_buffer(&size, socket);
+	
 	return buffer;
 }
 

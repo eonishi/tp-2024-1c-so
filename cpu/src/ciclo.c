@@ -17,7 +17,8 @@ void cicloDeCPU(){
         log_info(logger, "Instrucción tokenizada correctamente");
         execute(instruccion_tokenizada);
         log_info(logger, "Instrucción ejecutada correctamente");
+        //poner marca de tiempo fin paso execute
         checkInterrupt();
-            
+        log_info(logger, "======================================");
     }
 }

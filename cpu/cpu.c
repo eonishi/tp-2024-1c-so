@@ -2,11 +2,13 @@
 
 int main()
 {
-	logger = iniciar_logger("cpu.log", "CPU");
+	logger = iniciar_logger("cpu.log", "CPU", 1);
+	logger_oblig = iniciar_logger("logs_obligatorios.log", "CPU", 1);
 	log_info(logger, "Logger CPU Iniciado");
 
 	inicializar_configuracion();  
   	crear_conexion_memoria();
+	iniciar_tlb();
 	
 	pthread_t server_threads[2];
 	pthread_create(&server_threads[0], NULL, (void*)server_dispatch, NULL);

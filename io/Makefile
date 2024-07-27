@@ -8,7 +8,7 @@ SRC = $(shell find ./src -type f -iname "*.c" -exec basename {} \;)
 OBJ = $(SRC:%.c=./obj/%.o) #De la variable SRC agarra todo lo que sea *.c  y lo pone en la carpeta obj/*.o
 SHARED = $(shell find ../shared/obj/*.o)
 
-LINK = -lpthread -lcommons -lm
+LINK = -lpthread -lcommons -lm -lreadline
 CFLAGS = -c
 BUILD_DEBUG_FLAG = 
 
@@ -42,4 +42,6 @@ clean:
 	rm -rf obj
 	rm -rf *.out
 	rm -rf *.log
+	rm -rf *.dat
+	rm -rf *.txt
 	make clean -C ../shared

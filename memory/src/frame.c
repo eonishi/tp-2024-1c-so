@@ -3,6 +3,7 @@
 static void *MEMORIA;
 static t_bitarray* FRAME_BITMAP;
 static size_t size_bitmap;
+pthread_mutex_t mutex_memoria = PTHREAD_MUTEX_INITIALIZER;
 
 unsigned frames_totales(){
     return config.tam_memoria / config.tam_pagina;
@@ -13,12 +14,6 @@ void imprimir_bitmap(){
     {
         bool valor_del_bit = bitarray_test_bit(FRAME_BITMAP, i);
         log_info(logger, "Bit %d: %d", i, valor_del_bit);
-    }
-}
-
-void limpiar_bitmap(){
-    for (size_t i = 0; i < size_bitmap; i++){
-        bitarray_clean_bit(FRAME_BITMAP, i);
     }
 }
 
@@ -37,27 +32,38 @@ void inicializar_memoria(){
     inicializar_bitmap();
 }
 
-void* get_frame(int frame_number, int desplazamiento){
-    // devuelve un puntero a la base del frame + desplazamiento.
-    // Tener en cuenta que se trabaja sobre el espacio de memoria y no sobre una copia de los datos.
-    return MEMORIA + (frame_number * config.tam_pagina) + desplazamiento; // tam_pagina = tam_frame en paginación simple
+void* get_memoria(uint32_t direccion_fisica){
+    // devuelve un puntero a la dirección física.
+    return MEMORIA + direccion_fisica;
 }
 
-void set_frame(int frame_number, int offset, void* data, size_t size_data){
-    void* frame = get_frame(frame_number, offset);
-    memcpy(frame, data, size_data);
-    log_info(logger, "Data [%s] guardada en frame [%d]", data, frame_number);
+void set_memoria(uint32_t direccion_fisica, void* data, size_t size_data){
+    pthread_mutex_lock(&mutex_memoria);
+        void* frame = get_memoria(direccion_fisica);
+        memcpy(frame, data, size_data);
+    pthread_mutex_unlock(&mutex_memoria);
+
+    log_info(logger, "Data [%d] guardada en la direccion [%d]", data, direccion_fisica);
+
+    for(size_t i = 0; i < size_data; i++){
+        log_info(logger, "Data byte [%d]: [%c]", i, ((char*)data)[i]);
+    }
 }
 
 void marcar_frame_como(unsigned frame_number, int estado){
+    pthread_mutex_lock(&mutex_memoria);
+
     if(estado){
         bitarray_set_bit(FRAME_BITMAP, frame_number);
     } else {
         bitarray_clean_bit(FRAME_BITMAP, frame_number);
     }
+
+    pthread_mutex_unlock(&mutex_memoria);
 }
 
 unsigned get_available_frame(){
+    // Deberia ir un mutex aca?
     for (size_t i = 0; i < size_bitmap; i++){
         if (!bitarray_test_bit(FRAME_BITMAP, i)){
             log_info(logger, "Frame disponible [%d]", i);
@@ -67,23 +73,6 @@ unsigned get_available_frame(){
     log_error(logger, "No hay frames disponibles");
     return -1;
 };
-
-void imprimir_data(int frame_number, int offset, size_t value_size){
-    void* frame = get_frame(frame_number, offset);
-    char* value = malloc(value_size);
-    memcpy(value, frame, value_size);
-    log_info(logger, "Data en frame [%d]: [%s]", frame_number, value);
-}
-
-void  imprimir_frames(){
-    for (size_t i = 0; i < size_bitmap; i++){
-        void* frame = get_frame(i, 0);
-        char* frame_value = malloc(config.tam_pagina);
-        memcpy(frame_value, frame, config.tam_pagina);
-        log_info(logger, "Frame [%d]: [%s] esta [%s]", i, frame_value, bitarray_test_bit(FRAME_BITMAP, i) ? "Ocupado" : "Libre");
-        free(frame_value);
-    }
-}
 
 unsigned frame_cantidad_estado(int estado){
     unsigned cantidad = 0;
@@ -106,4 +95,8 @@ unsigned frames_libres(){
 
 bool tengo_espacio_para_agregar(int cantidad_frames){
     return frames_libres() >= cantidad_frames;
+}
+
+void imprimir_memoria_hex(){
+    mem_hexdump(MEMORIA, config.tam_memoria);
 }

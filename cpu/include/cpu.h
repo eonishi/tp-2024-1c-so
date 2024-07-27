@@ -8,10 +8,12 @@
 #include "conexion.h"
 #include "ciclo.h"
 #include "../../shared/include/logger.h"
+#include "tlb.h"
 
 t_log *logger;
+t_log *logger_oblig;
+
 extern int socket_memoria, socket_kernel;
-extern cpu_config config;
 extern pcb *pcb_actual;
 
 void terminar_programa();

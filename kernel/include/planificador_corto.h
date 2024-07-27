@@ -10,15 +10,24 @@
 #include "colas_planificador.h"
 #include "conexion.h"
 #include "gestor_io.h"
+#include "interrupcion.h"
+#include "recurso.h"
+#include "detener_planificacion.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
+#include "../../shared/include/direccion.h"
+#include "commons/temporal.h"
+#include "../../shared/include/codigos_operacion.h"
 
 extern pthread_t hilo_quantum;
 
 extern t_log *logger;
+extern t_log *logger_oblig;
 extern kernel_config* config;
-extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, q_usado, q_restante;
+extern int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io;
 extern t_list *lista_conexiones_io;
+extern t_temporal *q_transcurrido;
+extern t_queue *cola_readyVRR;
 
 extern int planificacion_activada;
 // Semaforos
@@ -30,13 +39,9 @@ void *iniciar_planificacion_corto();
 void *iniciar_planificacion_corto_RR();
 void *iniciar_planificacion_corto_VRR();
 void dispatch_proceso_planificador(pcb* newPcb);
-void send_interrupt();
 void gestionar_respuesta_cpu();
 void *monitoreo_quantum();
-void* serializar_interrupcion(unsigned int , size_t*);
-void enviar_interrupcion(int , unsigned);
 void crear_hilo_quantum();
-
-
+void cancelar_hilo_quantum();
 
 #endif

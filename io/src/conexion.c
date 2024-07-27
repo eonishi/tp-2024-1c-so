@@ -12,12 +12,21 @@ void crear_conexion_kernel(){
 }
 
 void crear_conexion_memoria(){
-    int memory_socket = crear_conexion(config.ip_memoria, config.puerto_memoria);
+    memory_socket = crear_conexion(config.ip_memoria, config.puerto_memoria);
+    log_info(logger, "SOCKET MEMORY: [%d]", memory_socket);
     if(memory_socket == -1){
         log_error(logger, "No se pudo conectar con la memoria");
         exit(EXIT_FAILURE);
     }
-    log_info(logger, "Conexión con la memoria establecida");
+    enviar_handshake(memory_socket);
+    log_info(logger, "SOCKET MEMORY: [%d]", memory_socket);
+    if(esperar_handshake(memory_socket)) {
+        log_error(logger, "No se pudo conectar con la memoria");
+        exit(EXIT_FAILURE);
+    } else {
+        log_info(logger, "SOCKET MEMORY: [%d]", memory_socket);
+        log_info(logger, "Conexión con la memoria establecida");
+    }
 }
 
  static int conexion_fue_exitosa(int socket){

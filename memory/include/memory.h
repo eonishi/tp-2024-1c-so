@@ -11,8 +11,10 @@
 #include "tabla_paginas.h"
 #include "../../shared/include/logger.h"
 #include "../../shared/include/pcb.h"
+#include "../../shared/include/direccion.h"
 
 t_log* logger;
+t_log* logger_oblig;
 extern memory_config config;
 
 extern int socket_cpu, socket_kernel;
@@ -26,6 +28,7 @@ void crear_hilo_solicitudes_kernel();
 void* gestionar_solicitudes_kernel();
 void crear_hilo_solicitudes_cpu();
 void* gestionar_solicitudes_cpu();
+void* gestionar_solicitudes_io(void *pthread_arg);
 
 void terminar_programa();
 

@@ -2,7 +2,7 @@
 
 int socket_memoria, socket_kernel;
 int INTERRUPTION_FLAG = 0;
-
+op_code MOTIVO_INTERRUPCION;
 
 static void terminar_programa()
 {
@@ -110,23 +110,46 @@ void server_interrupt()
 	int interrupt_fd = iniciar_servidor("CPU_INTERRUPT", config.ip_cpu, config.puerto_interrupt);
 	int cliente_fd = esperar_handshake_server(interrupt_fd);
 
-	//int cliente_fd = esperar_cliente(interrupt_fd);
-	log_info(logger, "pase de esperar cliente!! interrupt_fd es %d",interrupt_fd);
+	while (cliente_fd != -1){
+			op_code cod_op = recibir_operacion(cliente_fd);
+			log_info(logger, "Codigo de operacion recibido: [%d]", cod_op);
 
-	while (cliente_fd != -1)
-	{
-		int PID_interrumpido = recibir_interrupcion(cliente_fd);
-		log_info(logger, "Recibi interrupcion a PID: %d", PID_interrumpido);
+			unsigned PID_interrumpido = recibir_cantidad(cliente_fd);
+			log_info(logger, "PID interrumpido: [%d]", PID_interrumpido);
 
-		if(PID_interrumpido == pcb_actual->pid){
-			log_info(logger, "INTERRUPCION recibida. PID: %d", PID_interrumpido);
-			INTERRUPTION_FLAG = 1;
-		}
-		else{
-			log_info(logger, "INTERRUPCION recibida. PID: %d. No corresponde al PID actual", PID_interrumpido);
+			switch (cod_op){
+				case INTERRUPCION_USUARIO:
+					log_warning(logger, "Recibi interrupcion por USUARIO");
+
+					if(PID_interrumpido == pcb_actual->pid){
+						INTERRUPTION_FLAG = 1;
+						MOTIVO_INTERRUPCION = INTERRUPCION_USUARIO;
+					}
+					else
+						log_info(logger, "INTERRUPCION recibida. PID: [%d]. No corresponde al PID actual", PID_interrumpido);
+
+					break;
+				
+				case INTERRUPCION_QUANTUM:
+					log_warning(logger, "Recibi interrupcion por QUANTUM");
+					
+					if(PID_interrumpido == pcb_actual->pid){
+						INTERRUPTION_FLAG = 1;
+						MOTIVO_INTERRUPCION = INTERRUPCION_QUANTUM;
+					}
+					else
+						log_info(logger, "INTERRUPCION recibida. PID: [%d]. No corresponde al PID actual", PID_interrumpido);
+					break;
+
+				case -1:
+					log_error(logger, "el cliente se desconecto. Terminando servidor");
+					close(cliente_fd);
+					cliente_fd = -1;
+					terminar_programa();
+					exit(EXIT_FAILURE);
+				default:
+					log_warning(logger, "Operacion desconocida. No quieras meter la pata");
+					break;
 		}
 	}
-	log_error(logger, "el cliente se desconecto. Terminando servidor");
-	terminar_programa();
-	exit(EXIT_FAILURE);
 }

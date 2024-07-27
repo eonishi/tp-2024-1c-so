@@ -48,6 +48,14 @@
     "dictionary.h": "c",
     "bitarray.h": "c",
     "error.h": "c",
-    "txt.h": "c"
+    "txt.h": "c",
+    "io_dialfs.h": "c",
+    "filesystem.h": "c",
+    "cstdio": "c",
+    "utility": "c",
+    "frame.h": "c"
+    "io_stdin.h": "c",
+    "readline.h": "c",
+    "temporal.h": "c"
   }
 }

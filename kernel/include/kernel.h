@@ -16,6 +16,8 @@
 #include "planificador_largo.h"
 #include "planificador_corto.h"
 #include "gestor_io.h"
+#include "consola.h"
+#include "recurso.h"
 
 #include "../../shared/include/logger.h"
 #include "../../shared/include/client.h"
@@ -23,63 +25,28 @@
 #include "../../shared/include/comunicacion.h"
 #include "../../shared/include/pcb.h"
 #include "../../shared/include/protocolo.h"
+#include "../../shared/include/hilo.h"
 
 t_log *logger;
+t_log *logger_oblig;
 kernel_config* config;
-int pcb_counter = 1;
 int socket_cpu_dispatch, socket_cpu_interrupt, socket_memoria, socket_io, socket_server_kernel;
-t_list *lista_conexiones_io;
+extern t_list *lista_conexiones_io;
+extern pthread_mutex_t mutex_conexiones_io;
 
-pthread_t hilo_servidor_kernel;
-pthread_t hilo_escucha_cpu;
-
-// Variables Planificador
-int planificacion_activada = 0;
-// -- Colas
-t_queue *cola_new;
-t_queue *cola_exit;
-t_queue *cola_ready;
-t_queue *cola_blocked;
-t_queue *cola_execute;
 // -- Semaforos
 sem_t sem_nuevo_proceso;
 sem_t sem_grado_multiprog;
 sem_t sem_proceso_en_ready;
 sem_t sem_cpu_libre;
-// -- Hilos
-pthread_t hilo_planificador_largo;
-pthread_t hilo_conexiones_io;
-pthread_t hilo_conexiones_io2;
-pthread_t hilo_planificador_corto;
-pthread_t hilo_planificador_corto_RR;
-pthread_t hilo_planificador_corto_VRR;
-
-// Fin variables planificador
-
-typedef enum
-{
-	CPU,
-	MEMORIA,
-} cod_mensaje;
-
-/*typedef enum
-{
-	FIFO,
-	RR,
-	VRR,
-	DESCONOCIDO,
-} algoritmo_planificador;*/
+extern sem_t sem_planificacion_activa;
 
 void terminar_programa();
 void iniciar_semaforos();
-void iniciar_consola();
-void *iniciar_escucha_servidor();
 void iniciar_servidor_en_hilo();
-pcb* iniciar_proceso_en_memoria(char* filePath);
 void dispatch_proceso();
-void iniciar_hilo(void *func, pthread_t thread);
 void *esperar_y_escuchar_conexiones_io();
-void iniciar_hilo_con_args(void *(*func)(void *), pthread_t thread, void *args);
-//void cambiar_algoritmo_planificadorCorto(algoritmo_planificador);
+void crear_hilo_planificador_corto();
+void cancelar_hilo_planificador();
 
 #endif

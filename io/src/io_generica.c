@@ -8,16 +8,15 @@ void io_generica() {
         log_info(logger, "Codigo de operacion: [%d]", cod_op);
 
         switch (cod_op){
-            case EJECUTAR_INSTRUCCION_IO:
-                log_info(logger, "Ejecutar instruccion IO");
-                char** instruccion_tokenizada = recibir_instruccion_io(kernel_socket);
+            case EJECUTAR_INSTRUCCION_IO:                                
+                solicitud_io_sleep parametros = recibir_io_sleep(kernel_socket);
+                int retardo = parametros.retraso;
+                int pid = parametros.pid;
 
-                log_info(logger, "Instruccion: [%s]", instruccion_tokenizada[0]);
-                log_info(logger, "Dispositivo: [%s]", instruccion_tokenizada[1]);
-                log_info(logger, "Tiempo de retardo: [%s]", instruccion_tokenizada[2]);
+                log_info(logger_oblig, "PID: <%d> - Operacion: <IO_GEN_SLEEP>", pid);
                 
                 // ejecutar instruccion
-                int tiempo_retardo = atoi(instruccion_tokenizada[2]) * config.unidad_trabajo * 1000;
+                int tiempo_retardo = retardo * config.unidad_trabajo * 1000;
                 usleep(tiempo_retardo);
                 
                 // devolver status

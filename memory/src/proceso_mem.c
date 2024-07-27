@@ -1,10 +1,7 @@
 #include "../include/proceso_mem.h"
 
 t_list *procesos_en_memoria;
-
-unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set 
-unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
-
+pthread_mutex_t mutex_procesos_en_memoria = PTHREAD_MUTEX_INITIALIZER;
 
 void inicializar_procesos_en_memoria(){
     procesos_en_memoria = list_create();
@@ -47,18 +44,47 @@ static t_list *leer_archivo_instrucciones(char *file_name)
     // Lista de instrucciones individuales de todo el archivo: ["SET AX 3","SUM AX BX", "RESIZE 89"]
 }
 
-void cargar_proceso_en_memoria(char* path, unsigned PID){
+bool existe_el_archivo(char* file_name){
+    char *path = string_new();
+    string_append_with_format(&path, "%s%s", config.path_instrucciones, file_name);
+    log_info(logger, "Leer_archivo_instr path: [%s]", path);
+
+    if (access(path, F_OK) != -1){
+        free(path);
+        return true;
+    }
+    else {
+        log_error(logger, "Error al abrir el archivo de instrucciones");
+        free(path);
+        return false; // A checkear el exit 😅
+    }
+
+}
+
+bool cargar_proceso_en_memoria(char* path, unsigned PID){
+
+    if(!existe_el_archivo(path)){
+        log_error(logger, "No se pudo cargar el proceso PID:%u, el archivo no existe", PID);
+        return false;
+    }
+
     t_proceso_en_memoria* nuevo_set_instruc = malloc(sizeof(t_proceso_en_memoria));
     nuevo_set_instruc->PID = PID;
     nuevo_set_instruc->instrucciones = leer_archivo_instrucciones(path);
     nuevo_set_instruc->tabla_paginas = list_create();
 
-    //Guardo en una lista los procesos en memoria (Temporal hasta definir como se guardan)
+    pthread_mutex_lock(&mutex_procesos_en_memoria);
     list_add(procesos_en_memoria, nuevo_set_instruc);
+    pthread_mutex_unlock(&mutex_procesos_en_memoria);
+
     log_info(logger, "Instrucciones del proceso PID:%u cargadas en memoria", PID);
+    return true;
 } 
 
 // ----Condiciones de búsqueda----
+unsigned PID_a_liberar; // Solo deber ser asignada por liberar_instr_set 
+unsigned PID_solicitado; // revisar si necesitaria mutex (no creo).
+
 bool memoria_tiene_pid(void* set_instrucciones, unsigned PID){
     return ((t_proceso_en_memoria*)set_instrucciones)->PID == PID;
 }
@@ -69,14 +95,36 @@ static bool memoria_tiene_pid_a_liberar(void* set_instrucciones){
     return memoria_tiene_pid(set_instrucciones, PID_a_liberar);
 }//--------
 
+t_proceso_en_memoria* get_proceso_by_PID(unsigned PID, unsigned* PID_ptr, bool memoria_tiene_pid(void*)){
+    // TERRIBLE PARCHE
+    PID_solicitado = PID;
+
+    pthread_mutex_lock(&mutex_procesos_en_memoria);   
+    t_proceso_en_memoria* proceso = list_find(procesos_en_memoria, memoria_tiene_pid);
+    pthread_mutex_unlock(&mutex_procesos_en_memoria);
+        
+    return proceso;
+}
+
 // ----Liberador de memoria----
 static void proceso_mem_destroyer(void* set_instrucciones){
     t_proceso_en_memoria* proceso_a_destruir = (t_proceso_en_memoria*)set_instrucciones;
+    log_info(logger, "Liberando proceso PID:%u", proceso_a_destruir->PID);
+
+    log_info(logger, "Por eliminar %d instrucciones", list_size(proceso_a_destruir->instrucciones));
     list_destroy_and_destroy_elements(proceso_a_destruir->instrucciones, free);
+
+    size_t cantidad_paginas = list_size(proceso_a_destruir->tabla_paginas);
+    log_info(logger, "Por eliminar %d paginas", cantidad_paginas);
+    quitar_paginas(cantidad_paginas, proceso_a_destruir);
+
+    log_info(logger, "Proceso PID:%u liberado", proceso_a_destruir->PID);
     free(proceso_a_destruir);
 }
 
-void liberar_instr_set(unsigned PID){
+void liberar_proceso_en_memoria(unsigned PID){
     PID_a_liberar=PID;
-    list_remove_and_destroy_by_condition(procesos_en_memoria, memoria_tiene_pid_a_liberar, proceso_mem_destroyer);
+    pthread_mutex_lock(&mutex_procesos_en_memoria);
+        list_remove_and_destroy_by_condition(procesos_en_memoria, memoria_tiene_pid_a_liberar, proceso_mem_destroyer);
+    pthread_mutex_unlock(&mutex_procesos_en_memoria);
 }//--------

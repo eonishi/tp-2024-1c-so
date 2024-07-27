@@ -9,6 +9,7 @@
 #include <commons/string.h>
 
 extern t_log* logger;
+extern t_log* logger_oblig;
 extern int socket_memoria;
 extern pcb* pcb_actual;
 

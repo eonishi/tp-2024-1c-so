@@ -7,9 +7,11 @@
 #include <stdlib.h>
 #include "configuracion.h"
 #include "colas_planificador.h"
+#include "detener_planificacion.h"
 #include "../../shared/include/pcb.h"
 
 extern t_log *logger;
+extern t_log *logger_oblig;
 extern kernel_config* config;
 extern int socket_cpu, socket_memoria;
 
