@@ -119,7 +119,7 @@ void push_cola_blocked(pcb* pcb, t_queue* cola_blocked, sem_t* sem_blocked, pthr
 
 pcb* pop_cola_blocked(t_queue* cola_blocked, pthread_mutex_t mutex_blocked){
     pthread_mutex_lock(&mutex_blocked);
-        pcb* pcb = queue_pop(cola_blocked);
+    pcb* pcb = queue_pop(cola_blocked);
     pthread_mutex_unlock(&mutex_blocked);
     return pcb;
 }

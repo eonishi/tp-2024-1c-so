@@ -1,5 +1,7 @@
 #include "../include/io_dialfs.h"
 
+pthread_mutex_t archivo_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 static void exec_io_write_fs(int pid, char **tokens_instr, t_list *peticiones_memoria);
 static void exec_io_read_fs(int pid, char **tokens_instr, t_list *peticiones_memoria);
 
@@ -19,10 +21,12 @@ void io_dialfs() {
             
                 log_info(logger_oblig, "PID: <%d> - Crear Archivo: <%s>", solicitud_create.pid, solicitud_create.nombre_archivo);
 
+                pthread_mutex_lock(&archivo_mutex);
                 if(!crear_archivo(solicitud_create.nombre_archivo)){
                     log_error(logger, "No se pudo crear el archivo");
                     // TODO: Enviar respuesta de error?
                 }
+                pthread_mutex_unlock(&archivo_mutex);
 
                 enviar_status(FIN_EJECUCION_IO, kernel_socket);
             break;
@@ -32,9 +36,11 @@ void io_dialfs() {
                 log_info(logger_oblig, "PID: <%d> - Truncar Archivo: <%s> - Tamaño: <%d>", 
                 solicitud_recibida.pid, solicitud_recibida.nombre_archivo, solicitud_recibida.tamanio_archivo);
 
+                pthread_mutex_lock(&archivo_mutex);
                 if(!truncar_archivo(solicitud_recibida.pid, solicitud_recibida.nombre_archivo, solicitud_recibida.tamanio_archivo)){
                     log_error(logger, "No se pudo truncar el archivo");
                 }
+                pthread_mutex_unlock(&archivo_mutex);
 
                 enviar_status(FIN_EJECUCION_IO, kernel_socket);
             break;
@@ -83,7 +89,7 @@ void io_dialfs() {
 
 static void exec_io_write_fs(int pid, char** tokens_instr, t_list *peticiones_memoria){   
     char* nombre_archivo = tokens_instr[2];
-    char* puntero_archivo = tokens_instr[4];
+    char* puntero_archivo = tokens_instr[5];
     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
 
     log_info(logger_oblig, "PID: <%d> - Escribir Archivo: <%s> - Tamaño a Leer: <%ld> - Puntero Archivo: <%s>", 
@@ -105,10 +111,12 @@ static void exec_io_write_fs(int pid, char** tokens_instr, t_list *peticiones_me
 
     
 
+    pthread_mutex_lock(&archivo_mutex);
     if(!escribir_archivo(nombre_archivo, datos, tam_total, atoi(puntero_archivo))){
         log_error(logger, "No se pudo escribir el archivo");
         // TODO: Enviar respuesta de error?
     }
+    pthread_mutex_unlock(&archivo_mutex);
 
     log_info(logger, "Se ha escrito correctamente el archivo: [%s]", nombre_archivo);
 
@@ -117,7 +125,7 @@ static void exec_io_write_fs(int pid, char** tokens_instr, t_list *peticiones_me
 
 static void exec_io_read_fs(int pid, char** tokens_instr, t_list *peticiones_memoria){
     char* nombre_archivo = tokens_instr[2];
-    char* puntero_archivo = tokens_instr[4];
+    char* puntero_archivo = tokens_instr[5];
     size_t tam_total = peticiones_tam_total(peticiones_memoria) + 1;
 
     log_info(logger_oblig, "PID: <%d> - Leer Archivo: <%s> - Tamaño a Leer: <%ld> - Puntero Archivo: <%s>", 
@@ -131,10 +139,12 @@ static void exec_io_read_fs(int pid, char** tokens_instr, t_list *peticiones_mem
 
     memset(datos_leidos, 0, tam_total);
 
+    pthread_mutex_lock(&archivo_mutex);
     if(!leer_archivo(nombre_archivo,atoi(puntero_archivo), tam_total, (void*)&datos_leidos)){
         log_error(logger, "No se pudo leer el archivo");
         // TODO: Enviar respuesta de error?
     }
+    pthread_mutex_unlock(&archivo_mutex);
 
     log_info(logger, "Leido desde archivo: [%s]", datos_leidos);
 

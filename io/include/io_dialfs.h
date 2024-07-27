@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "filesystem.h"
+#include <pthread.h>
 
 extern t_log *logger;
 extern t_log *logger_oblig;

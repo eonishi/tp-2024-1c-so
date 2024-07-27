@@ -151,7 +151,7 @@ void reemplazar_registro_por_dato(char** instr_tokenizada, int index, int valor)
     size_t buffer_size = snprintf(NULL, 0, "%u", valor) + 1;
 
     // Asigna suficiente espacio para la cadena resultante
-    instr_tokenizada[index] = realloc(instr_tokenizada[3], buffer_size);
+    instr_tokenizada[index] = realloc(instr_tokenizada[index], buffer_size);
     if (instr_tokenizada[index] == NULL) {
         log_error(logger, "Error al intentar reemplazar registro por dato");
         enviar_pcb(pcb_actual, socket_kernel, ERROR_DE_PROCESAMIENTO);
@@ -439,6 +439,8 @@ void exec_io_fs_read_write(char** instr_tokenizada){
 
     reemplazar_registro_por_dato(instr_tokenizada, 5, puntero_archivo);
 
+    log_warning(logger, "instr_tokenizada[5]: [%s]", instr_tokenizada[5]);
+
     log_info(logger, "Dirección logica: [%d], Tamaño: [%d], Puntero Archivo: [%d]", direccion_logica, tamanio, puntero_archivo);
 
     t_list *peticiones_lectura = mmu(direccion_logica, tamanio, NULL);    
@@ -446,5 +448,6 @@ void exec_io_fs_read_write(char** instr_tokenizada){
     solicitud_bloqueo_por_io* solicitud = crear_solicitud_io(instr_tokenizada, peticiones_lectura);
     pcb_actual->solicitud = solicitud;
 
+    log_warning(logger, "pcb_actual-->solicitud->instr_tokenizada[5]: [%s]", pcb_actual->solicitud->instruc_io_tokenizadas[5]);
     enviar_pcb(pcb_actual, socket_kernel, PROCESO_BLOQUEADO_IO);
 }

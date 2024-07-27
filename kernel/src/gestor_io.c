@@ -39,13 +39,24 @@ static void enviar_instruccion_io_segun_op(pcb* pcb_io, conexion_io* conexion_io
 
             break;
         case IO_FS_READ:
-        case IO_FS_WRITE:
+            log_warning(logger, "pcb_io->solicitud->instruc_io_tokenizadas[5]: [%s]", pcb_io->solicitud->instruc_io_tokenizadas[5]);
+
             enviar_instruccion_io(pcb_io->solicitud->instruc_io_tokenizadas, 
              pcb_io->solicitud->peticiones_memoria,
              pcb_io->pid,
              conexion_io->socket);
+            break;
+        case IO_FS_WRITE:
+            log_warning(logger, "pcb_io->solicitud->instruc_io_tokenizadas[5]: [%s]", pcb_io->solicitud->instruc_io_tokenizadas[5]);
+
+            enviar_instruccion_io(pcb_io->solicitud->instruc_io_tokenizadas, 
+             pcb_io->solicitud->peticiones_memoria,
+             pcb_io->pid,
+             conexion_io->socket);
+             break;
         default:
             log_error(logger, "Operacion no reconocida");
+            log_warning(logger, "La operación no reconocida es: [%d]", operacion);
             break;
     }
 }

@@ -133,6 +133,8 @@ solicitud_instruccion_io recibir_instruccion_io(int socket_cliente){
 
     solicitud_instruccion_io result = {pid, tokens, peticiones_memoria};
 
+    log_warning(logger, "PID:[%d] tokens[0]:[%s] ", pid, tokens[0]);
+
     return result;
 }
 
