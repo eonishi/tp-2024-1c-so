@@ -74,7 +74,10 @@ void gestionar_respuesta_cpu(){
             esperar_planificacion();
             pop_and_destroy_execute();
 
+            log_warning(logger, "pop_and_destroy_execute");
+
             if(strcmp(config->algoritmo_planificacion,"FIFO") == 0){
+                log_warning(logger, "entro a fifo");
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
                     log_info(logger_oblig, "Finaliza el proceso <%d> - Motivo: INVALID_INTERFACE", pcb->pid);
 
@@ -83,11 +86,13 @@ void gestionar_respuesta_cpu(){
                     break;
                 }
 
+                log_warning(logger, "enviar_proceso_a_esperar_io");
                 enviar_proceso_a_esperar_io(pcb);
 
                 log_info(logger_oblig, "PID: <%d> - Bloqueado por: <%s>", pcb->pid, pcb->solicitud->instruc_io_tokenizadas[1]);
 
                 sem_post(&sem_cpu_libre);
+                log_warning(logger, "sem_post");
 
                 break;
             }
