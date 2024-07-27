@@ -44,7 +44,30 @@ static t_list *leer_archivo_instrucciones(char *file_name)
     // Lista de instrucciones individuales de todo el archivo: ["SET AX 3","SUM AX BX", "RESIZE 89"]
 }
 
-void cargar_proceso_en_memoria(char* path, unsigned PID){
+bool existe_el_archivo(char* file_name){
+    char *path = string_new();
+    string_append_with_format(&path, "%s%s", config.path_instrucciones, file_name);
+    log_info(logger, "Leer_archivo_instr path: [%s]", path);
+
+    if (access(path, F_OK) != -1){
+        free(path);
+        return true;
+    }
+    else {
+        log_error(logger, "Error al abrir el archivo de instrucciones");
+        free(path);
+        return false; // A checkear el exit 😅
+    }
+
+}
+
+bool cargar_proceso_en_memoria(char* path, unsigned PID){
+
+    if(!existe_el_archivo(path)){
+        log_error(logger, "No se pudo cargar el proceso PID:%u, el archivo no existe", PID);
+        return false;
+    }
+
     t_proceso_en_memoria* nuevo_set_instruc = malloc(sizeof(t_proceso_en_memoria));
     nuevo_set_instruc->PID = PID;
     nuevo_set_instruc->instrucciones = leer_archivo_instrucciones(path);
@@ -55,6 +78,7 @@ void cargar_proceso_en_memoria(char* path, unsigned PID){
     pthread_mutex_unlock(&mutex_procesos_en_memoria);
 
     log_info(logger, "Instrucciones del proceso PID:%u cargadas en memoria", PID);
+    return true;
 } 
 
 // ----Condiciones de búsqueda----
