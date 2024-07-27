@@ -82,11 +82,11 @@ void *escuchar_io(void *args){
             
             //aca se envia a ready luego de desbloquearse por I/O
             if(strcmp(config->algoritmo_planificacion, "VRR") == 0){
-                temporal_stop(q_transcurrido); // detengo el contador iniciado en dispatch (if algortimo VRR)
-                int contador_quantum_cast = temporal_gettime(q_transcurrido); //casteo el contador a milisegundos
-                push_cola_ready_priority(pcb_blocked, contador_quantum_cast); 
+                
+                push_cola_ready_priority(pcb_blocked); 
 			    sem_post(&sem_proceso_en_ready);//chequear si hace falta otro semaforo por VRR, no deberia.
-            }else {
+            }
+            else {
 			    push_cola_ready(pcb_blocked);
             }
 			  break;

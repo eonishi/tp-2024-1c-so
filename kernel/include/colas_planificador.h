@@ -47,8 +47,8 @@ void push_cola_execute(pcb* pcb);
 pcb* pop_cola_execute();
 void pop_and_destroy_execute();
 
-void push_cola_ready_priority(pcb* pcbVRR, int q_pendiente);
-elemVRR* pop_cola_ready_priority();
+void push_cola_ready_priority(pcb* pcb);
+pcb* pop_cola_ready_priority();
 
 void pop_and_destroy(t_queue *queue, void (*destroyer)(void *), pthread_mutex_t mutex);
 void finalizar_proceso(unsigned PID);

@@ -115,6 +115,13 @@ void push_cola_blocked(pcb* pcb, t_queue* cola_blocked, sem_t* sem_blocked, pthr
     sem_post(sem_blocked);
 }
 
+pcb* pop_cola_blocked(t_queue* cola_blocked, pthread_mutex_t mutex_blocked){
+    pthread_mutex_lock(&mutex_blocked);
+        pcb* pcb = queue_pop(cola_blocked);
+    pthread_mutex_unlock(&mutex_blocked);
+    return pcb;
+}
+
 void push_cola_exit(pcb* pcb){
     log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: EXIT", pcb->pid, pcb->estado);
     pcb->estado = EXIT;
@@ -152,22 +159,19 @@ pcb* pop_cola_execute(){
     return pcb;
 }
 
-void push_cola_ready_priority(pcb* pcb, int quantum_pendiente){
+void push_cola_ready_priority(pcb* pcb){
     log_info(logger_oblig,"PID: %d - Estado Anterior: %c - Estado Actual: READY PRIORIDAD", pcb->pid, pcb->estado);
     pcb->estado = READY;
-    elemVRR element = {.pcbVRR = pcb, .quantum_usado = quantum_pendiente};
 
     pthread_mutex_lock(&mutex_readyVRR);
-        queue_push(cola_readyVRR, &element);
+        queue_push(cola_readyVRR, pcb);
     pthread_mutex_unlock(&mutex_readyVRR);
     imprimir_cola("READY PRIORIDAD:",cola_readyVRR, mutex_readyVRR);
 }
 
-elemVRR* pop_cola_ready_priority(){
-    pthread_mutex_lock(&mutex_readyVRR);
-        elemVRR* elem = queue_pop(cola_readyVRR);
-    pthread_mutex_unlock(&mutex_readyVRR);
-    return elem;
+pcb* pop_cola_ready_priority(){
+    pcb* siguiente_pcb = pop_cola_blocked(cola_readyVRR, mutex_readyVRR);
+    return siguiente_pcb;
 }
 
 void pop_and_destroy(t_queue* queue, void (*destroyer)(void*), pthread_mutex_t mutex){

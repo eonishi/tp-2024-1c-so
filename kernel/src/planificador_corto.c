@@ -2,7 +2,7 @@
 #include "../../cpu/include/checkInterrupt.h"
 
 
-int q_usado, q_restante = 0;
+int64_t q_usado, q_restante = 0;
 t_temporal *q_transcurrido;
 pthread_mutex_t mutex_quantum = PTHREAD_MUTEX_INITIALIZER;
 pthread_t hilo_quantum;
@@ -93,10 +93,12 @@ void gestionar_respuesta_cpu(){
             }
             
             else{//estoy usando RR o VRR
-                temporal_stop(q_transcurrido); //detengo el contador de quantum usado
-                q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
+
+                if(q_usado > pcb->quantum) 
+                    pcb->quantum = config->quantum;
+                else
+                    pcb->quantum -= q_usado;
                 
-                pcb->quantum -= q_usado;
                 loggear_pcb(pcb);
 
                 if(!validar_instruccion_a_io(pcb->solicitud->instruc_io_tokenizadas, pcb)){
@@ -134,7 +136,7 @@ void gestionar_respuesta_cpu(){
             loggear_pcb(pcb);
             
             log_info(logger_oblig, "PID <%d> - Desalojado por fin de Quantum.", pcb->pid);
-            pcb->quantum -= config->quantum;// por interrupcion se consumio todo el quantum del CPU
+            pcb->quantum = config->quantum;// por interrupcion se consumio todo el quantum del CPU
 
             esperar_planificacion();
             // Gestion del proceso en las colas y su sincronizacion
@@ -268,7 +270,7 @@ void *iniciar_planificacion_corto_RR(){
         push_cola_execute(pcb);
 
         dispatch_proceso_planificador(pcb);
-        crear_hilo_quantum();
+        crear_hilo_quantum(pcb->quantum);
         gestionar_respuesta_cpu();
         
     }
@@ -291,10 +293,7 @@ void *iniciar_planificacion_corto_VRR(){
 
         if(!queue_is_empty(cola_readyVRR)){
             //dar paso a readyVRR prioritario
-            log_info(logger, "La cola prioritaria NO esta vacia.");
-             elemVRR* auxVRR = queue_pop(cola_readyVRR);
-             pcb = auxVRR->pcbVRR;
-             q_usado = auxVRR->quantum_usado; //aca defino el quantum que va a usar el proceso en la cola ready prioridad
+            pcb = pop_cola_ready_priority();
         }
         else{
             //dar paso a la cola ready normal
@@ -303,23 +302,25 @@ void *iniciar_planificacion_corto_VRR(){
             pcb = pop_cola_ready();
         } 
         
+        push_cola_execute(pcb); 
         dispatch_proceso_planificador(pcb);
-        crear_hilo_quantum();
+
+        crear_hilo_quantum(pcb->quantum);
         gestionar_respuesta_cpu();
         
     }
 }
 
-void crear_hilo_quantum(){
-    int error = pthread_create(&hilo_quantum, NULL, monitoreo_quantum, NULL);
+void crear_hilo_quantum(unsigned quantum){
+    int error = pthread_create(&hilo_quantum, NULL, monitoreo_quantum, (void*) quantum);
     if(error != 0){
         log_error(logger, "Hubo un error al crear el hilo de quatum");
     }
     pthread_detach(hilo_quantum);
 }
 
-void *monitoreo_quantum(){
-    q_restante = config->quantum - q_usado; // Si es FIFO no se trabaja con quantum.
+void *monitoreo_quantum(void* quantum){
+    unsigned q_restante = (unsigned) quantum;
     log_info(logger, "Inicio quantum de %d", q_restante);
     usleep((q_restante)*1000);
     interrumpir_proceso_ejecutando(INTERRUPCION_QUANTUM);
@@ -327,7 +328,9 @@ void *monitoreo_quantum(){
 
 void cancelar_hilo_quantum(){
     if(strcmp(config->algoritmo_planificacion, "FIFO") != 0){
-                pthread_cancel(hilo_quantum);
-                log_info(logger, "hilo quantum cancelado.");
-            }
+        pthread_cancel(hilo_quantum);
+        temporal_stop(q_transcurrido); //detengo el contador de quantum usado
+        q_usado = temporal_gettime(q_transcurrido); //lo casteo a milisegundos
+        log_info(logger, "hilo quantum cancelado.");
+    }
 }
