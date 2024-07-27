@@ -33,14 +33,14 @@ void imprimir_colas(){
 }
 
 void imprimir_cola(char* nombre, t_queue* cola, pthread_mutex_t mutex){
-    log_info(logger, "=====================================");
-    log_info(logger, "Procesos en cola [%s]: ", nombre);
+    //log_info(logger_oblig, "=====================================");
+    log_info(logger_oblig, "Procesos en cola [%s]: ", nombre);
 
     pthread_mutex_lock(&mutex);
     for(int index = 0; index < cola->elements->elements_count; index++){
         pcb* pcb = list_get(cola->elements, index);
 
-        log_info(logger, "--> PID: [%d] ESTADO: [%d]", pcb->pid, pcb->estado);
+        log_info(logger_oblig, "--> PID: [%d] ESTADO: [%s]", pcb->pid, estadoToString(pcb->estado));
     }
     pthread_mutex_unlock(&mutex);
 }
@@ -163,7 +163,7 @@ pcb* pop_cola_execute(){
 
 void push_cola_ready_priority(pcb* pcb){
     log_info(logger_oblig,"PID: %d - Estado Anterior: %s - Estado Actual: READY PRIORIDAD", pcb->pid, estadoToString(pcb->estado));
-    pcb->estado = READY;
+    pcb->estado = READY_PRIORIDAD;
 
     pthread_mutex_lock(&mutex_readyVRR);
         queue_push(cola_readyVRR, pcb);

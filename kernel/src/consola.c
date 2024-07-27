@@ -18,6 +18,15 @@ static comando_consola get_comando(char* comando_token){
 	unsigned table_size = sizeof(tabla_comandos) / sizeof(table_element);
 	return get_table_value(comando_token, tabla_comandos, table_size);
 }
+static bool existe_archivo(char* path){
+    if (access(path, F_OK) != -1){
+        return true;
+    }
+    else {
+        log_error(logger, "Error al abrir el archivo de instrucciones");
+		return false;
+	}
+}
 
 static void gestionar_comando_leido(char** linea_leida){
 	char* comando_token = linea_leida[0];
@@ -62,9 +71,16 @@ static void gestionar_comando_leido(char** linea_leida){
 			char *path = linea_leida[1];
 			log_info(logger, "Leer archivo de script: [%s]", path);
 
+			if(!existe_archivo(path)){
+				log_error(logger, "No se pudo cargar el archivo de script");
+				free(path);
+				break;
+			}
+
 			FILE *archivo = fopen(path, "r");
 			if (archivo == NULL){
 				log_error(logger, "Error al abrir el archivo de instrucciones");
+				free(path);
 				exit(EXIT_FAILURE); // A checkear el exit 😅
 			}
 

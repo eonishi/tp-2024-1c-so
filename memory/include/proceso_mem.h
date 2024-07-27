@@ -18,7 +18,7 @@ typedef struct {
 } t_proceso_en_memoria;
 
 void inicializar_procesos_en_memoria();
-void cargar_proceso_en_memoria(char *path, unsigned PID);
+bool cargar_proceso_en_memoria(char *path, unsigned PID);
 void liberar_proceso_en_memoria(unsigned PID);
 bool memoria_tiene_pid(void* set_instrucciones, unsigned PID);
 bool memoria_tiene_pid_solicitado(void* set_instrucciones);

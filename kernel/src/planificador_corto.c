@@ -98,11 +98,16 @@ void gestionar_respuesta_cpu(){
             }
             
             else{//estoy usando RR o VRR
-
-                if(q_usado > pcb->quantum) 
+                if (string_equals_ignore_case(config->algoritmo_planificacion, "RR")) {
                     pcb->quantum = config->quantum;
-                else
-                    pcb->quantum -= q_usado;
+                }
+                else if (string_equals_ignore_case(config->algoritmo_planificacion, "VRR"))
+                {
+                    if(q_usado > pcb->quantum) 
+                        pcb->quantum = config->quantum;
+                    else
+                        pcb->quantum -= q_usado;
+                }
                 
                 loggear_pcb(pcb);
 
@@ -193,6 +198,10 @@ void gestionar_respuesta_cpu(){
             // Dependiendo si existen intancias disponibles, bloqueo o vuelvo a CPU
             if(recurso_disponible(recurso_solicitado)){
                 wait_recurso(recurso_solicitado, pcb->pid);
+
+                solicitud_bloqueo_por_io* solicitud_realizada = pcb->solicitud;
+                pcb->solicitud = NULL;
+                liberar_solicitud_io(solicitud_realizada);
                 enviar_pcb(pcb, socket_cpu_dispatch, DISPATCH_PROCESO);
 
                 // Lo hago recursivo porque sino tendria que separar la gestion de respuesta en un hilo
@@ -230,7 +239,13 @@ void gestionar_respuesta_cpu(){
             // Obtengo el recurso, lo libero y vuelvo a CPU
             t_recurso* recurso_liberar = get_recurso(nombre_recurso_liberar);
             signal_recurso(recurso_liberar, pcb->pid);
+
+            solicitud_bloqueo_por_io* solicitud_realizada = pcb->solicitud;
+            pcb->solicitud = NULL;
+            liberar_solicitud_io(solicitud_realizada);
+
             enviar_pcb(pcb, socket_cpu_dispatch, DISPATCH_PROCESO);
+
             gestionar_respuesta_cpu();
             break;
 

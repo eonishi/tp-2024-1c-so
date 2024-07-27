@@ -60,11 +60,16 @@ void* gestionar_solicitudes_kernel(){
 
             solicitud_crear_proceso solicitud = recibir_solicitud_crear_proceso(socket_kernel);
 			esperar_retardo();
-			cargar_proceso_en_memoria(solicitud.filePath, solicitud.PID);
+			bool carga_correcta = cargar_proceso_en_memoria(solicitud.filePath, solicitud.PID);
 
-			log_info(logger_oblig, "PID: <%u> - Páginas: <%d>", solicitud.PID, 0);
+			if(carga_correcta){
+				log_info(logger_oblig, "PID: <%u> - Páginas: <%d>", solicitud.PID, 0);
+				enviar_status(SUCCESS, socket_kernel);
+			}
+			else {
+				enviar_status(ERROR_DE_PROCESAMIENTO, socket_kernel);
+			}
 
-			enviar_status(SUCCESS, socket_kernel);
 			break;
 			
 		case LIBERAR_PROCESO_EN_MEMORIA:

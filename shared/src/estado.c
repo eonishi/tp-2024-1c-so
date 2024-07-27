@@ -6,6 +6,8 @@ char* estadoToString(state estado){
             return "NEW";
         case READY:
             return "READY";
+        case READY_PRIORIDAD:
+            return "READY_PRIORIDAD";
         case EXECUTE:
             return "EXEC";
         case BLOCKED:

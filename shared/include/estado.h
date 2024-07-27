@@ -5,6 +5,7 @@ typedef enum
 {
     NEW,
     READY,
+    READY_PRIORIDAD,
     EXECUTE,
     BLOCKED,
     EXIT
