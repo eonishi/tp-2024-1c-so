@@ -98,11 +98,16 @@ void gestionar_respuesta_cpu(){
             }
             
             else{//estoy usando RR o VRR
-
-                if(q_usado > pcb->quantum) 
+                if (string_equals_ignore_case(config->algoritmo_planificacion, "RR")) {
                     pcb->quantum = config->quantum;
-                else
-                    pcb->quantum -= q_usado;
+                }
+                else if (string_equals_ignore_case(config->algoritmo_planificacion, "VRR"))
+                {
+                    if(q_usado > pcb->quantum) 
+                        pcb->quantum = config->quantum;
+                    else
+                        pcb->quantum -= q_usado;
+                }
                 
                 loggear_pcb(pcb);
 
