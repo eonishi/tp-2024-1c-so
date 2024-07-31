@@ -294,7 +294,7 @@ void compactar(int pid) {
         memcpy((char*)nuevo_espacio + nuevo_byte_inicial, datos_leidos, tamanio_archivo);
 
         // Liberar los bloques antiguos
-        asignar_bloques_bitmap_por_rango(nuevo_bloque_inicial, nuevo_bloque_inicial + bloques_a_ocupar - 1);
+        asignar_bloques_bitmap_por_rango(nuevo_bloque_inicial, nuevo_bloque_inicial + bloques_a_ocupar);
 
         // Actualizar el FCB con los nuevos bloques
         set_campo_de_archivo("BLOQUE_INICIAL", nuevo_bloque_inicial, fcb->config);
