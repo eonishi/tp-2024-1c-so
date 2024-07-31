@@ -4,6 +4,8 @@ static void *BLOQUES;
 static t_bitarray* BLOQ_BITMAP;
 int tam_filesystem = 0;
 
+static void init_bloq_bitmap();
+
 
 void inicializar_bloques(){
     tam_filesystem = config.block_count * config.block_size;
@@ -56,22 +58,21 @@ void inicializar_archivo_bitmap(){
         }
     }
     
-    int bitmap_file_size = sizeof(t_bitarray) + config.block_count/8; // 32 bloques -> 32 bits -> ocupa 4 bytes 
+    int bitmap_file_size = config.block_count/8; // 32 bloques -> 32 bits -> ocupa 4 bytes 
 
     ftruncate(fd, bitmap_file_size);
     
-    void* mapped_file = (t_bitarray*) enlazar_archivo(fd, bitmap_file_size);    
+    void* mapped_file = (char*) enlazar_archivo(fd, bitmap_file_size);    
 
     if(!mapped_file){
         log_error(logger, "No se pudo enlazar el archivo");        
     }
 
-    //+-------------------------------+----------------+
-    //|  t_bitarray (16 bytes)        | bitarray (4 bytes) |
-    //+-------------------------------+----------------+
-    t_bitarray *bloq_bitmap = (t_bitarray *)mapped_file; // Primero convertimos el puntero generico a un puntero t_bitarray
-    bloq_bitmap->bitarray = (char *)mapped_file + sizeof(t_bitarray); // Convertirmos el puntero generico a (char *) para poder "saltear" los primeros 16 bytes
-    BLOQ_BITMAP = bloq_bitmap;
+    if(BLOQ_BITMAP == NULL){
+        init_bloq_bitmap();
+
+    }
+    BLOQ_BITMAP->bitarray = (char *)mapped_file;
 
     close(fd);
 }
@@ -113,6 +114,15 @@ bool inicializar_bloques_en_archivo(int fd){
         return true;
 }
 
+void init_bloq_bitmap(){
+    // Inicialización de bloques
+    int cantidad_bits_en_bytes = config.block_count / 8; // 1 byte = 8 bits
+    char *bitmap = calloc(cantidad_bits_en_bytes, sizeof(char));    
+    t_bitarray *bloq_bitmap = malloc(sizeof(t_bitarray));
+    bloq_bitmap = bitarray_create_with_mode(bitmap, cantidad_bits_en_bytes, MSB_FIRST);
+    BLOQ_BITMAP = bloq_bitmap;
+}
+
 bool inicializar_bitmap_en_archivo(int fd) {
     // Inicialización de bloques
     int cantidad_bits_en_bytes = config.block_count / 8; // 1 byte = 8 bits
@@ -121,14 +131,9 @@ bool inicializar_bitmap_en_archivo(int fd) {
     t_bitarray *bloq_bitmap = malloc(sizeof(t_bitarray));
     bloq_bitmap = bitarray_create_with_mode(bitmap, cantidad_bits_en_bytes, MSB_FIRST);
     BLOQ_BITMAP = bloq_bitmap;
-    // Escribir la estructura completa en el archivo
-    ssize_t written = write(fd, bloq_bitmap, sizeof(t_bitarray));
-    if (written != sizeof(t_bitarray)) {
-        free(bitmap); // Liberar la memoria asignada
-        return false;
-    }
+
     // Escribir el bitarray
-    written = write(fd, bitmap, cantidad_bits_en_bytes);
+    ssize_t written = write(fd, bitmap, cantidad_bits_en_bytes);
     if (written != cantidad_bits_en_bytes) {
         free(bitmap); // Liberar la memoria asignada
         return false;
