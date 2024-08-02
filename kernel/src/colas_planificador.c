@@ -35,7 +35,7 @@ void imprimir_colas(){
 void imprimir_cola(char* nombre, t_queue* cola, pthread_mutex_t mutex){
     log_info(logger_oblig, "Procesos en cola [%s]: ", nombre);
     // pthread_mutex_lock(&mutex);
-    log_warning(logger, "Mutex: [%d]", pthread_mutex_trylock(&mutex));
+    // log_warning(logger, "Mutex: [%d]", pthread_mutex_trylock(&mutex));
     for(int index = 0; index < cola->elements->elements_count; index++){
         pcb* pcb = list_get(cola->elements, index);
 
