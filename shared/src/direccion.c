@@ -70,7 +70,7 @@ void* serializar_peticion_memoria(t_peticion_memoria* peticion){
         memcpy(stream + offset, &peticion->direccion_fisica, sizeof(uint32_t));
         offset += sizeof(uint32_t);
 
-        memcpy(stream + offset, &peticion->tam_dato, sizeof(uint32_t));
+        memcpy(stream + offset, &peticion->tam_dato, sizeof(size_t));
         return stream;
 }
 
@@ -81,7 +81,7 @@ void* deserializar_peticion_memoria(void* stream){
     memcpy(&peticion->direccion_fisica, stream + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
-    memcpy(&peticion->tam_dato, stream + offset, sizeof(uint32_t));
+    memcpy(&peticion->tam_dato, stream + offset, sizeof(size_t));
 
     free(stream); 
     return peticion;
