@@ -33,22 +33,22 @@ void imprimir_colas(){
 }
 
 void imprimir_cola(char* nombre, t_queue* cola, pthread_mutex_t mutex){
-    //log_info(logger_oblig, "=====================================");
     log_info(logger_oblig, "Procesos en cola [%s]: ", nombre);
-
-    pthread_mutex_lock(&mutex);
+    // pthread_mutex_lock(&mutex);
+    log_warning(logger, "Mutex: [%d]", pthread_mutex_trylock(&mutex));
     for(int index = 0; index < cola->elements->elements_count; index++){
         pcb* pcb = list_get(cola->elements, index);
 
         log_info(logger_oblig, "--> PID: [%d] ESTADO: [%s]", pcb->pid, estadoToString(pcb->estado));
     }
-    pthread_mutex_unlock(&mutex);
+    // pthread_mutex_unlock(&mutex);
 }
 
 void imprimir_colas_io(){
     pthread_mutex_lock(&mutex_conexiones_io);
     for (size_t i = 0; i < list_size(lista_conexiones_io); i++){
         conexion_io* conexion_a_imprimir = list_get(lista_conexiones_io, i);
+
         imprimir_cola(conexion_a_imprimir->nombre_interfaz, conexion_a_imprimir->cola_espera, conexion_a_imprimir->mutex);
     }
     pthread_mutex_unlock(&mutex_conexiones_io);
