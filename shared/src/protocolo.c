@@ -4,14 +4,14 @@
 int enviar_solicitud_crear_proceso(char* filePath, unsigned PID, int socket_cliente){
     t_paquete* paquete = crear_paquete(CREAR_PROCESO_EN_MEMORIA);
 
-    void* tamanio_path_serializado = serializar_int8(strlen(filePath) + 1);
-    agregar_a_paquete(paquete, tamanio_path_serializado, sizeof(int8_t));
+    void* tamanio_path_serializado = serializar_size_t(strlen(filePath) + 1);
+    agregar_a_paquete(paquete, tamanio_path_serializado, sizeof(size_t));
 
     void* filepath_serializado = serializar_char(filePath);
     agregar_a_paquete(paquete, filepath_serializado, strlen(filePath) + 1);
 
-    void* pid_stream = serializar_uint32(PID);    
-    agregar_a_paquete(paquete, pid_stream, sizeof(uint32_t));
+    void* pid_stream = serializar_unsigned(PID);    
+    agregar_a_paquete(paquete, pid_stream, sizeof(unsigned));
 
     enviar_paquete(paquete, socket_cliente);
 
@@ -30,12 +30,12 @@ solicitud_crear_proceso recibir_solicitud_crear_proceso(int socket_cliente){
     void* pid_bytes = list_get(lista_pcb_bytes, 2);
 
 
-    int8_t tamanio_filepath = deserializar_int8(filepath_tamanio_bytes);
+    size_t tamanio_filepath = deserializar_size_t(filepath_tamanio_bytes);
     log_info(logger,"tamanio_filepath recibido en solicitud crear proceso: [%d]", tamanio_filepath);
     char* file_path = deserializar_char(filepath_bytes,tamanio_filepath);
     log_info(logger,"FilePath recibido en solicitud crear proceso: [%s]", file_path);
 
-    unsigned pid_recibido = deserializar_uint32(pid_bytes);
+    unsigned pid_recibido = deserializar_unsigned(pid_bytes);
 
     free(lista_pcb_bytes);
 

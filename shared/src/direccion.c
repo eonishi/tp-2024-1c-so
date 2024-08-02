@@ -32,7 +32,7 @@ t_peticion_memoria* peticion_recibir(int socket, op_code CODE){
     t_peticion_memoria *peticion = malloc(sizeof(t_peticion_memoria));
 
     peticion->direccion_fisica = deserializar_uint32(list_get(paquete_recibido, 0));
-    peticion->tam_dato = deserializar_uint32(list_get(paquete_recibido, 1));
+    peticion->tam_dato = deserializar_size_t(list_get(paquete_recibido, 1));
     if(CODE == ESCRIBIR_DATO_EN_MEMORIA){
         peticion->dato = list_get(paquete_recibido, 2);
     }
@@ -48,8 +48,8 @@ void peticion_empaquetar(t_peticion_memoria *peticion, t_paquete *paquete, op_co
     void* df_stream = serializar_uint32(peticion->direccion_fisica);
     agregar_a_paquete(paquete, df_stream, sizeof(uint32_t));
 
-    void* tam_dato_stream = serializar_uint32(peticion->tam_dato);
-    agregar_a_paquete(paquete, tam_dato_stream, sizeof(uint32_t));
+    void* tam_dato_stream = serializar_size_t(peticion->tam_dato);
+    agregar_a_paquete(paquete, tam_dato_stream, sizeof(size_t));
 
     if(CODE == ESCRIBIR_DATO_EN_MEMORIA){
         void *dato_stream = malloc(peticion->tam_dato);
@@ -64,13 +64,13 @@ void peticion_empaquetar(t_peticion_memoria *peticion, t_paquete *paquete, op_co
 
 void* serializar_peticion_memoria(t_peticion_memoria* peticion){
     // cantidad_bytes = [direccion_fisica + tam_dato]
-        void* stream = malloc(sizeof(uint32_t)*2);
+        void* stream = malloc(sizeof(uint32_t) + sizeof(size_t));
         size_t offset = 0;
 
         memcpy(stream + offset, &peticion->direccion_fisica, sizeof(uint32_t));
         offset += sizeof(uint32_t);
 
-        memcpy(stream + offset, &peticion->tam_dato, sizeof(uint32_t));
+        memcpy(stream + offset, &peticion->tam_dato, sizeof(size_t));
         return stream;
 }
 
@@ -81,7 +81,7 @@ void* deserializar_peticion_memoria(void* stream){
     memcpy(&peticion->direccion_fisica, stream + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
-    memcpy(&peticion->tam_dato, stream + offset, sizeof(uint32_t));
+    memcpy(&peticion->tam_dato, stream + offset, sizeof(size_t));
 
     free(stream); 
     return peticion;
@@ -90,13 +90,13 @@ void* deserializar_peticion_memoria(void* stream){
 void peticiones_empaquetar(t_list* peticiones, t_paquete* paquete){
     // Cada petición queda en una posicion de la lista (recibir_paquete)
     size_t cantidad_peticiones = list_size(peticiones);
-    log_peticiones(peticiones);
+    //log_peticiones(peticiones);
     agregar_a_paquete(paquete, &cantidad_peticiones, sizeof(size_t));
     log_info(logger, "Cantidad de peticiones: [%d]", cantidad_peticiones);
 
     for(int i = 0; i < cantidad_peticiones; i++){
         t_peticion_memoria* peticion = list_get(peticiones, i);
-        log_peticion(peticion);
+        //log_peticion(peticion);
         void* stream = serializar_peticion_memoria(peticion);
         agregar_a_paquete(paquete, stream, sizeof(t_peticion_memoria));
     }

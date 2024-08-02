@@ -52,6 +52,21 @@ char* deserializar_char(void* char_bytes, int8_t size){
     return string;
 }
 
+void* serializar_unsigned(unsigned value){
+    void* stream = malloc(sizeof(unsigned)); 
+
+    memcpy(stream, &value, sizeof(unsigned));
+    
+    return stream;
+}
+
+unsigned deserializar_unsigned(void* int_bytes){
+    unsigned* result =malloc(sizeof(unsigned));
+    memcpy(result, int_bytes, sizeof(unsigned));
+
+    return *result;
+}
+
 void* serializar_uint32(uint32_t value){
     void* stream = malloc(sizeof(uint32_t)); 
 
@@ -63,6 +78,21 @@ void* serializar_uint32(uint32_t value){
 uint32_t deserializar_uint32(void* int_bytes){
     uint32_t* result =malloc(sizeof(uint32_t));
     memcpy(result, int_bytes, sizeof(uint32_t));
+
+    return *result;
+}
+
+void *serializar_size_t(size_t value){
+    void* stream = malloc(sizeof(size_t)); 
+
+    memcpy(stream, &value, sizeof(size_t));
+    
+    return stream;
+}
+
+size_t deserializar_size_t(void* size_t_bytes){
+    size_t* result =malloc(sizeof(size_t));
+    memcpy(result, size_t_bytes, sizeof(size_t));
 
     return *result;
 }

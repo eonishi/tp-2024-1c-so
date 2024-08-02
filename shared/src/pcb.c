@@ -10,7 +10,7 @@ int pcb_size(){
 
 pcb* crear_pcb(unsigned id, unsigned quantum){
     pcb* nuevo_pcb = (pcb*) malloc(sizeof(pcb));
-    nuevo_pcb->registros = (registros_t*) malloc(sizeof(registros_t));
+    //nuevo_pcb->registros = (registros_t*) malloc(sizeof(registros_t));
 
     nuevo_pcb->pid = id;
     nuevo_pcb->quantum = quantum;
@@ -45,9 +45,11 @@ void enviar_pcb(pcb* pcb, int socket_cliente, op_code code){
     agregar_a_paquete(paquete, data_primitive, size_primitive_data);
     agregar_a_paquete(paquete, registros, size_registros);
 
-    if(pcb->solicitud == NULL){
+    int no_envio_solicitud = pcb->solicitud == NULL;
+
+    if(no_envio_solicitud){
         log_warning(logger, "Enviando PCB sin soliciutd");
-        void* envio_una_solicitud = serializar_int(false);
+        void* envio_una_solicitud = serializar_int(no_envio_solicitud);
         agregar_a_paquete(paquete, envio_una_solicitud, sizeof(int));
     }
     else {

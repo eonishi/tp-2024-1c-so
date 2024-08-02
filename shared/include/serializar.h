@@ -18,7 +18,13 @@ int deserializar_int(void *int_bytes);
 void* serializar_uint32(uint32_t value);
 uint32_t deserializar_uint32(void* int_bytes);
 
-void* serializar_int8(int8_t value);
+void* serializar_size_t(size_t value);
+size_t deserializar_size_t(void *size_t_bytes);
+
+void *serializar_unsigned(unsigned value);
+unsigned deserializar_unsigned(void *int_bytes);
+
+void *serializar_int8(int8_t value);
 int8_t deserializar_int8(void* int_bytes);
 
 void* serializar_lista_strings(char** strings);

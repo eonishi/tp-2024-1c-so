@@ -255,15 +255,22 @@ bool sacar_proceso_de_cola_estado(unsigned PID){
 }
 
 bool sacar_proceso_de_cola_io(unsigned PID){
-    for (size_t i = 0; i < list_size(lista_conexiones_io); i++){
+    bool fue_exitoso = false;
+
+    pthread_mutex_lock(&mutex_conexiones_io);
+    for (size_t i = 0; i < list_size(lista_conexiones_io); i++)
+    {
         conexion_io* conexion = list_get(lista_conexiones_io, i);
         if(proceso_esta_en_cola(conexion->cola_espera, PID, conexion->mutex)){
             pcb* pcb_encontrado = pop_proceso(conexion->cola_espera, PID, conexion->mutex);
             push_cola_exit(pcb_encontrado);
-            return true;
+            fue_exitoso = true;
+            break;
         }
     }
-    return false;
+    pthread_mutex_unlock(&mutex_conexiones_io);
+
+    return fue_exitoso;
 }
 
 bool sacar_proceso_de_cola_recurso(unsigned PID){

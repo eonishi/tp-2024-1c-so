@@ -75,16 +75,16 @@ int generar_conexion(char* ip, char* puerto){
 }
 
 conexion_io* crear_conexion_io(int socket, char* nombre_interfaz, io_tipo tipo, int* operaciones){
-    conexion_io* conexion_io = malloc(sizeof(conexion_io));
-    conexion_io->socket = socket;
-    conexion_io->nombre_interfaz = nombre_interfaz;
-    conexion_io->tipo = tipo;
-    conexion_io->operaciones = operaciones;
-    conexion_io->cola_espera = queue_create();
-    sem_init(&conexion_io->sem_cliente, 0, 0);
-    pthread_mutex_init(&conexion_io->mutex, NULL);
+    conexion_io* conexion = (conexion_io*)malloc(sizeof(conexion_io));
+    conexion->socket = socket;
+    conexion->nombre_interfaz = nombre_interfaz;
+    conexion->tipo = tipo;
+    conexion->operaciones = operaciones;
+    conexion->cola_espera = queue_create();
+    sem_init(&conexion->sem_cliente, 0, 0);
+    pthread_mutex_init(&conexion->mutex, NULL);
 
-    return conexion_io;
+    return conexion;
 }
 
 void liberar_conexion_io(conexion_io* conexion_io){

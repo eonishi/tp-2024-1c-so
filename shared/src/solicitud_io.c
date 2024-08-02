@@ -29,7 +29,7 @@ solicitud_bloqueo_por_io recibir_solicitud_bloqueo_por_io(int socket_cliente){
 }
 
 solicitud_bloqueo_por_io* crear_solicitud_io(char** instruc_io_tokenizadas, t_list* peticiones_memoria){
-    solicitud_bloqueo_por_io* solicitud = malloc(sizeof(solicitud_bloqueo_por_io));
+    solicitud_bloqueo_por_io* solicitud = (solicitud_bloqueo_por_io*)malloc(sizeof(solicitud_bloqueo_por_io));
     solicitud->instruc_io_tokenizadas = instruc_io_tokenizadas;
     solicitud->peticiones_memoria = peticiones_memoria;
 
