@@ -206,7 +206,7 @@ void gestionar_respuesta_cpu(){
 
                 // Lo hago recursivo porque sino tendria que separar la gestion de respuesta en un hilo
                 // y la admicion de proceso a execute en otro hilo
-                // TODO: probar si esto anda en condiciones
+                // TODO: probar si esto anda en condiciones                
                 gestionar_respuesta_cpu(); 
             }
             else {
