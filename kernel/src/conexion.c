@@ -45,7 +45,7 @@ conexion_io* recibir_conexion_io(int server) {
         exit(EXIT_FAILURE); // Nose si mata al proceso o solo al hilo
     }
     solicitud_conexion_kernel* solicitud = recibir_solicitud_conexion_kernel(socket);
-    log_info(logger,"Recibido handshake del modulo IO. Interfaz: [%s] Tipo: [%d]", solicitud->nombre_interfaz, solicitud->tipo);
+    log_info(logger,"Recibido handshake del modulo IO. Interfaz: [%s] Tipo: [%d] Operacion: [%d]", solicitud->nombre_interfaz, solicitud->tipo, solicitud->operaciones[0]);
     log_info(logger, "Respondiendo handshake del modulo IO... ");
     enviar_status(SUCCESS, socket);
     

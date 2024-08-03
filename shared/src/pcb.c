@@ -45,11 +45,9 @@ void enviar_pcb(pcb* pcb, int socket_cliente, op_code code){
     agregar_a_paquete(paquete, data_primitive, size_primitive_data);
     agregar_a_paquete(paquete, registros, size_registros);
 
-    int no_envio_solicitud = pcb->solicitud == NULL;
-
-    if(no_envio_solicitud){
+    if(pcb->solicitud == NULL){
         log_warning(logger, "Enviando PCB sin soliciutd");
-        void* envio_una_solicitud = serializar_int(no_envio_solicitud);
+        void* envio_una_solicitud = serializar_int(0);
         agregar_a_paquete(paquete, envio_una_solicitud, sizeof(int));
     }
     else {
@@ -97,7 +95,7 @@ pcb* recibir_pcb(int socket_cliente){
     // Recibo bool para saber si tengo que recibir instrucciones
     void * bytes_recibo_solicitud = list_get(lista_pcb_bytes, 2);
     int recibo_solititud = deserializar_int(bytes_recibo_solicitud);
-    log_warning(logger, "Recibiendo PCB con solicitud de IO: [%s]", recibo_solititud? "true" : "false");
+    log_warning(logger, "Recibiendo PCB con solicitud de IO: [%s]", recibo_solititud ? "true" : "false");
 
     if(!recibo_solititud){
         recived_pcb->solicitud = NULL;

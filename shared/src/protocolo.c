@@ -56,7 +56,6 @@ solicitud_conexion_kernel* crear_solicitud_conexion_kernel(char* nombre_interfaz
 }
 
 void liberar_solicitud_conexion_kernel(solicitud_conexion_kernel* solicitud){
-    free(solicitud->operaciones);
     free(solicitud);
 }
 
